@@ -1,12 +1,11 @@
 package com.hits.graphic_editor
 
-import android.R
+import android.R.color
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Color.valueOf
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.createBitmap
 import com.hits.graphic_editor.databinding.ActivityMainBinding
@@ -41,10 +40,18 @@ fun getBilinearFilteredPixelColor(bitmap: Bitmap, u: Float, v: Float): Color
     return valueOf(newComponents[0], newComponents[1],
         newComponents[2], newComponents[3])
 }
-fun getBilinearFilteredPixelInt(bitmap: Bitmap, u: Float, v: Float): Int
+
+
+
+typealias IntColor = Int
+fun IntColor.alpha(): IntColor = this shr 24
+fun IntColor.red(): IntColor = this shr 16 and 0xff
+fun IntColor.green(): IntColor = this shr 8 and 0xff
+fun IntColor.blue(): IntColor = this and 0xff
+fun getBilinearFilteredPixelInt(pixels: IntArray, width: Int, height: Int, u: Float, v: Float): Int
 {
-    val floatX = u * bitmap.width
-    val floatY = v * bitmap.height
+    val floatX = u * width
+    val floatY = v * height
 
     val x = floatX.toInt()
     val y = floatY.toInt()
@@ -54,19 +61,19 @@ fun getBilinearFilteredPixelInt(bitmap: Bitmap, u: Float, v: Float): Int
     val uOpposite = 1 - uRatio
     val vOpposite = 1 - vRatio
 
-    val oldComponentsArray = arrayOf(
-        bitmap.getColor(x, y).components, bitmap.getColor(x, y + 1).components,
-        bitmap.getColor(x + 1, y).components, bitmap.getColor(x + 1, y + 1).components
-    )
+    val alpha = ((pixels[x * width + y].alpha() * uOpposite + pixels[(x + 1) * width + y].alpha() * uRatio) * vOpposite +
+            (pixels[x * width + y + 1].alpha() * uOpposite + pixels[(x + 1) * width + y + 1].alpha() * uRatio) * vRatio).toInt()
 
-    val newComponents = FloatArray(4)
+    val red = ((pixels[x * width + y].red() * uOpposite + pixels[(x + 1) * width + y].red() * uRatio) * vOpposite +
+                (pixels[x * width + y + 1].red() * uOpposite + pixels[(x + 1) * width + y + 1].red() * uRatio) * vRatio).toInt()
 
-    for (j in 0..3)
-        newComponents[j] = (oldComponentsArray[0][j] * uOpposite + oldComponentsArray[2][j] * uRatio) * vOpposite +
-                (oldComponentsArray[1][j] * uOpposite + oldComponentsArray[3][j] * uRatio) * vRatio
+    val green = ((pixels[x * width + y].green() * uOpposite + pixels[(x + 1) * width + y].green() * uRatio) * vOpposite +
+            (pixels[x * width + y + 1].green() * uOpposite + pixels[(x + 1) * width + y + 1].green() * uRatio) * vRatio).toInt()
 
-    return valueOf(newComponents[0], newComponents[1],
-        newComponents[2], newComponents[3]).toArgb()
+    val blue = ((pixels[x * width + y].blue() * uOpposite + pixels[(x + 1) * width + y].blue() * uRatio) * vOpposite +
+            (pixels[x * width + y + 1].blue() * uOpposite + pixels[(x + 1) * width + y + 1].blue() * uRatio) * vRatio).toInt()
+
+    return (alpha shl 24) or (red shl 16) or (green shl 8) or blue
 }
 fun getBilinearFilteredBitmap(input: Bitmap, coeff: Float): Bitmap
 {
@@ -78,15 +85,15 @@ fun getBilinearFilteredBitmap(input: Bitmap, coeff: Float): Bitmap
 
     val newPixels = IntArray(newWidth * newHeight)
 
-    //val oldPixels = IntArray(oldWidth * oldHeight)
-    //input.getPixels(oldPixels, 0, oldWidth, 0, 0, oldWidth, oldHeight)
+    val oldPixels = IntArray(oldWidth * oldHeight)
+    input.getPixels(oldPixels, 0, oldWidth, 0, 0, oldWidth, oldHeight)
 
     for (y in 0 until newHeight - coeff.toInt())
     {
         for (x in 0 until newWidth - coeff.toInt())
         {
-            newPixels[y * newWidth + x] =
-                getBilinearFilteredPixelInt(input, x / newWidth.toFloat(), y / newHeight.toFloat())
+            newPixels[x * newWidth + y] =
+                getBilinearFilteredPixelInt(oldPixels, oldWidth, oldHeight, x / newWidth.toFloat(), y / newHeight.toFloat())
         }
     }
 
@@ -108,7 +115,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.btn.setOnClickListener {
             val drawable = binding.image1.drawable as BitmapDrawable
-            var x = ColorInt();
             var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
             bitmap = getBilinearFilteredBitmap(bitmap, 3F)
 
