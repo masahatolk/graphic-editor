@@ -2,6 +2,7 @@ package com.hits.graphic_editor
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 
 class NewProjectActivity : AppCompatActivity() {
@@ -10,12 +11,12 @@ class NewProjectActivity : AppCompatActivity() {
         ActivityNewProjectBinding.inflate(layoutInflater)
     }
 
-    val photo = intent.getStringExtra("photo")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-    }
+        val photo = intent?.getStringExtra("photo")
 
-    //binding.
+        binding.imageView.setImageURI(photo?.toUri())
+    }
 }
