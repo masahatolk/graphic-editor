@@ -18,6 +18,7 @@
         app:srcCompat="@drawable/ic_launcher_background" />
 
     <com.google.android.material.tabs.TabLayout
+        app:tabTextAppearance="@style/TabText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -25,7 +26,7 @@
 
         <com.google.android.material.tabs.TabItem
             android:icon="@drawable/ic_scaling_24dp"
-            android:text="Scaling"
+            android:text="Scale"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content" />
 
@@ -42,6 +43,12 @@
             android:layout_width="wrap_content"/>
 
         <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_filters_24dp"
+            android:text="Filter"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
             android:icon="@drawable/ic_retouch_24dp"
             android:text="Retouch"
             android:layout_height="wrap_content"
@@ -54,8 +61,20 @@
             android:layout_width="wrap_content"/>
 
         <com.google.android.material.tabs.TabItem
-            android:icon="@drawable/ic_cube_24dp"
-            android:text="Cube"
+            android:icon="@drawable/ic_splines_24dp"
+            android:text="Splines"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_affine_transformation_24dp"
+            android:text="Affine transformation"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_unsharp_masking_24dp"
+            android:text="Unsharp masking"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"/>
 
@@ -66,5 +85,60 @@
             android:layout_width="wrap_content"/>
 
     </com.google.android.material.tabs.TabLayout>
+
+    <ImageView
+        android:id="@+id/close"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_close_24dp"
+        app:tint="@color/grey"/>
+
+    <ImageView
+        android:id="@+id/undo"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="72dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toEndOf="@+id/close"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_undo"
+        app:tint="@color/grey" />
+
+    <ImageView
+        android:id="@+id/redo"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="80dp"
+        app:layout_constraintEnd_toStartOf="@+id/download"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_redo_24dp"
+        app:tint="@color/grey" />
+
+    <ImageView
+        android:id="@+id/download"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toStartOf="@+id/share"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_download_24dp"
+        app:tint="@color/grey" />
+
+    <ImageView
+        android:id="@+id/share"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_share_24dp"
+        app:tint="@color/grey" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
