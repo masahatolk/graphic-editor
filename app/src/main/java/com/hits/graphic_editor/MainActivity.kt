@@ -51,6 +51,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         tempImageUri = initTempUri()
+
+        supportActionBar?.hide()
     }
 
     private val galleryLauncher =

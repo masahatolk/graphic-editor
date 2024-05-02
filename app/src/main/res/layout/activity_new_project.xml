@@ -16,4 +16,55 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_launcher_background" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tabMode="scrollable">
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_scaling_24dp"
+            android:text="Scaling"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_rotate_24dp"
+            android:text="Rotate"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_crop_24dp"
+            android:text="Crop"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_retouch_24dp"
+            android:text="Retouch"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_face_recognition_24dp"
+            android:text="Face recognition"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_cube_24dp"
+            android:text="Cube"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:icon="@drawable/ic_cube_24dp"
+            android:text="Cube"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"/>
+
+    </com.google.android.material.tabs.TabLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
