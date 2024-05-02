@@ -10,7 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.createBitmap
 import com.hits.graphic_editor.databinding.ActivityMainBinding
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.min
 import kotlin.math.round
 
 typealias IntColor = Int
@@ -151,49 +153,40 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
     val oldNewRatio = oldWidth.toFloat() / newWidth //bigger
     val newOldRatio = newWidth / oldWidth.toFloat() //smaller
 
-    //val newPixelArea = oldNewRatio * oldNewRatio
-
-    val minStep = if (isWhole(oldNewRatio))
-        oldNewRatio.toInt() + 1
-        else oldNewRatio.toInt()
-    val maxStep = minStep + 1
-
-    for (newY in 2 until newHeight - 2)
+    for (newY in 0 until newHeight - 1)
     {
         val v = newY / newHeight.toFloat()
         val oldY = (v * oldHeight).toInt()
-        val yStep = //if (isWhole(v * oldHeight)) minStep else maxStep
-            minStep
-        val topOffset = oldY * newOldRatio - newY
-        val bottomOffset = (newY + 1) * oldNewRatio - floor((newY + 1) * oldNewRatio)
+        val yStep = (ceil((newY + 1) * oldNewRatio) - floor(newY * oldNewRatio)).toInt()
+        val topOffset = newY - oldY * newOldRatio
+        val bottomOffset = (ceil((newY + 1) * oldNewRatio) - (newY + 1) * oldNewRatio) * newOldRatio
 
-        for (newX in 2 until newWidth - 2)
+        for (newX in 0 until newWidth)
         {
             val u = newX / newWidth.toFloat()
             val oldX = (u * oldWidth).toInt()
-            val xStep = //if (isWhole(u * oldWidth)) minStep else maxStep
-                minStep
-            val leftOffset = oldX * newOldRatio - newX
-            val rightOffset = (newX + 1) * oldNewRatio - floor((newX + 1) * oldNewRatio)
+            val xStep = (ceil((newX + 1) * oldNewRatio) - floor(newX * oldNewRatio)).toInt()
+            val leftOffset = newX - oldX * newOldRatio
+            val rightOffset = (ceil((newX + 1) * oldNewRatio) - (newX + 1) * oldNewRatio) * newOldRatio
 
             fun addToChannels(pixelsX: Int, pixelsY: Int, pixelArea: Float)
             {
                 val pixelsIndex = pixelsY * img.width + pixelsX
 
                 newChannels[4 * (newY * newWidth + newX)] +=
-                    img.pixels[pixelsIndex].alpha() * pixelArea // newPixelArea
+                    img.pixels[pixelsIndex].alpha() * pixelArea
                 newChannels[4 * (newY * newWidth + newX) + 1] +=
-                    img.pixels[pixelsIndex].red() * pixelArea // newPixelArea
+                    img.pixels[pixelsIndex].red() * pixelArea
                 newChannels[4 * (newY * newWidth + newX) + 2] +=
-                    img.pixels[pixelsIndex].green() * pixelArea // newPixelArea
+                    img.pixels[pixelsIndex].green() * pixelArea
                 newChannels[4 * (newY * newWidth + newX) + 3] +=
-                    img.pixels[pixelsIndex].blue() * pixelArea // newPixelArea
+                    img.pixels[pixelsIndex].blue() * pixelArea
             }
 
             // inner pixels
-            for (innerY in (if (isWhole(v * oldWidth)) 0 else 1) until yStep - 1)
+            for (innerY in 1 until yStep - 1)
             {
-                for (innerX in (if (isWhole(u * oldWidth)) 0 else 1) until xStep - 1)
+                for (innerX in 1 until xStep - 1)
                 {
                     addToChannels(
                         oldX + innerX,
@@ -210,6 +203,7 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
                     oldY + innerY,
                     newOldRatio * (newOldRatio - leftOffset))
             }
+
             //right pixels
             for (innerY in 1 until yStep - 1)
             {
@@ -261,10 +255,10 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
     for (i in 0 until newWidth * newHeight)
     {
         newPixels[i] = argbToInt(
-            255,
-            newChannels[4 * i + 1].toInt(),
-            newChannels[4 * i + 2].toInt(),
-            newChannels[4 * i + 3].toInt())
+            round(newChannels[4 * i]).toInt(),
+            round(newChannels[4 * i + 1]).toInt(),
+            round(newChannels[4 * i + 2]).toInt(),
+            round(newChannels[4 * i + 3]).toInt())
     }
     return SimpleImage(newPixels, newWidth, newHeight)
 }
@@ -286,7 +280,7 @@ class MainActivity : AppCompatActivity() {
             val drawable = binding.image1.drawable as BitmapDrawable
             var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
             //
-            bitmap = getSuperSampledSimpleImage(getSimpleImage(bitmap), 0.2F).toBitMap()
+            bitmap = getSuperSampledSimpleImage(getSimpleImage(bitmap), 0.99F).toBitMap()
             //
             binding.image2.setImageBitmap(bitmap)
         }
