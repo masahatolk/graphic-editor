@@ -2,6 +2,7 @@ package com.hits.graphic_editor
 
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -39,6 +40,7 @@ class NewProjectActivity : AppCompatActivity() {
         val photo = intent?.getStringExtra("photo")
 
         pickedPhoto = photo?.toUri()
+        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, pickedPhoto);
 
         binding.imageView.setImageURI(pickedPhoto)
 
@@ -64,6 +66,35 @@ class NewProjectActivity : AppCompatActivity() {
         bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
             override fun onTabSelected(tab: TabLayout.Tab) {
+
+                binding.root.removeView(topMenu.root)
+                binding.root.removeView(bottomMenu.root)
+                GlobalScope.launch {
+                    delay(1000L)
+                    withContext(Dispatchers.Main) {
+                        binding.root.addView(
+                            topMenu.root,
+                            ConstraintLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            ).apply {
+                                topToTop = binding.root.id
+                            }
+                        )
+                        binding.root.addView(
+                            bottomMenu.root,
+                            ConstraintLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            ).apply {
+                                bottomToBottom = binding.root.id
+                            }
+                        )
+                    }
+                }
+
+                val image = getSimpleImage(bitmap)
+
                 when (bottomMenu.root.selectedTabPosition) {
                     0 -> {
 
@@ -78,8 +109,9 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     3 -> {
-
-
+                        val newFilter: Filter = Filter()
+                        newFilter.showBottomMenu(binding)
+                        binding.imageView.setImageBitmap(getBitMap(image))
                     }
 
                     4 -> {
@@ -104,31 +136,6 @@ class NewProjectActivity : AppCompatActivity() {
 
                     9 -> {
 
-                    }
-                }
-                binding.root.removeView(topMenu.root)
-                binding.root.removeView(bottomMenu.root)
-                GlobalScope.launch {
-                    delay(1000L)
-                    withContext(Dispatchers.Main) {
-                        binding.root.addView(
-                            topMenu.root,
-                            ConstraintLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            ).apply {
-                                topToTop = binding.root.id
-                            }
-                        )
-                        binding.root.addView(
-                            bottomMenu.root,
-                            ConstraintLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            ).apply {
-                                bottomToBottom = binding.root.id
-                            }
-                        )
                     }
                 }
             }
