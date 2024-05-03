@@ -89,6 +89,11 @@
 
     </com.google.android.material.tabs.TabLayout>
 
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <ImageView
         android:id="@+id/close"
         android:layout_width="36dp"
@@ -98,7 +103,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_close_24dp"
-        app:tint="@color/grey"/>
+        app:tint="@color/grey" />
 
     <ImageView
         android:id="@+id/undo"

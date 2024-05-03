@@ -20,7 +20,6 @@ class NewProjectActivity : AppCompatActivity() {
     var pickedPhoto: Uri? = null
     var tabLayout: TabLayout? = null
     var tabListener: OnTabSelectedListener? = null
-    lateinit var containerView: ViewGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +31,7 @@ class NewProjectActivity : AppCompatActivity() {
         binding.imageView.setImageURI(pickedPhoto)
 
         tabLayout = binding.tabLayout
-        containerView.addView(tabLayout, 0)
+        binding.group.addView(tabLayout)
 
 
         tabLayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
@@ -45,6 +44,7 @@ class NewProjectActivity : AppCompatActivity() {
                 } else if (tabLayout!!.selectedTabPosition == 2) {
 
                 } else if (tabLayout!!.selectedTabPosition == 3) {
+
 
                 } else if (tabLayout!!.selectedTabPosition == 4) {
 
@@ -59,7 +59,7 @@ class NewProjectActivity : AppCompatActivity() {
                 } else if (tabLayout!!.selectedTabPosition == 9) {
 
                 }
-                containerView.removeView(tabLayout)
+                binding.group.removeView(tabLayout)
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
