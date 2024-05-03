@@ -2,13 +2,20 @@ package com.hits.graphic_editor
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
+import com.hits.graphic_editor.databinding.BottomMenuBinding
+import com.hits.graphic_editor.databinding.TopMenuBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -18,7 +25,12 @@ class NewProjectActivity : AppCompatActivity() {
     }
 
     var pickedPhoto: Uri? = null
-    var tabLayout: TabLayout? = null
+    val topMenu: TopMenuBinding by lazy {
+        TopMenuBinding.inflate(layoutInflater)
+    }
+    val bottomMenu: BottomMenuBinding by lazy {
+        BottomMenuBinding.inflate(layoutInflater)
+    }
     var tabListener: OnTabSelectedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,36 +42,95 @@ class NewProjectActivity : AppCompatActivity() {
 
         binding.imageView.setImageURI(pickedPhoto)
 
-        tabLayout = binding.tabLayout
-        binding.group.addView(tabLayout)
+        binding.root.addView(
+            topMenu.root,
+            ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topToTop = binding.root.id
+            }
+        )
+        binding.root.addView(
+            bottomMenu.root.rootView,
+            ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomToBottom = binding.root.id
+            }
+        )
 
-
-        tabLayout!!.addOnTabSelectedListener(object : OnTabSelectedListener {
+        bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
             override fun onTabSelected(tab: TabLayout.Tab) {
-                if (tabLayout!!.selectedTabPosition == 0) {
+                when (bottomMenu.root.selectedTabPosition) {
+                    0 -> {
 
-                } else if (tabLayout!!.selectedTabPosition == 1) {
+                    }
 
-                } else if (tabLayout!!.selectedTabPosition == 2) {
+                    1 -> {
 
-                } else if (tabLayout!!.selectedTabPosition == 3) {
+                    }
+
+                    2 -> {
+
+                    }
+
+                    3 -> {
 
 
-                } else if (tabLayout!!.selectedTabPosition == 4) {
+                    }
 
-                } else if (tabLayout!!.selectedTabPosition == 5) {
+                    4 -> {
 
-                } else if (tabLayout!!.selectedTabPosition == 6) {
+                    }
 
-                } else if (tabLayout!!.selectedTabPosition == 7) {
+                    5 -> {
 
-                } else if (tabLayout!!.selectedTabPosition == 8) {
+                    }
 
-                } else if (tabLayout!!.selectedTabPosition == 9) {
+                    6 -> {
 
+                    }
+
+                    7 -> {
+
+                    }
+
+                    8 -> {
+
+                    }
+
+                    9 -> {
+
+                    }
                 }
-                binding.group.removeView(tabLayout)
+                binding.root.removeView(topMenu.root)
+                binding.root.removeView(bottomMenu.root)
+                GlobalScope.launch {
+                    delay(1000L)
+                    withContext(Dispatchers.Main) {
+                        binding.root.addView(
+                            topMenu.root,
+                            ConstraintLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            ).apply {
+                                topToTop = binding.root.id
+                            }
+                        )
+                        binding.root.addView(
+                            bottomMenu.root,
+                            ConstraintLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                            ).apply {
+                                bottomToBottom = binding.root.id
+                            }
+                        )
+                    }
+                }
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -72,7 +143,6 @@ class NewProjectActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        tabListener?.let { tabLayout?.removeOnTabSelectedListener(it) }
+        tabListener?.let { bottomMenu.root.removeOnTabSelectedListener(it) }
     }
-
 }
