@@ -4,33 +4,47 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.blue
 import androidx.core.graphics.createBitmap
 import com.hits.graphic_editor.databinding.ActivityMainBinding
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 // COLORS
-
 typealias IntColor = Int
 fun IntColor.alpha(): IntColor = this shr 24
 fun IntColor.red(): IntColor = this shr 16 and 0xff
 fun IntColor.green(): IntColor = this shr 8 and 0xff
 fun IntColor.blue(): IntColor = this and 0xff
+fun IntColor.multiplyIntColorByInt(c: Float): IntColor =
+    argbToInt(this.alpha() * c, this.red() * c,this.green() * c,this.blue() * c)
+fun IntColor.divideIntColorByInt(d: Float): IntColor =
+    argbToInt(this.alpha() / d, this.red() / d,this.green() / d,this.blue() / d)
+fun IntColor.addIntColorToIntColor(other: Int): IntColor =
+    argbToInt(this.alpha() + other.alpha(), this.red() + other.red(),
+        this.green() + other.green(),this.blue() + other.blue)
+fun getTruncatedChannel(channel: Int):Int =
+    max(0, min(255, channel))
 fun argbToInt(alpha: Int, red: Int, green: Int, blue: Int) =
     (alpha shl 24) or (red shl 16) or (green shl 8) or blue
+fun argbToInt(alpha: Float, red: Float, green: Float, blue: Float) =
+    (alpha.roundToInt() shl 24) or (red.roundToInt() shl 16) or (green.roundToInt() shl 8) or blue.roundToInt()
 fun blendedIntColor(first: IntColor, second: IntColor, coeff: Float): IntColor
 {
     return argbToInt(
-        (first.alpha() * coeff + second.alpha() * (1 - coeff)).roundToInt(),
-        (first.red() * coeff + second.red() * (1 - coeff)).roundToInt(),
-        (first.green()* coeff + second.green() * (1 - coeff)).roundToInt(),
-        (first.blue()* coeff + second.blue() * (1 - coeff)).roundToInt()
+        first.alpha() * coeff + second.alpha() * (1 - coeff),
+        first.red() * coeff + second.red() * (1 - coeff),
+        first.green()* coeff + second.green() * (1 - coeff),
+        first.blue()* coeff + second.blue() * (1 - coeff)
     )
 }
-// API
 
+// API
 data class SimpleImage(
     val pixels: IntArray,
     val width: Int,
@@ -251,10 +265,10 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
     for (i in 0 until newWidth * newHeight)
     {
         newPixels[i] = argbToInt(
-            newChannels[4 * i].roundToInt(),
-            newChannels[4 * i + 1].roundToInt(),
-            newChannels[4 * i + 2].roundToInt(),
-            newChannels[4 * i + 3].roundToInt())
+            newChannels[4 * i],
+            newChannels[4 * i + 1],
+            newChannels[4 * i + 2],
+            newChannels[4 * i + 3])
     }
     return SimpleImage(newPixels, newWidth, newHeight)
 }
@@ -298,21 +312,121 @@ fun getTrilinearFilteredSimpleImage(input: MipMapsContainer, coeff: Float): Simp
     }
     return SimpleImage(newPixels, newWidth, newHeight)
 }
-fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
+const val FLOAT_PRECISION = 1e-8
+fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3): SimpleImage
 {
+    fun lanczos(x: Float):Float {
+        if (abs(x) > radius)
+            return 0F
+        if (abs(x) < FLOAT_PRECISION)
+            return 1F
+
+        val normX = x * Math.PI
+        return (radius * sin(normX) * sin(normX / radius) /
+                (normX * normX)).toFloat()
+    }
     val newHeight = (img.height * coeff).toInt()
     val newWidth = (img.width * coeff).toInt()
 
     val newPixels = IntArray(newWidth * newHeight)
 
-    for (y in 0 until newHeight - coeff.toInt())
+    //rows
+    var kernels = Array(newWidth){FloatArray(radius * 2)}
+    for (newX in 0 until newWidth) {
+        var kernelSum = 0F
+        val u = newX/newWidth.toFloat()
+        val floatX = u * (img.width - 1)
+        val x = floatX.toInt()
+        for (i in kernels[newX].indices) {
+            if (x + radius - i in 0..<img.width) {
+                kernels[newX][i] = lanczos(floatX - x - radius + 0.5F + i)
+                kernelSum += kernels[newX][i]
+            }
+        }
+        for (i in kernels[newX].indices)
+            kernels[newX][i] /= kernelSum
+    }
+    for (newY in 0 until newHeight)
     {
-        for (x in 0 until newWidth - coeff.toInt())
+        val v = newY/newHeight.toFloat()
+        val floatY = v * (img.height - 1)
+        val y = floatY.toInt()
+
+        for (newX in 0 until newWidth)
         {
-            //newPixels[y * newWidth + x] =
+            val newIndex = newY * newWidth + newX
+            val u = newX/newWidth.toFloat()
+            val floatX = u * (img.width - 1)
+            val x = floatX.toInt()
+
+            var alpha = 0F; var red = 0F
+            var green = 0F; var blue = 0F
+
+            val kernel = kernels[newX]
+            for (i in kernel.indices) {
+                if (x + radius - i in 0..<img.width) {
+                    alpha += img[x + radius - i, y].alpha() * kernel[i]
+                    red += img[x + radius - i, y].red() * kernel[i]
+                    green += img[x + radius - i, y].green() * kernel[i]
+                    blue += img[x + radius - i, y].blue() * kernel[i]
+                }
+            }
+            newPixels[newIndex] = argbToInt(
+                alpha.roundToInt(),
+                getTruncatedChannel(red.roundToInt()),
+                getTruncatedChannel(green.roundToInt()),
+                getTruncatedChannel(blue.roundToInt()))
         }
     }
 
+    //colums
+    kernels = Array(newHeight){FloatArray(radius * 2)}
+    for (newY in 0 until newHeight) {
+        var kernelSum = 0F
+        val v = newY/newHeight.toFloat()
+        val floatY = v * (img.height - 1)
+        val y = floatY.toInt()
+        for (i in kernels[newY].indices) {
+            if (y + radius - i in 0..<img.height) {
+                kernels[newY][i] = lanczos(floatY - y - radius + 0.5F + i)
+                kernelSum += kernels[newY][i]
+            }
+        }
+        for (i in kernels[newY].indices)
+            kernels[newY][i] /= kernelSum
+    }
+    for (newX in 0 until newWidth)
+    {
+        val u = newX/newWidth.toFloat()
+        val floatX = u * (img.width - 1)
+        val x = floatX.toInt()
+
+        for (newY in 0 until newHeight)
+        {
+            val newIndex = newY * newWidth + newX
+            val v = newY/newHeight.toFloat()
+            val floatY = v * (img.height - 1)
+            val y = floatY.toInt()
+
+            var alpha = 0F; var red = 0F
+            var green = 0F; var blue = 0F
+
+            val kernel = kernels[newY]
+            for (i in kernel.indices) {
+                if (y + radius - i in 0..<img.height) {
+                    alpha += img[x, y + radius - i].alpha() * kernel[i]
+                    red += img[x, y + radius - i].red() * kernel[i]
+                    green += img[x, y + radius - i].green() * kernel[i]
+                    blue += img[x, y + radius - i].blue() * kernel[i]
+                }
+            }
+            newPixels[newIndex] = argbToInt(
+                alpha.roundToInt(),
+                getTruncatedChannel(red.roundToInt()),
+                getTruncatedChannel(green.roundToInt()),
+                getTruncatedChannel(blue.roundToInt()))
+        }
+    }
     return SimpleImage(newPixels, newWidth, newHeight)
 }
 fun getScaledSimpleImage(mipMaps: MipMapsContainer, scaleCoeff: Float, antiAliasing: Boolean = false): SimpleImage
@@ -345,7 +459,7 @@ class MainActivity : AppCompatActivity() {
             var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
             //
             val mipMaps = MipMapsContainer(getSimpleImage(bitmap))
-            bitmap = getBitMap(getScaledSimpleImage(mipMaps, 10.7F))
+            bitmap = getBitMap(getScaledSimpleImage(mipMaps, 1.7F, true))
             //
             binding.image2.setImageBitmap(bitmap)
         }
