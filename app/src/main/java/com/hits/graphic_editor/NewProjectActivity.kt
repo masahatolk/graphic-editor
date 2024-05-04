@@ -23,6 +23,7 @@ class NewProjectActivity : AppCompatActivity() {
         ActivityNewProjectBinding.inflate(layoutInflater)
     }
 
+    private var lastRotatedBitmap: Bitmap? = null
     private var totalRotationAngle = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,12 +39,17 @@ class NewProjectActivity : AppCompatActivity() {
                 val originalBitmap = getBitmapFromUri(photoUri)
 
                 if (originalBitmap != null) {
+                    val rotatedBitmap = if (lastRotatedBitmap != null) {
+                        rotateBitmap90Clockwise(lastRotatedBitmap!!)
+                    } else {
+                        rotateBitmap90Clockwise(originalBitmap)
+                    }
+                    lastRotatedBitmap = rotatedBitmap
 
-                    val rotatedBitmap = rotateBitmap90Clockwise(originalBitmap, totalRotationAngle)
-                    totalRotationAngle += 90
-                    totalRotationAngle %= 360
                     val drawable = BitmapDrawable(resources, rotatedBitmap)
                     binding.imageView.setImageDrawable(drawable)
+                    totalRotationAngle += 90
+                    totalRotationAngle %= 360
                 } else {
                     Toast.makeText(this, "Не удалось загрузить изображение", Toast.LENGTH_SHORT).show()
                 }
@@ -52,58 +58,31 @@ class NewProjectActivity : AppCompatActivity() {
                 Toast.makeText(this, "Произошла ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
     //https://www.sciencedirect.com/topics/computer-science/image-rotation
     //http://www.leptonica.org/rotation.html#SPECIAL-ROTATIONS
 
-    fun rotateBitmap90Clockwise(originalBitmap: Bitmap, angle: Int): Bitmap {
+    fun rotateBitmap90Clockwise(originalBitmap: Bitmap): Bitmap {
         val width = originalBitmap.width
         val height = originalBitmap.height
 
-        val rotatedBitmap = Bitmap.createBitmap(height, width, originalBitmap.config)
+        val pixels = IntArray(width * height)
+        originalBitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+
+        val rotatedWidth = height
+        val rotatedHeight = width
+        val rotatedPixels = IntArray(rotatedWidth * rotatedHeight)
 
         for (x in 0 until width) {
             for (y in 0 until height) {
                 val newX = y
                 val newY = width - 1 - x
-                val pixelColor = originalBitmap.getPixel(x, y)
-                rotatedBitmap.setPixel(newX, newY, pixelColor)
+                rotatedPixels[newY * rotatedWidth + newX] = pixels[y * width + x]
             }
         }
 
-        if (angle > 0) {
-            return rotateBitmap(rotatedBitmap, angle)
-        }
-
-        return rotatedBitmap
-    }
-
-    fun rotateBitmap(originalBitmap: Bitmap, angle: Int): Bitmap {
-        val width = originalBitmap.width
-        val height = originalBitmap.height
-
-        val rotatedBitmap = Bitmap.createBitmap(width, height, originalBitmap.config)
-
-        val centerX = width / 2f
-        val centerY = height / 2f
-
-        val radians = Math.toRadians(angle.toDouble())
-        val cos = Math.cos(radians)
-        val sin = Math.sin(radians)
-
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val newX = (x - centerX) * cos - (y - centerY) * sin + centerX
-                val newY = (x - centerX) * sin + (y - centerY) * cos + centerY
-
-                if (newX >= 0 && newX < width && newY >= 0 && newY < height) {
-                    val newColor = originalBitmap.getPixel(newX.toInt(), newY.toInt())
-                    rotatedBitmap.setPixel(x, y, newColor)
-                }
-            }
-        }
+        val rotatedBitmap = Bitmap.createBitmap(rotatedPixels, rotatedWidth, rotatedHeight, originalBitmap.config)
 
         return rotatedBitmap
     }
