@@ -30,7 +30,7 @@ data class SimpleImage(
         return result
     }
 
-    operator fun get(x: Int, y: Int): Int {
+    operator fun get(y: Int, x: Int): Int {
         return pixels[y * width + x]
     }
 

@@ -12,11 +12,6 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -25,14 +20,13 @@ class NewProjectActivity : AppCompatActivity() {
         ActivityNewProjectBinding.inflate(layoutInflater)
     }
 
-    var pickedPhoto: Uri? = null
+    private var pickedPhoto: Uri? = null
     val topMenu: TopMenuBinding by lazy {
         TopMenuBinding.inflate(layoutInflater)
     }
     val bottomMenu: BottomMenuBinding by lazy {
         BottomMenuBinding.inflate(layoutInflater)
     }
-    var tabListener: OnTabSelectedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,8 +63,9 @@ class NewProjectActivity : AppCompatActivity() {
 
                 binding.root.removeView(topMenu.root)
                 binding.root.removeView(bottomMenu.root)
-                GlobalScope.launch {
-                    delay(1000L)
+
+                /*GlobalScope.launch {
+                    //delay(1000L)
                     withContext(Dispatchers.Main) {
                         binding.root.addView(
                             topMenu.root,
@@ -81,6 +76,7 @@ class NewProjectActivity : AppCompatActivity() {
                                 topToTop = binding.root.id
                             }
                         )
+
                         binding.root.addView(
                             bottomMenu.root,
                             ConstraintLayout.LayoutParams(
@@ -91,7 +87,7 @@ class NewProjectActivity : AppCompatActivity() {
                             }
                         )
                     }
-                }
+                }*/
 
                 val image = getSimpleImage(bitmap)
 
@@ -109,9 +105,10 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     3 -> {
-                        val newFilter: Filter = Filter()
-                        newFilter.showBottomMenu(binding)
-                        binding.imageView.setImageBitmap(getBitMap(image))
+                        //is this right?
+                        val newFilter: Filter = Filter(image, applicationContext)
+                        newFilter.showBottomMenu(binding, topMenu, bottomMenu, layoutInflater)
+                        //binding.imageView.setImageBitmap(getBitMap(newFilter.simpleImage))
                     }
 
                     4 -> {
@@ -145,11 +142,5 @@ class NewProjectActivity : AppCompatActivity() {
         })
 
         supportActionBar?.hide()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        tabListener?.let { bottomMenu.root.removeOnTabSelectedListener(it) }
     }
 }

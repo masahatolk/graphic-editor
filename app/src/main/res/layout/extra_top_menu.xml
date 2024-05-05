@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/topMenu"
+    android:id="@+id/extraTopMenu"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -32,32 +32,21 @@
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="80dp"
-        app:layout_constraintEnd_toStartOf="@+id/download"
+        app:layout_constraintEnd_toStartOf="@+id/save"
+        app:layout_constraintStart_toEndOf="@+id/undo"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_redo_24dp"
         app:tint="@color/grey" />
 
     <ImageView
-        android:id="@+id/download"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="20dp"
-        app:layout_constraintEnd_toStartOf="@+id/share"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_download_24dp"
-        app:tint="@color/grey" />
-
-    <ImageView
-        android:id="@+id/share"
+        android:id="@+id/save"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_share_24dp"
+        app:srcCompat="@drawable/ic_save_24dp"
         app:tint="@color/grey" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
