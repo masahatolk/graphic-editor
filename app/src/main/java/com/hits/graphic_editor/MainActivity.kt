@@ -17,7 +17,7 @@ import kotlin.math.sin
 
 // COLORS
 typealias IntColor = Int
-fun IntColor.alpha(): IntColor = this shr 24
+fun IntColor.alpha(): IntColor = this shr 24 and 0xff
 fun IntColor.red(): IntColor = this shr 16 and 0xff
 fun IntColor.green(): IntColor = this shr 8 and 0xff
 fun IntColor.blue(): IntColor = this and 0xff
@@ -30,6 +30,8 @@ fun IntColor.addIntColorToIntColor(other: Int): IntColor =
         this.green() + other.green(),this.blue() + other.blue)
 fun getTruncatedChannel(channel: Int):Int =
     max(0, min(255, channel))
+fun getTruncatedChannel(channel: Float):Int =
+    max(0, min(255, channel.roundToInt()))
 fun argbToInt(alpha: Int, red: Int, green: Int, blue: Int) =
     (alpha shl 24) or (red shl 16) or (green shl 8) or blue
 fun argbToInt(alpha: Float, red: Float, green: Float, blue: Float) =
@@ -46,7 +48,7 @@ fun blendedIntColor(first: IntColor, second: IntColor, coeff: Float): IntColor
 
 // API
 data class SimpleImage(
-    val pixels: IntArray,
+    var pixels: IntArray,
     val width: Int,
     val height: Int)
 {
@@ -70,6 +72,9 @@ data class SimpleImage(
         result = 31 * result + height
         result = 31 * result + width
         return result
+    }
+    operator fun set(x: Int, y: Int, value: Int) {
+        pixels[y * width + x] = value
     }
 }
 fun getBitMap(img: SimpleImage): Bitmap {
@@ -328,9 +333,8 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
     val newHeight = (img.height * coeff).toInt()
     val newWidth = (img.width * coeff).toInt()
 
-    val newPixels = IntArray(newWidth * newHeight)
-
-    //rows
+    //along rows
+    val tempImg = SimpleImage(IntArray(newWidth * img.height), newWidth, img.height)
     var kernels = Array(newWidth){FloatArray(radius * 2)}
     for (newX in 0 until newWidth) {
         var kernelSum = 0F
@@ -339,26 +343,17 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
         val x = floatX.toInt()
         for (i in kernels[newX].indices) {
             if (x - radius + i in 0..<img.width) {
-                kernels[newX][i] = lanczos(floatX - x - radius + 0.5F + i)
+                kernels[newX][i] = lanczos(x - floatX + 1F - radius + i)
                 kernelSum += kernels[newX][i]
             }
         }
         for (i in kernels[newX].indices)
             kernels[newX][i] /= kernelSum
     }
-    for (newY in 0 until newHeight)
+    for (y in 0 until img.height)
     {
-        val v = newY/newHeight.toFloat()
-        val floatY = v * (img.height - 1)
-        val y = floatY.toInt()
-
-        val topBound = max(0, radius - y)
-        val bottomBound = min(6, img.height + radius - y)
-        val yDiff = bottomBound - topBound;
-
         for (newX in 0 until newWidth)
         {
-            val newIndex = newY * newWidth + newX
             val u = newX/newWidth.toFloat()
             val floatX = u * (img.width - 1)
             val x = floatX.toInt()
@@ -368,56 +363,45 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
 
             val kernel = kernels[newX]
             val leftBound = max(0, radius - x)
-            val rightBound = min(6, img.width + radius - x)
+            val rightBound = min(radius * 2, img.width + radius - x)
             for (i in leftBound until rightBound)
             {
-                for (j in topBound until bottomBound)
-                {
-                    alpha += img[x - radius + i, y + j - radius].alpha() * kernel[i] / yDiff
-                    red += img[x - radius + i, y + j - radius].red() * kernel[i] / yDiff
-                    green += img[x - radius + i, y + j - radius].green() * kernel[i] / yDiff
-                    blue += img[x - radius + i, y + j - radius].blue() * kernel[i] / yDiff
-                }
+                alpha += img[x - radius + i, y].alpha() * kernel[i]
+                red += img[x - radius + i, y].red() * kernel[i]
+                green += img[x - radius + i, y].green() * kernel[i]
+                blue += img[x - radius + i, y].blue() * kernel[i]
             }
-            newPixels[newIndex] = argbToInt(
-                alpha.roundToInt(),
-                (red.roundToInt()),
-                (green.roundToInt()),
-                (blue.roundToInt()))
+            tempImg[newX, y] = argbToInt(
+                getTruncatedChannel(alpha),
+                getTruncatedChannel(red),
+                getTruncatedChannel(green),
+                getTruncatedChannel(blue))
         }
     }
 
-    //colums
+    //along colums
+    val newImg = SimpleImage(IntArray(newWidth * newHeight), newWidth, newHeight)
     kernels = Array(newHeight){FloatArray(radius * 2)}
     for (newY in 0 until newHeight) {
         var kernelSum = 0F
         val v = newY/newHeight.toFloat()
-        val floatY = v * (img.height - 1)
+        val floatY = v * (tempImg.height - 1)
         val y = floatY.toInt()
         for (i in kernels[newY].indices) {
-            if (y - radius + i in 0..<img.height) {
-                kernels[newY][i] = lanczos(floatY - y - radius + 0.5F + i)
+            if (y - radius + i in 0..<tempImg.height) {
+                kernels[newY][i] = lanczos(y - floatY + 1F - radius + i)
                 kernelSum += kernels[newY][i]
             }
         }
         for (i in kernels[newY].indices)
             kernels[newY][i] /= kernelSum
     }
-    for (newX in 0 until newWidth)
+    for (x in 0 until newWidth)
     {
-        val u = newX/newWidth.toFloat()
-        val floatX = u * (img.width - 1)
-        val x = floatX.toInt()
-
-        val leftBound = max(0, radius - x)
-        val rightBound = min(6, img.width + radius - x)
-        val xDiff = rightBound - leftBound
-
         for (newY in 0 until newHeight)
         {
-            val newIndex = newY * newWidth + newX
             val v = newY/newHeight.toFloat()
-            val floatY = v * (img.height - 1)
+            val floatY = v * (tempImg.height - 1)
             val y = floatY.toInt()
 
             var alpha = 0F; var red = 0F
@@ -425,34 +409,32 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
 
             val kernel = kernels[newY]
             val topBound = max(0, radius - y)
-            val bottomBound = min(6, img.height + radius - y)
+            val bottomBound = min(radius * 2, tempImg.height + radius - y)
             for (i in topBound until bottomBound)
             {
-                for (j in leftBound until rightBound)
-                {
-                    alpha += img[x - radius + j, y + i - radius].alpha() * kernel[i] / xDiff
-                    red += img[x - radius + j, y + i - radius].red() * kernel[i] / xDiff
-                    green += img[x - radius + j, y + i - radius].green() * kernel[i] / xDiff
-                    blue += img[x - radius + j, y + i - radius].blue() * kernel[i] / xDiff
-                }
+                alpha += tempImg[x, y + i - radius].alpha() * kernel[i]
+                red += tempImg[x, y + i - radius].red() * kernel[i]
+                green += tempImg[x, y + i - radius].green() * kernel[i]
+                blue += tempImg[x, y + i - radius].blue() * kernel[i]
             }
-            newPixels[newIndex] = argbToInt(
-                255,//alpha.roundToInt(),
-                getTruncatedChannel(red.roundToInt()),
-                getTruncatedChannel(green.roundToInt()),
-                getTruncatedChannel(blue.roundToInt()))
+            newImg[x, newY] = argbToInt(
+                getTruncatedChannel(alpha),
+                getTruncatedChannel(red),
+                getTruncatedChannel(green),
+                getTruncatedChannel(blue))
         }
     }
-    return SimpleImage(newPixels, newWidth, newHeight)
+    return newImg
 }
 fun getScaledSimpleImage(mipMaps: MipMapsContainer, scaleCoeff: Float, antiAliasing: Boolean = false): SimpleImage
 {
     if (scaleCoeff == 1F)
         return mipMaps.img
 
-    if (scaleCoeff < 1F)
-        return if(antiAliasing) getTrilinearFilteredSimpleImage(mipMaps, scaleCoeff)
-            else getSuperSampledSimpleImage(mipMaps.img, scaleCoeff)
+    if (scaleCoeff < 1F) {
+        return if (antiAliasing) getSuperSampledSimpleImage(mipMaps.img, scaleCoeff)
+        else getTrilinearFilteredSimpleImage(mipMaps, scaleCoeff)
+    }
 
     return if(antiAliasing) getConvolutionedSimpleImage(mipMaps.img, scaleCoeff)
         else getBilinearFilteredSimpleImage(mipMaps.img, scaleCoeff)
@@ -475,7 +457,7 @@ class MainActivity : AppCompatActivity() {
             var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
             //
             val mipMaps = MipMapsContainer(getSimpleImage(bitmap))
-            bitmap = getBitMap(getScaledSimpleImage(mipMaps, 1.7F, true))
+            bitmap = getBitMap(getScaledSimpleImage(mipMaps, 5.6F, true))
             //
             binding.image2.setImageBitmap(bitmap)
         }
