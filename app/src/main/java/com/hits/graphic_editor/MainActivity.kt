@@ -338,7 +338,7 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
         val floatX = u * (img.width - 1)
         val x = floatX.toInt()
         for (i in kernels[newX].indices) {
-            if (x + radius - i in 0..<img.width) {
+            if (x - radius + i in 0..<img.width) {
                 kernels[newX][i] = lanczos(floatX - x - radius + 0.5F + i)
                 kernelSum += kernels[newX][i]
             }
@@ -352,6 +352,10 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
         val floatY = v * (img.height - 1)
         val y = floatY.toInt()
 
+        val topBound = max(0, radius - y)
+        val bottomBound = min(6, img.height + radius - y)
+        val yDiff = bottomBound - topBound;
+
         for (newX in 0 until newWidth)
         {
             val newIndex = newY * newWidth + newX
@@ -363,19 +367,23 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
             var green = 0F; var blue = 0F
 
             val kernel = kernels[newX]
-            for (i in kernel.indices) {
-                if (x + radius - i in 0..<img.width) {
-                    alpha += img[x + radius - i, y].alpha() * kernel[i]
-                    red += img[x + radius - i, y].red() * kernel[i]
-                    green += img[x + radius - i, y].green() * kernel[i]
-                    blue += img[x + radius - i, y].blue() * kernel[i]
+            val leftBound = max(0, radius - x)
+            val rightBound = min(6, img.width + radius - x)
+            for (i in leftBound until rightBound)
+            {
+                for (j in topBound until bottomBound)
+                {
+                    alpha += img[x - radius + i, y + j - radius].alpha() * kernel[i] / yDiff
+                    red += img[x - radius + i, y + j - radius].red() * kernel[i] / yDiff
+                    green += img[x - radius + i, y + j - radius].green() * kernel[i] / yDiff
+                    blue += img[x - radius + i, y + j - radius].blue() * kernel[i] / yDiff
                 }
             }
             newPixels[newIndex] = argbToInt(
                 alpha.roundToInt(),
-                getTruncatedChannel(red.roundToInt()),
-                getTruncatedChannel(green.roundToInt()),
-                getTruncatedChannel(blue.roundToInt()))
+                (red.roundToInt()),
+                (green.roundToInt()),
+                (blue.roundToInt()))
         }
     }
 
@@ -387,7 +395,7 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
         val floatY = v * (img.height - 1)
         val y = floatY.toInt()
         for (i in kernels[newY].indices) {
-            if (y + radius - i in 0..<img.height) {
+            if (y - radius + i in 0..<img.height) {
                 kernels[newY][i] = lanczos(floatY - y - radius + 0.5F + i)
                 kernelSum += kernels[newY][i]
             }
@@ -401,6 +409,10 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
         val floatX = u * (img.width - 1)
         val x = floatX.toInt()
 
+        val leftBound = max(0, radius - x)
+        val rightBound = min(6, img.width + radius - x)
+        val xDiff = rightBound - leftBound
+
         for (newY in 0 until newHeight)
         {
             val newIndex = newY * newWidth + newX
@@ -412,16 +424,20 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
             var green = 0F; var blue = 0F
 
             val kernel = kernels[newY]
-            for (i in kernel.indices) {
-                if (y + radius - i in 0..<img.height) {
-                    alpha += img[x, y + radius - i].alpha() * kernel[i]
-                    red += img[x, y + radius - i].red() * kernel[i]
-                    green += img[x, y + radius - i].green() * kernel[i]
-                    blue += img[x, y + radius - i].blue() * kernel[i]
+            val topBound = max(0, radius - y)
+            val bottomBound = min(6, img.height + radius - y)
+            for (i in topBound until bottomBound)
+            {
+                for (j in leftBound until rightBound)
+                {
+                    alpha += img[x - radius + j, y + i - radius].alpha() * kernel[i] / xDiff
+                    red += img[x - radius + j, y + i - radius].red() * kernel[i] / xDiff
+                    green += img[x - radius + j, y + i - radius].green() * kernel[i] / xDiff
+                    blue += img[x - radius + j, y + i - radius].blue() * kernel[i] / xDiff
                 }
             }
             newPixels[newIndex] = argbToInt(
-                alpha.roundToInt(),
+                255,//alpha.roundToInt(),
                 getTruncatedChannel(red.roundToInt()),
                 getTruncatedChannel(green.roundToInt()),
                 getTruncatedChannel(blue.roundToInt()))
