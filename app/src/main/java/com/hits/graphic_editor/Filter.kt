@@ -2,27 +2,27 @@ package com.hits.graphic_editor
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.tabs.TabLayout
+import androidx.core.graphics.scale
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
-import com.hits.graphic_editor.databinding.FilterBottomMenuBinding
 import com.hits.graphic_editor.databinding.FilterRecyclerViewBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import kotlin.math.min
 
-class Filter(_simpleImage: SimpleImage, context: Context) {
+class Filter(private val simpleImage: SimpleImage, context: Context, private val binding: ActivityNewProjectBinding) {
 
-    private var simpleImage: SimpleImage = _simpleImage
-    private var adapter: FilterRecyclerViewAdapter = FilterRecyclerViewAdapter(getListOfSamples())
-
-    private val layoutManager = LinearLayoutManager(context)
+    //private var smallSimpleImage : SimpleImage =
+    private var adapter: FilterRecyclerViewAdapter = FilterRecyclerViewAdapter(getListOfSamples(), object: onClickFilterListener{
+        override fun onClick(filterName: String) {
+            setFilter(filterName)
+        }
+    })
 
     fun showBottomMenu(
-        binding: ActivityNewProjectBinding,
         topMenu : TopMenuBinding,
         bottomMenu : BottomMenuBinding,
         layoutInflater: LayoutInflater
@@ -34,7 +34,6 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
         val filterBottomMenu: FilterRecyclerViewBinding by lazy {
             FilterRecyclerViewBinding.inflate(layoutInflater)
         }
-        filterBottomMenu.filterRecyclerView.layoutManager = layoutManager
         filterBottomMenu.filterRecyclerView.adapter = adapter
 
         binding.root.addView(
@@ -80,15 +79,43 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
                 }
             )
         }
+    }
 
+    fun setFilter(filterName: String) {
+        when(filterName) {
+            "Inversion" -> {
+                binding.imageView.setImageBitmap(getBitMap(inverse()))
+            }
+            "Grayscale" -> {
+                binding.imageView.setImageBitmap(getBitMap(grayscale()))
+            }
+            "Black and white" -> {
+                binding.imageView.setImageBitmap(getBitMap(blackAndWhite()))
+            }
+            "Sepia" -> {
+                binding.imageView.setImageBitmap(getBitMap(sepia()))
+            }
+            "Contrast" -> {
 
+            }
+            "RGB" -> {
 
+            }
+            "Mosaic" -> {
 
+            }
+            "Dots" -> {
+
+            }
+            "Channel shift" -> {
+
+            }
+        }
     }
 
     private fun inverse() : SimpleImage {
 
-        val img : SimpleImage = simpleImage
+        val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
         for (i in 0 until img.height) {
             for (j in 0 until img.width) {
@@ -106,7 +133,7 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
 
     private fun grayscale() : SimpleImage {
 
-        val img : SimpleImage = simpleImage
+        val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
         for (i in 0 until img.height) {
             for (j in 0 until img.width) {
@@ -128,7 +155,7 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
 
     private fun blackAndWhite() : SimpleImage {
 
-        val img : SimpleImage = simpleImage
+        val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
         for (i in 0 until img.height) {
             for (j in 0 until img.width) {
@@ -154,7 +181,7 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
 
     private fun sepia() : SimpleImage {
 
-        val img : SimpleImage = simpleImage
+        val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
         for (i in 0 until img.height) {
             for (j in 0 until img.width) {
@@ -211,6 +238,7 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
 
     }
 
+    //TODO add scaling using Vasya's algorithm
     private fun getListOfSamples() : MutableList<ItemFilter> {
         val items = mutableListOf<ItemFilter>()
         items.add(ItemFilter(getBitMap(inverse()), "Inversion"))
@@ -219,6 +247,10 @@ class Filter(_simpleImage: SimpleImage, context: Context) {
         items.add(ItemFilter(getBitMap(sepia()), "Sepia"))
         //contrast
         //rgb
+        //mosaic
+        //dots
+        //channel shift
+
         return items
     }
 }

@@ -105,10 +105,12 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     3 -> {
-                        //is this right?
-                        val newFilter: Filter = Filter(image, applicationContext)
-                        newFilter.showBottomMenu(binding, topMenu, bottomMenu, layoutInflater)
-                        //binding.imageView.setImageBitmap(getBitMap(newFilter.simpleImage))
+                        val newFilter = Filter(image, applicationContext, binding)
+                        newFilter.showBottomMenu(
+                            topMenu = topMenu,
+                            bottomMenu = bottomMenu,
+                            layoutInflater = layoutInflater
+                        )
                     }
 
                     4 -> {
