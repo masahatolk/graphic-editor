@@ -12,6 +12,7 @@ import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
+import com.hits.graphic_editor.ui.filter.Filter
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -105,11 +106,10 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     3 -> {
-                        val newFilter = Filter(image, applicationContext, binding)
+                        val newFilter = Filter(image, applicationContext, binding, layoutInflater)
                         newFilter.showBottomMenu(
                             topMenu = topMenu,
                             bottomMenu = bottomMenu,
-                            layoutInflater = layoutInflater
                         )
                     }
 

@@ -1,4 +1,4 @@
-package com.hits.graphic_editor
+package com.hits.graphic_editor.ui.filter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,21 +6,19 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.hits.graphic_editor.databinding.ItemFilterBinding
 
-interface onClickFilterListener {
+interface OnClickFilterListener {
     fun onClick(filterName: String)
 }
 
 class FilterRecyclerViewAdapter(
-    _items: MutableList<ItemFilter>,
-    private val actionListener: onClickFilterListener
+    private var items: MutableList<ItemFilter>,
+    private val actionListener: OnClickFilterListener
 ) : RecyclerView.Adapter<FilterRecyclerViewAdapter.FilterViewHolder>(), View.OnClickListener {
 
     override fun onClick(v: View) {
         val item = v.tag as ItemFilter
         actionListener.onClick(item.filterName)
     }
-
-    private var items: MutableList<ItemFilter> = _items
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterViewHolder {
         val inflater = LayoutInflater.from(parent.context)

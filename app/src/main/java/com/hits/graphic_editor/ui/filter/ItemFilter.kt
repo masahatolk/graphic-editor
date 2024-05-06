@@ -1,4 +1,4 @@
-package com.hits.graphic_editor
+package com.hits.graphic_editor.ui.filter
 
 import android.graphics.Bitmap
 

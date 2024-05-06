@@ -41,25 +41,25 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_face_recognition_24dp"
-        android:text="Face recognition" />
+        android:text="FR" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_splines_24dp"
-        android:text="Splines" />
+        android:text="Spline" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_affine_transformation_24dp"
-        android:text="Affine transformation" />
+        android:text="AT" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:icon="@drawable/ic_unsharp_masking_24dp"
-        android:text="Unsharp masking" />
+        android:text="UM" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
