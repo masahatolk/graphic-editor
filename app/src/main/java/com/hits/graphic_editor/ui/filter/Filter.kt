@@ -1,16 +1,21 @@
 package com.hits.graphic_editor.ui.filter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.slider.Slider
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
-import com.hits.graphic_editor.SimpleImage
-import com.hits.graphic_editor.alpha
-import com.hits.graphic_editor.argbToInt
-import com.hits.graphic_editor.blue
+import com.hits.graphic_editor.addBottomMenu
+import com.hits.graphic_editor.addTopMenu
+import com.hits.graphic_editor.custom_api.SimpleImage
+import com.hits.graphic_editor.custom_api.alpha
+import com.hits.graphic_editor.custom_api.argbToInt
+import com.hits.graphic_editor.custom_api.blue
+import com.hits.graphic_editor.custom_api.getBitMap
+import com.hits.graphic_editor.custom_api.getSimpleImage
+import com.hits.graphic_editor.custom_api.green
+import com.hits.graphic_editor.custom_api.red
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ContrastSliderBinding
@@ -18,28 +23,25 @@ import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.FilterRecyclerViewBinding
 import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import com.hits.graphic_editor.getBitMap
-import com.hits.graphic_editor.green
-import com.hits.graphic_editor.red
+import com.hits.graphic_editor.getSuperSampledSimpleImage
+import com.hits.graphic_editor.removeExtraTopMenu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlin.math.min
 
 class Filter(
-    private val simpleImage: SimpleImage,
-    private val context: Context,
+    private var simpleImage: SimpleImage,
     private val binding: ActivityNewProjectBinding,
     private val layoutInflater: LayoutInflater
 ) {
 
-    //private var smallSimpleImage : SimpleImage =
+    // -----------------create necessary fields-----------------
+    private val simpleImageCopy: SimpleImage = simpleImage.copy(pixels = simpleImage.pixels.clone())
+    private var smallSimpleImage: SimpleImage = getSuperSampledSimpleImage(simpleImage, 0.5F)
+
     private var adapter: FilterRecyclerViewAdapter =
         FilterRecyclerViewAdapter(getListOfSamples(), object : OnClickFilterListener {
             override fun onClick(filterName: String) {
@@ -47,139 +49,83 @@ class Filter(
             }
         })
 
+    private val filterBottomMenu: FilterRecyclerViewBinding by lazy {
+        FilterRecyclerViewBinding.inflate(layoutInflater)
+    }
     private val contrastSlider: ContrastSliderBinding by lazy {
         ContrastSliderBinding.inflate(layoutInflater)
     }
-    private val rgbMenu : RgbMenuBinding by lazy {
+    private val rgbMenu: RgbMenuBinding by lazy {
         RgbMenuBinding.inflate(layoutInflater)
     }
 
+    // -----------------create necessary fields-----------------
     fun showBottomMenu(
         topMenu: TopMenuBinding,
-        bottomMenu: BottomMenuBinding
+        bottomMenu: BottomMenuBinding,
+        extraTopMenu: ExtraTopMenuBinding
     ) {
-
-        val extraTopMenu: ExtraTopMenuBinding by lazy {
-            ExtraTopMenuBinding.inflate(layoutInflater)
-        }
-        val filterBottomMenu: FilterRecyclerViewBinding by lazy {
-            FilterRecyclerViewBinding.inflate(layoutInflater)
-        }
-
+        //TODO change it
         filterBottomMenu.filterRecyclerView.adapter = adapter
 
-        binding.root.addView(
-            extraTopMenu.root,
-            ConstraintLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topToTop = binding.root.id
-            }
-        )
-        binding.root.addView(
-            filterBottomMenu.root.rootView,
-            ConstraintLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                bottomToBottom = binding.root.id
-            }
-        )
+        addFilterBottomMenu(binding, filterBottomMenu)
 
+        //TODO
+        // ------------set listeners to extraTopMenu------------
         extraTopMenu.close.setOnClickListener {
 
             binding.imageView.setImageBitmap(getBitMap(simpleImage))
 
-            binding.root.removeView(extraTopMenu.root)
-            binding.root.removeView(filterBottomMenu.root)
-            binding.root.removeView(contrastSlider.root)
-            binding.root.removeView(rgbMenu.root)
+            // TODO put it in other place
+            removeExtraTopMenu(binding, extraTopMenu)
+            removeFilterBottomMenu(binding, filterBottomMenu)
+            removeContrastSlider(binding, contrastSlider)
+            removeRgbMenu(binding, rgbMenu)
 
-            binding.root.addView(
-                topMenu.root,
-                ConstraintLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    topToTop = binding.root.id
-                }
-            )
-
-            binding.root.addView(
-                bottomMenu.root,
-                ConstraintLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    bottomToBottom = binding.root.id
-                }
-            )
+            addTopMenu(binding, topMenu)
+            addBottomMenu(binding, bottomMenu)
         }
 
         extraTopMenu.save.setOnClickListener {
 
-            binding.root.removeView(extraTopMenu.root)
-            binding.root.removeView(filterBottomMenu.root)
-            binding.root.removeView(contrastSlider.root)
-            binding.root.removeView(rgbMenu.root)
+            simpleImage = simpleImageCopy.copy(pixels = simpleImage.pixels.clone())
 
-            binding.root.addView(
-                topMenu.root,
-                ConstraintLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    topToTop = binding.root.id
-                }
-            )
+            removeExtraTopMenu(binding, extraTopMenu)
+            removeFilterBottomMenu(binding, filterBottomMenu)
+            removeContrastSlider(binding, contrastSlider)
+            removeRgbMenu(binding, rgbMenu)
 
-            binding.root.addView(
-                bottomMenu.root,
-                ConstraintLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    bottomToBottom = binding.root.id
-                }
-            )
+            addTopMenu(binding, topMenu)
+            addBottomMenu(binding, bottomMenu)
         }
     }
 
+    //TODO enum
     fun updateFilterMode(filterName: String) {
 
         when (filterName) {
             "Inversion" -> {
-                binding.imageView.setImageBitmap(getBitMap(inverse()))
+                binding.imageView.setImageBitmap(getBitMap(inverse(simpleImageCopy)))
             }
 
             "Grayscale" -> {
-                binding.imageView.setImageBitmap(getBitMap(grayscale()))
+                binding.imageView.setImageBitmap(getBitMap(grayscale(simpleImageCopy)))
             }
 
             "Black and white" -> {
-                binding.imageView.setImageBitmap(getBitMap(blackAndWhite()))
+                binding.imageView.setImageBitmap(getBitMap(blackAndWhite(simpleImageCopy)))
             }
 
             "Sepia" -> {
-                binding.imageView.setImageBitmap(getBitMap(sepia()))
+                binding.imageView.setImageBitmap(getBitMap(sepia(simpleImageCopy)))
             }
 
             "Contrast" -> {
 
                 val flow = MutableStateFlow(0f)
 
-                binding.root.addView(
-                    contrastSlider.root.rootView,
-                    ConstraintLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        bottomToBottom = binding.guideline.id
-                        leftToLeft = binding.root.id
-                        rightToRight = binding.root.id
-                    }
-                )
+                addContrastSlider(binding, contrastSlider)
+
                 //TODO
                 val slider: Slider = contrastSlider.contrastSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
@@ -188,41 +134,47 @@ class Filter(
 
                 val scope = CoroutineScope(Dispatchers.Default)
                 scope.launch {
-                    flow.collect{
+                    flow.collect {
                         binding.imageView.setImageBitmap(
-                            getBitMap(contrast(it.toInt()))
+                            getBitMap(contrast(simpleImageCopy, it.toInt()))
                         )
                     }
                 }
             }
 
             "RGB" -> {
-                binding.root.addView(
-                    rgbMenu.root.rootView,
-                    ConstraintLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        bottomToBottom = binding.guideline.id
-                        leftToLeft = binding.root.id
-                        rightToRight = binding.root.id
-                    }
-                )
+                addRgbMenu(binding, rgbMenu)
 
-                binding.imageView.setImageBitmap(getBitMap(rgb("red")))
+                binding.imageView.setImageBitmap(getBitMap(rgb(simpleImageCopy, "red")))
 
                 rgbMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
                     override fun onTabSelected(p0: TabLayout.Tab?) {
-                        when(rgbMenu.root.selectedTabPosition) {
+                        when (rgbMenu.root.selectedTabPosition) {
                             0 -> {
-                                binding.imageView.setImageBitmap(getBitMap(rgb("red")))
+                                binding.imageView.setImageBitmap(getBitMap(rgb(simpleImage, "red")))
                             }
+
                             1 -> {
-                                binding.imageView.setImageBitmap(getBitMap(rgb("green")))
+                                binding.imageView.setImageBitmap(
+                                    getBitMap(
+                                        rgb(
+                                            simpleImage,
+                                            "green"
+                                        )
+                                    )
+                                )
                             }
+
                             2 -> {
-                                binding.imageView.setImageBitmap(getBitMap(rgb("blue")))
+                                binding.imageView.setImageBitmap(
+                                    getBitMap(
+                                        rgb(
+                                            simpleImage,
+                                            "blue"
+                                        )
+                                    )
+                                )
                             }
                         }
                     }
@@ -245,21 +197,23 @@ class Filter(
             }
         }
 
-        if(filterName != "Contrast") binding.root.removeView(contrastSlider.root)
-        if(filterName != "RGB") binding.root.removeView(rgbMenu.root)
+        if (filterName != "Contrast") binding.root.removeView(contrastSlider.root)
+        if (filterName != "RGB") binding.root.removeView(rgbMenu.root)
     }
 
-    private fun inverse(): SimpleImage {
+    //TODO do I need to create new file for all these algorithms?
+
+    private fun inverse(simpleImage: SimpleImage): SimpleImage {
 
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
         for (i in 0 until img.height) {
             for (j in 0 until img.width) {
-                img[i, j] = argbToInt(
-                    img[i, j].alpha(),
-                    255 - img[i, j].red(),
-                    255 - img[i, j].green(),
-                    255 - img[i, j].blue()
+                img[j, i] = argbToInt(
+                    img[j, i].alpha(),
+                    255 - img[j, i].red(),
+                    255 - img[j, i].green(),
+                    255 - img[j, i].blue()
                 )
             }
         }
@@ -267,7 +221,7 @@ class Filter(
         return img
     }
 
-    private fun grayscale(): SimpleImage {
+    private fun grayscale(simpleImage: SimpleImage): SimpleImage {
 
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
@@ -275,10 +229,10 @@ class Filter(
             for (j in 0 until img.width) {
 
                 val averageValue =
-                    (img[i, j].red() + img[i, j].green() + img[i, j].blue()) / 3
+                    (img[j, i].red() + img[j, i].green() + img[j, i].blue()) / 3
 
-                img[i, j] = argbToInt(
-                    img[i, j].alpha(),
+                img[j, i] = argbToInt(
+                    img[j, i].alpha(),
                     averageValue,
                     averageValue,
                     averageValue
@@ -289,7 +243,7 @@ class Filter(
         return img
     }
 
-    private fun blackAndWhite(): SimpleImage {
+    private fun blackAndWhite(simpleImage: SimpleImage): SimpleImage {
 
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
@@ -297,13 +251,13 @@ class Filter(
             for (j in 0 until img.width) {
 
                 val averageValue =
-                    (img[i, j].red() + img[i, j].green() + img[i, j].blue()) / 3
+                    (img[j, i].red() + img[j, i].green() + img[j, i].blue()) / 3
 
                 val value: Int = if (averageValue > 128) 255
                 else 0
 
-                img[i, j] = argbToInt(
-                    img[i, j].alpha(),
+                img[j, i] = argbToInt(
+                    img[j, i].alpha(),
                     value,
                     value,
                     value
@@ -314,7 +268,7 @@ class Filter(
         return img
     }
 
-    private fun sepia(): SimpleImage {
+    private fun sepia(simpleImage: SimpleImage): SimpleImage {
 
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
@@ -323,27 +277,27 @@ class Filter(
 
                 val red =
                     min(
-                        255, (img[i, j].red() * 0.393 +
-                                img[i, j].green() * 0.769 +
-                                img[i, j].blue() * 0.189).toInt()
+                        255, (img[j, i].red() * 0.393 +
+                                img[j, i].green() * 0.769 +
+                                img[j, i].blue() * 0.189).toInt()
                     )
 
                 val green =
                     min(
-                        255, (img[i, j].red() * 0.349 +
-                                img[i, j].green() * 0.686 +
-                                img[i, j].blue() * 0.168).toInt()
+                        255, (img[j, i].red() * 0.349 +
+                                img[j, i].green() * 0.686 +
+                                img[j, i].blue() * 0.168).toInt()
                     )
 
                 val blue =
                     min(
-                        255, (img[i, j].red() * 0.272 +
-                                img[i, j].green() * 0.534 +
-                                img[i, j].blue() * 0.131).toInt()
+                        255, (img[j, i].red() * 0.272 +
+                                img[j, i].green() * 0.534 +
+                                img[j, i].blue() * 0.131).toInt()
                     )
 
-                img[i, j] = argbToInt(
-                    img[i, j].alpha(),
+                img[j, i] = argbToInt(
+                    img[j, i].alpha(),
                     red,
                     green,
                     blue
@@ -354,7 +308,7 @@ class Filter(
         return img
     }
 
-    private fun contrast(contrastCoefficient: Int): SimpleImage {
+    private fun contrast(simpleImage: SimpleImage, contrastCoefficient: Int): SimpleImage {
 
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
         val contrastCorrectionFactor: Float =
@@ -364,14 +318,14 @@ class Filter(
             for (j in 0 until img.width) {
 
                 val red =
-                    truncate((img[i, j].red() - 128).toFloat() * contrastCorrectionFactor + 128)
+                    truncate((img[j, i].red() - 128).toFloat() * contrastCorrectionFactor + 128)
                 val green =
-                    truncate((img[i, j].green() - 128).toFloat() * contrastCorrectionFactor + 128)
+                    truncate((img[j, i].green() - 128).toFloat() * contrastCorrectionFactor + 128)
                 val blue =
-                    truncate((img[i, j].blue() - 128).toFloat() * contrastCorrectionFactor + 128)
+                    truncate((img[j, i].blue() - 128).toFloat() * contrastCorrectionFactor + 128)
 
                 img.pixels[i * img.width + j] = argbToInt(
-                    img[i, j].alpha(),
+                    img[j, i].alpha(),
                     red,
                     green,
                     blue
@@ -382,42 +336,40 @@ class Filter(
         return img
     }
 
-    //TODO make it normal pls
-    private fun rgb(color: String) : SimpleImage {
+    //TODO make it normal pls using enum
+    private fun rgb(simpleImage: SimpleImage, color: String): SimpleImage {
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
 
-        if(color == "red") {
+        if (color == "red") {
             for (i in 0 until img.height) {
                 for (j in 0 until img.width) {
-                    img[i, j] = argbToInt(
-                        img[i, j].alpha(),
-                        img[i, j].red(),
+                    img[j, i] = argbToInt(
+                        img[j, i].alpha(),
+                        img[j, i].red(),
                         0,
                         0
                     )
                 }
             }
-        }
-        else if(color == "green") {
+        } else if (color == "green") {
             for (i in 0 until img.height) {
                 for (j in 0 until img.width) {
-                    img[i, j] = argbToInt(
-                        img[i, j].alpha(),
+                    img[j, i] = argbToInt(
+                        img[j, i].alpha(),
                         0,
-                        img[i, j].green(),
+                        img[j, i].green(),
                         0
                     )
                 }
             }
-        }
-        else {
+        } else {
             for (i in 0 until img.height) {
                 for (j in 0 until img.width) {
-                    img[i, j] = argbToInt(
-                        img[i, j].alpha(),
+                    img[j, i] = argbToInt(
+                        img[j, i].alpha(),
                         0,
                         0,
-                        img[i, j].blue()
+                        img[j, i].blue()
                     )
                 }
             }
@@ -426,15 +378,14 @@ class Filter(
         return img
     }
 
-    //TODO add scaling using Vasya's algorithm
     private fun getListOfSamples(): MutableList<ItemFilter> {
         val items = mutableListOf<ItemFilter>()
-        items.add(ItemFilter(getBitMap(inverse()), "Inversion"))
-        items.add(ItemFilter(getBitMap(grayscale()), "Grayscale"))
-        items.add(ItemFilter(getBitMap(blackAndWhite()), "Black and white"))
-        items.add(ItemFilter(getBitMap(sepia()), "Sepia"))
-        items.add(ItemFilter(getBitMap(contrast(100)), "Contrast"))
-        items.add(ItemFilter(getBitMap(rgb("red")), "RGB"))
+        items.add(ItemFilter(getBitMap(inverse(smallSimpleImage)), "Inversion"))
+        items.add(ItemFilter(getBitMap(grayscale(smallSimpleImage)), "Grayscale"))
+        items.add(ItemFilter(getBitMap(blackAndWhite(smallSimpleImage)), "Black and white"))
+        items.add(ItemFilter(getBitMap(sepia(smallSimpleImage)), "Sepia"))
+        items.add(ItemFilter(getBitMap(contrast(smallSimpleImage, 100)), "Contrast"))
+        items.add(ItemFilter(getBitMap(rgb(smallSimpleImage, "red")), "RGB"))
         //mosaic
         //dots
         //channel shift

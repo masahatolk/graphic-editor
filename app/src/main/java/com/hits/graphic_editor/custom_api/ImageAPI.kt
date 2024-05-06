@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap
 import com.hits.graphic_editor.getSuperSampledSimpleImage
 
+
 data class SimpleImage(
     var pixels: IntArray,
     val width: Int,
