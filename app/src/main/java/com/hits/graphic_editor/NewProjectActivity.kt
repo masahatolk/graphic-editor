@@ -3,9 +3,7 @@ package com.hits.graphic_editor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
@@ -15,6 +13,7 @@ import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.ui.filter.Filter
+import com.hits.graphic_editor.ui.filter.RGBMode
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -42,7 +41,7 @@ class NewProjectActivity : AppCompatActivity() {
         val photo = intent?.getStringExtra("photo")
 
         pickedPhoto = photo?.toUri()
-        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, pickedPhoto);
+        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, pickedPhoto)
 
         binding.imageView.setImageURI(pickedPhoto)
 
@@ -52,7 +51,7 @@ class NewProjectActivity : AppCompatActivity() {
 
         // --------------create necessary fields---------------
         val image = getSimpleImage(bitmap)
-        val newFilter = Filter(image, binding, layoutInflater)
+        val newFilter = Filter(image, binding, layoutInflater, RGBMode.RED)
 
 
         // ------------add listener to bottom menu-------------

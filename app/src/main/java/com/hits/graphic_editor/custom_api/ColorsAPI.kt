@@ -9,6 +9,7 @@ fun IntColor.alpha(): IntColor = this shr 24 and 0xff
 fun IntColor.red(): IntColor = this shr 16 and 0xff
 fun IntColor.green(): IntColor = this shr 8 and 0xff
 fun IntColor.blue(): IntColor = this and 0xff
+
 fun IntColor.multiplyIntColorByInt(c: Float): IntColor =
     argbToInt(this.alpha() * c, this.red() * c,this.green() * c,this.blue() * c)
 fun IntColor.divideIntColorByInt(d: Float): IntColor =

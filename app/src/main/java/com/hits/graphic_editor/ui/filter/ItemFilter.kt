@@ -4,5 +4,5 @@ import android.graphics.Bitmap
 
 data class ItemFilter(
     val appliedFilterSample: Bitmap,
-    val filterName: String
+    val filterMode: FilterMode
 )

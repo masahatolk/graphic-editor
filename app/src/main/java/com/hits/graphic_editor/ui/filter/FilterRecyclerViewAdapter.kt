@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hits.graphic_editor.databinding.ItemFilterBinding
 
 interface OnClickFilterListener {
-    fun onClick(filterName: String)
+    fun onClick(filterMode: FilterMode)
 }
 
 class FilterRecyclerViewAdapter(
@@ -17,7 +17,7 @@ class FilterRecyclerViewAdapter(
 
     override fun onClick(v: View) {
         val item = v.tag as ItemFilter
-        actionListener.onClick(item.filterName)
+        actionListener.onClick(item.filterMode)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterViewHolder {
@@ -36,7 +36,7 @@ class FilterRecyclerViewAdapter(
         with(holder.binding) {
             holder.itemView.tag = item
 
-            appliedFilterName.text = item.filterName
+            appliedFilterName.text = item.filterMode.toString()
             //TODO
             appliedFilterSample.setImageBitmap(item.appliedFilterSample)
             /*if(item.appliedFilterSample != null) {
