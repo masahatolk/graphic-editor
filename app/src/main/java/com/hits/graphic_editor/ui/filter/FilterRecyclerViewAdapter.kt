@@ -11,7 +11,7 @@ interface OnClickFilterListener {
 }
 
 class FilterRecyclerViewAdapter(
-    private var items: MutableList<ItemFilter>,
+    var items: MutableList<ItemFilter>,
     private val actionListener: OnClickFilterListener
 ) : RecyclerView.Adapter<FilterRecyclerViewAdapter.FilterViewHolder>(), View.OnClickListener {
 

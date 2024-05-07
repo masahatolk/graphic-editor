@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.hits.graphic_editor.custom_api.SimpleImage
+import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding

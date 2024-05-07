@@ -53,6 +53,14 @@ class NewProjectActivity : AppCompatActivity() {
         val image = getSimpleImage(bitmap)
         val newFilter = Filter(image, binding, layoutInflater, RGBMode.RED)
 
+        // ----------add listeners to extra top menu-----------
+        setListenersToExtraTopMenu(
+            binding,
+            topMenu,
+            bottomMenu,
+            extraTopMenu,
+            newFilter
+        )
 
         // ------------add listener to bottom menu-------------
         bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
@@ -69,11 +77,11 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     1 -> {
-                        val rotation = Rotation(image,applicationContext,binding,layoutInflater)
+                        val rotation = Rotation(image, applicationContext, binding, layoutInflater)
                         rotation.showBottomMenu(
                             topMenu = topMenu,
                             bottomMenu = bottomMenu,
-                            )
+                        )
                     }
 
                     2 -> {
@@ -81,11 +89,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     3 -> {
-                        newFilter.showBottomMenu(
-                            topMenu = topMenu,
-                            bottomMenu = bottomMenu,
-                            extraTopMenu = extraTopMenu
-                        )
+                        newFilter.showBottomMenu()
                     }
 
                     4 -> {
