@@ -69,7 +69,11 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     1 -> {
-
+                        val rotation = Rotation(image,applicationContext,binding,layoutInflater)
+                        rotation.showBottomMenu(
+                            topMenu = topMenu,
+                            bottomMenu = bottomMenu,
+                            )
                     }
 
                     2 -> {
