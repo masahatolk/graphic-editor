@@ -1,5 +1,6 @@
 package com.hits.graphic_editor.custom_api
 
+import androidx.core.graphics.alpha
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
