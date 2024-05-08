@@ -10,11 +10,18 @@ import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityMainBinding
 import com.hits.graphic_editor.utils.getBilinearFilteredPixelInt
+import com.hits.graphic_editor.utils.getTrilinearFilterBlendCoeff
+import com.hits.graphic_editor.utils.getTrilinearFilteredPixelInt
+import kotlin.math.PI
 import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 data class Vec2(var x: Float, var y: Float)
-fun getAffineTransformedSimpleImage(img: SimpleImage, matrix: Array<Array<Float>>): SimpleImage
+fun getAffineTransformedSimpleImage(input: MipMapsContainer, matrix: Array<Array<Float>>): SimpleImage
 {
+    val img = input.img
     val oldHeight = img.height
     val oldWidth = img.width
 
@@ -32,35 +39,71 @@ fun getAffineTransformedSimpleImage(img: SimpleImage, matrix: Array<Array<Float>
         getTransformedVec2(Vec2(0F, img.height.toFloat()), matrix),
         getTransformedVec2(Vec2(img.width.toFloat(), img.height.toFloat()), matrix))
 
-    val xOffset = 0
-    val yOffset =0
-
-    val translatedLeft = ceil(cornerCoordinates.minBy{ it.x }.x + xOffset).toInt()
-    val translatedTop = ceil(cornerCoordinates.minBy{ it.y }.y + yOffset).toInt()
-    val translatedRight = (cornerCoordinates.maxBy{ it.x }.x + xOffset).toInt()
-    val translatedBottom = (cornerCoordinates.maxBy{ it.y }.y + yOffset).toInt()
+    val translatedLeft = ceil(cornerCoordinates.minBy{ it.x }.x).toInt()
+    val translatedTop = ceil(cornerCoordinates.minBy{ it.y }.y).toInt()
+    val translatedRight = cornerCoordinates.maxBy{ it.x }.x.toInt()
+    val translatedBottom = cornerCoordinates.maxBy{ it.y }.y.toInt()
 
     val newWidth = translatedRight - translatedLeft
     val newHeight = translatedBottom - translatedTop
     val newImg = SimpleImage(newWidth, newHeight)
 
-    for (translatedX in translatedLeft until translatedRight)
-    {
-        for (translatedY in translatedTop until translatedBottom)
-        {
-            val oldVec = getTransformedVec2(
-                Vec2(translatedX.toFloat(), translatedY.toFloat()),
-                reversedMatrix)
-            val newX = translatedX - translatedLeft
-            val newY = translatedY - translatedTop
+    val currCoeff = sqrt(newWidth * newHeight / (img.width * img.height).toFloat())
 
-            if (0 <= oldVec.x && oldVec.x < oldWidth &&
-                0 <= oldVec.y && oldVec.y < oldHeight)
-                newImg[newX, newY] = getBilinearFilteredPixelInt(
-                    img, oldVec.x / oldWidth, oldVec.y / oldHeight)
+    if (currCoeff >= MipMapsContainer.constSizeCoeffs.last() ||
+        currCoeff <= MipMapsContainer.constSizeCoeffs.first())
+    {
+        for (translatedX in translatedLeft until translatedRight) {
+            for (translatedY in translatedTop until translatedBottom) {
+                val oldVec = getTransformedVec2(
+                    Vec2(translatedX.toFloat(), translatedY.toFloat()),
+                    reversedMatrix)
+
+                val newX = translatedX - translatedLeft
+                val newY = translatedY - translatedTop
+
+                if (0 <= oldVec.x && oldVec.x < oldWidth &&
+                    0 <= oldVec.y && oldVec.y < oldHeight)
+                    newImg[newX, newY] = getBilinearFilteredPixelInt(
+                        img, oldVec.x / oldWidth, oldVec.y / oldHeight)
+            }
+        }
+    }
+    else{
+        val biggerImgIndex = MipMapsContainer.constSizeCoeffs.indexOfFirst { it >= currCoeff }
+        val biggerImg = input.mipMaps[biggerImgIndex]
+        val smallerImg = input.mipMaps[biggerImgIndex - 1]
+        val blendCoeff = getTrilinearFilterBlendCoeff(
+            MipMapsContainer.constSizeCoeffs[biggerImgIndex - 1],
+            MipMapsContainer.constSizeCoeffs[biggerImgIndex],
+            currCoeff)
+
+        for (translatedX in translatedLeft until translatedRight) {
+            for (translatedY in translatedTop until translatedBottom) {
+                val oldVec = getTransformedVec2(
+                    Vec2(translatedX.toFloat(), translatedY.toFloat()),
+                    reversedMatrix)
+
+                val newX = translatedX - translatedLeft
+                val newY = translatedY - translatedTop
+
+                if (0 <= oldVec.x && oldVec.x < oldWidth &&
+                    0 <= oldVec.y && oldVec.y < oldHeight)
+                    newImg[newX, newY] = getTrilinearFilteredPixelInt(
+                        smallerImg, biggerImg, blendCoeff,
+                        oldVec.x / oldWidth, oldVec.y / oldHeight)
+            }
         }
     }
     return newImg
+}
+fun getRotatedSimpleImage(input: MipMapsContainer, angle: Float): SimpleImage
+{
+    return getAffineTransformedSimpleImage(input,
+        arrayOf(
+            arrayOf(cos(angle),-sin(angle),0F),
+            arrayOf(sin(angle),cos(angle),0F)
+        ))
 }
 data class PointTransfer(
     var fromX: Float,
@@ -131,13 +174,15 @@ class MainActivity : AppCompatActivity() {
             var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
             /* ---------------------------------- */
 
-            bitmap = getBitMap(getAffineTransformedSimpleImage(getSimpleImage(bitmap),
-                getAffineTransformationMatrix(
-                    PointTransfer(50F, 50F, 100F, 150F),
-                    PointTransfer(100F, 150F, 250F, 30F),
-                    PointTransfer(200F, 30F, 40F, 40F)
+            val img = getSimpleImage(bitmap)
+            val mipmaps = MipMapsContainer(img)
+            /*bitmap = getBitMap(getAffineTransformedSimpleImage(mipmaps,
+                arrayOf(
+                    arrayOf(cos(20F),-sin(20F),0F),
+                    arrayOf(sin(20F),cos(20F),0F)
                 )
-            ))
+            ))*/
+            bitmap = getBitMap(getRotatedSimpleImage(mipmaps, (PI/6).toFloat()))
 
             /* ---------------------------------- */
             binding.image2.setImageBitmap(bitmap)
