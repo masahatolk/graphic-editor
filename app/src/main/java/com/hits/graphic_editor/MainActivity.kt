@@ -32,10 +32,13 @@ fun getAffineTransformedSimpleImage(img: SimpleImage, matrix: Array<Array<Float>
         getTransformedVec2(Vec2(0F, img.height.toFloat()), matrix),
         getTransformedVec2(Vec2(img.width.toFloat(), img.height.toFloat()), matrix))
 
-    val translatedLeft = ceil(cornerCoordinates.minBy{ it.x }.x).toInt()
-    val translatedTop = ceil(cornerCoordinates.minBy{ it.y }.y).toInt()
-    val translatedRight = ceil(cornerCoordinates.maxBy{ it.x }.x).toInt()
-    val translatedBottom = ceil(cornerCoordinates.maxBy{ it.y }.y).toInt()
+    val xOffset = 0
+    val yOffset =0
+
+    val translatedLeft = ceil(cornerCoordinates.minBy{ it.x }.x + xOffset).toInt()
+    val translatedTop = ceil(cornerCoordinates.minBy{ it.y }.y + yOffset).toInt()
+    val translatedRight = (cornerCoordinates.maxBy{ it.x }.x + xOffset).toInt()
+    val translatedBottom = (cornerCoordinates.maxBy{ it.y }.y + yOffset).toInt()
 
     val newWidth = translatedRight - translatedLeft
     val newHeight = translatedBottom - translatedTop
@@ -94,20 +97,20 @@ fun getAffineTransformationMatrix(
 }
 fun getReversedTransformationMatrix(matrix: Array<Array<Float>>): Array<Array<Float>>
 {
-    val a1 = matrix[0][0]
-    val b1 = matrix[0][1]
-    val a2 = matrix[1][0]
-    val b2 = matrix[1][1]
+    val ax = matrix[0][0]
+    val bx = matrix[0][1]
+    val ay = matrix[1][0]
+    val by = matrix[1][1]
 
-    val newA1 = a1/(a1*b2-a2*b1)
-    val newB1 = a2/(a2*b1-a1*b2)
+    val newBx = bx/(bx*ay-by*ax)
+    val newAx = by/(by*ax-bx*ay)
 
-    val newA2 = b1/(b1*a2-b2*a1)
-    val newB2 = b2/(b2*a1-b1*a2)
+    val newBy = ax/(ax*by-ay*bx)
+    val newAy = ay/(ay*bx-ax*by)
 
     return arrayOf(
-        arrayOf(newA1, newB1,0F),
-        arrayOf(newA2, newB2,0F)
+        arrayOf(newAx, newBx, -matrix[0][2]),
+        arrayOf(newAy, newBy,-matrix[1][2])
     )
 }
 
