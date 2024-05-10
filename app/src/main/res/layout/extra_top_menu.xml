@@ -17,28 +17,6 @@
         app:tint="@color/grey" />
 
     <ImageView
-        android:id="@+id/undo"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toEndOf="@+id/close"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_undo"
-        app:tint="@color/grey" />
-
-    <ImageView
-        android:id="@+id/redo"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toStartOf="@+id/save"
-        app:layout_constraintStart_toEndOf="@+id/undo"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_redo_24dp"
-        app:tint="@color/grey" />
-
-    <ImageView
         android:id="@+id/save"
         android:layout_width="30dp"
         android:layout_height="30dp"

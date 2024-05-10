@@ -16,14 +16,14 @@ import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.getSuperSampledSimpleImage
 
 class Filter(
-    var simpleImage: SimpleImage,
     private val binding: ActivityNewProjectBinding,
     private val layoutInflater: LayoutInflater,
     private var rgbMode: RGBMode
 ) {
 
     // -----------------create necessary fields-----------------
-    private var smallSimpleImage: SimpleImage = getSuperSampledSimpleImage(this.simpleImage, 0.5F)
+    var simpleImage : SimpleImage? = null
+    private var smallSimpleImage: SimpleImage? = null
     private var verticalShift: Int = 0
     private var horizontalShift: Int = 0
     private var grainNumber: Int = 5
@@ -58,7 +58,7 @@ class Filter(
 
 
     fun showBottomMenu() {
-        smallSimpleImage = getSuperSampledSimpleImage(this.simpleImage, 0.5F)
+        smallSimpleImage = getSuperSampledSimpleImage(this.simpleImage!!, 0.5F)
         adapter.items = getListOfSamples()
         filterBottomMenu.filterRecyclerView.adapter = adapter
 
@@ -69,19 +69,19 @@ class Filter(
 
         when (filterMode) {
             FilterMode.INVERSION -> {
-                binding.imageView.setImageBitmap(getBitMap(inverse(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(inverse(this.simpleImage!!)))
             }
 
             FilterMode.GRAYSCALE -> {
-                binding.imageView.setImageBitmap(getBitMap(grayscale(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(grayscale(this.simpleImage!!)))
             }
 
             FilterMode.BLACK_AND_WHITE -> {
-                binding.imageView.setImageBitmap(getBitMap(blackAndWhite(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(blackAndWhite(this.simpleImage!!)))
             }
 
             FilterMode.SEPIA -> {
-                binding.imageView.setImageBitmap(getBitMap(sepia(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(sepia(this.simpleImage!!)))
             }
 
             FilterMode.CONTRAST -> {
@@ -89,14 +89,14 @@ class Filter(
                 addContrastSlider(binding, contrastSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(contrast(this.simpleImage, contrastCoefficient))
+                    getBitMap(contrast(this.simpleImage!!, contrastCoefficient))
                 )
 
                 val slider: Slider = contrastSlider.contrastSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     contrastCoefficient = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(contrast(this.simpleImage, contrastCoefficient))
+                        getBitMap(contrast(this.simpleImage!!, contrastCoefficient))
                     )
                 })
             }
@@ -104,7 +104,7 @@ class Filter(
             FilterMode.RGB -> {
                 addRgbMenu(binding, rgbMenu)
 
-                binding.imageView.setImageBitmap(getBitMap(rgb(this.simpleImage, rgbMode)))
+                binding.imageView.setImageBitmap(getBitMap(rgb(this.simpleImage!!, rgbMode)))
 
                 rgbMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
@@ -122,7 +122,7 @@ class Filter(
                                 rgbMode = RGBMode.BLUE
                             }
                         }
-                        binding.imageView.setImageBitmap(getBitMap(rgb(this@Filter.simpleImage, rgbMode)))
+                        binding.imageView.setImageBitmap(getBitMap(rgb(this@Filter.simpleImage!!, rgbMode)))
                     }
 
                     override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -135,14 +135,14 @@ class Filter(
                 addMosaicSlider(binding, mosaicSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(mosaic(this.simpleImage, squareSide))
+                    getBitMap(mosaic(this.simpleImage!!, squareSide))
                 )
 
                 val slider: Slider = mosaicSlider.mosaicSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     squareSide = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(mosaic(this.simpleImage, squareSide))
+                        getBitMap(mosaic(this.simpleImage!!, squareSide))
                     )
                 })
             }
@@ -152,14 +152,14 @@ class Filter(
                 addGrainSlider(binding, grainSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(grain(this.simpleImage, grainNumber))
+                    getBitMap(grain(this.simpleImage!!, grainNumber))
                 )
 
                 val slider: Slider = grainSlider.grainSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     grainNumber = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(grain(this.simpleImage, grainNumber))
+                        getBitMap(grain(this.simpleImage!!, grainNumber))
                     )
                 })
             }
@@ -168,7 +168,7 @@ class Filter(
                 addChannelShiftSlider(binding, channelShiftSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(channelShift(this.simpleImage, horizontalShift, verticalShift))
+                    getBitMap(channelShift(this.simpleImage!!, horizontalShift, verticalShift))
                 )
 
                 val verticalSlider: Slider = channelShiftSlider.verticalSlider
@@ -177,13 +177,13 @@ class Filter(
                 verticalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     verticalShift = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(channelShift(this.simpleImage, horizontalShift, verticalShift))
+                        getBitMap(channelShift(this.simpleImage!!, horizontalShift, verticalShift))
                     )
                 })
                 horizontalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     horizontalShift = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(channelShift(this.simpleImage, horizontalShift, verticalShift))
+                        getBitMap(channelShift(this.simpleImage!!, horizontalShift, verticalShift))
                     )
                 })
             }
@@ -201,26 +201,27 @@ class Filter(
 
     private fun getListOfSamples(): MutableList<ItemFilter> {
         val items = mutableListOf<ItemFilter>()
-        items.add(ItemFilter(getBitMap(inverse(smallSimpleImage)), FilterMode.INVERSION))
-        items.add(ItemFilter(getBitMap(grayscale(smallSimpleImage)), FilterMode.GRAYSCALE))
-        items.add(
-            ItemFilter(
-                getBitMap(blackAndWhite(smallSimpleImage)),
-                FilterMode.BLACK_AND_WHITE
+        if(smallSimpleImage != null){
+            items.add(ItemFilter(getBitMap(inverse(smallSimpleImage!!)), FilterMode.INVERSION))
+            items.add(ItemFilter(getBitMap(grayscale(smallSimpleImage!!)), FilterMode.GRAYSCALE))
+            items.add(
+                ItemFilter(
+                    getBitMap(blackAndWhite(smallSimpleImage!!)),
+                    FilterMode.BLACK_AND_WHITE
+                )
             )
-        )
-        items.add(ItemFilter(getBitMap(sepia(smallSimpleImage)), FilterMode.SEPIA))
-        items.add(ItemFilter(getBitMap(contrast(smallSimpleImage, 100)), FilterMode.CONTRAST))
-        items.add(ItemFilter(getBitMap(rgb(smallSimpleImage, rgbMode)), FilterMode.RGB))
-        items.add(ItemFilter(getBitMap(mosaic(smallSimpleImage, 10)), FilterMode.MOSAIC))
-        items.add(ItemFilter(getBitMap(grain(smallSimpleImage, 50)), FilterMode.GRAIN))
-        items.add(
-            ItemFilter(
-                getBitMap(channelShift(smallSimpleImage, 100, 100)),
-                FilterMode.CHANNEL_SHIFT
+            items.add(ItemFilter(getBitMap(sepia(smallSimpleImage!!)), FilterMode.SEPIA))
+            items.add(ItemFilter(getBitMap(contrast(smallSimpleImage!!, 100)), FilterMode.CONTRAST))
+            items.add(ItemFilter(getBitMap(rgb(smallSimpleImage!!, rgbMode)), FilterMode.RGB))
+            items.add(ItemFilter(getBitMap(mosaic(smallSimpleImage!!, 10)), FilterMode.MOSAIC))
+            items.add(ItemFilter(getBitMap(grain(smallSimpleImage!!, 50)), FilterMode.GRAIN))
+            items.add(
+                ItemFilter(
+                    getBitMap(channelShift(smallSimpleImage!!, 100, 100)),
+                    FilterMode.CHANNEL_SHIFT
+                )
             )
-        )
-
+        }
         return items
     }
 }

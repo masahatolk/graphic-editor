@@ -17,12 +17,12 @@ import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
-    var fab: View? = null
-    val bottomSheetBinding: BottomSheetBinding by lazy {
+    private var fab: View? = null
+    private val bottomSheetBinding: BottomSheetBinding by lazy {
         BottomSheetBinding.inflate(layoutInflater)
     }
-    var pickedPhoto: Uri? = null
-    var tempImageUri: Uri? = null
+    private var pickedPhoto: Uri? = null
+    private var tempImageUri: Uri? = null
 
     private val binding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
@@ -67,7 +67,6 @@ class MainActivity : AppCompatActivity() {
 
     private val cameraLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) {
-            //tempImageUri ?: return@registerForActivityResult
             if(it){
                 val message: String = tempImageUri.toString()
                 val photoIntent = Intent(this, NewProjectActivity::class.java)

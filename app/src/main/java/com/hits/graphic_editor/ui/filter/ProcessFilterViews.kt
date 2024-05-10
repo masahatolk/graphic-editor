@@ -111,3 +111,12 @@ fun addRgbMenu (binding: ActivityNewProjectBinding, rgbMenu: RgbMenuBinding) {
 fun removeRgbMenu (binding: ActivityNewProjectBinding, rgbMenu: RgbMenuBinding) {
     binding.root.removeView(rgbMenu.root)
 }
+
+fun removeAllFilterMenus (binding: ActivityNewProjectBinding, filter: Filter) {
+    removeFilterBottomMenu(binding, filter.filterBottomMenu)
+    removeContrastSlider(binding, filter.contrastSlider)
+    removeRgbMenu(binding, filter.rgbMenu)
+    removeMosaicSlider(binding, filter.mosaicSlider)
+    removeChannelShiftSlider(binding, filter.channelShiftSlider)
+    removeGrainSlider(binding, filter.grainSlider)
+}

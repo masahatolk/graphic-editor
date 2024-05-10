@@ -12,6 +12,7 @@ import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
+import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.ui.filter.Filter
 import com.hits.graphic_editor.ui.filter.RGBMode
 
@@ -32,6 +33,9 @@ class NewProjectActivity : AppCompatActivity() {
     val extraTopMenu: ExtraTopMenuBinding by lazy {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
+    private var processedImage: ProcessedImage = ProcessedImage()
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,15 +54,19 @@ class NewProjectActivity : AppCompatActivity() {
         addBottomMenu(binding, bottomMenu)
 
         // --------------create necessary fields---------------
-        val image = getSimpleImage(bitmap)
-        val newFilter = Filter(image, binding, layoutInflater, RGBMode.RED)
+        processedImage.image = getSimpleImage(bitmap)
+        val newRotation = Rotation(binding, layoutInflater)
+        val newFilter = Filter(binding, layoutInflater, RGBMode.RED)
 
-        // ----------add listeners to extra top menu-----------
+        // --------------add listeners to menus----------------
+        setListenersToTopMenu(this, binding, this, topMenu, processedImage)
         setListenersToExtraTopMenu(
             binding,
             topMenu,
             bottomMenu,
             extraTopMenu,
+            processedImage,
+            newRotation,
             newFilter
         )
 
@@ -77,11 +85,8 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     1 -> {
-                        val rotation = Rotation(image, applicationContext, binding, layoutInflater)
-                        rotation.showBottomMenu(
-                            topMenu = topMenu,
-                            bottomMenu = bottomMenu,
-                        )
+                        newRotation.simpleImage = processedImage.image
+                        newRotation.showBottomMenu()
                     }
 
                     2 -> {
@@ -89,6 +94,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     3 -> {
+                        newFilter.simpleImage = processedImage.image
                         newFilter.showBottomMenu()
                     }
 
