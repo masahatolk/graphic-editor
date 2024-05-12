@@ -5,12 +5,12 @@ import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.utils.getBilinearFilteredPixelInt
 import com.hits.graphic_editor.utils.getTrilinearFilterBlendCoeff
 import com.hits.graphic_editor.utils.getTrilinearFilteredPixelInt
+import com.hits.graphic_editor.utils.FVec2
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-data class Vec2(var x: Float, var y: Float)
 data class PointTransfer(
     var fromX: Float,
     var fromY: Float,
@@ -69,18 +69,18 @@ fun getAffineTransformedSimpleImage(input: MipMapsContainer, matrix: Array<Array
     val oldWidth = img.width
 
     // function ignores coordinates offset and centers new image
-    fun getTransformedVec2(vec: Vec2, matrix: Array<Array<Float>>): Vec2
-            = Vec2(
+    fun getTransformedFVec2(vec: FVec2, matrix: Array<Array<Float>>): FVec2
+            = FVec2(
         matrix[0][0] * vec.x + matrix[0][1] * vec.y,
         matrix[1][0] * vec.x + matrix[1][1] * vec.y)
 
     val reversedMatrix = getReversedTransformationMatrix(matrix)
 
     val cornerCoordinates = arrayOf(
-        Vec2(0F, 0F),
-        getTransformedVec2(Vec2(img.width.toFloat(), 0F), matrix),
-        getTransformedVec2(Vec2(0F, img.height.toFloat()), matrix),
-        getTransformedVec2(Vec2(img.width.toFloat(), img.height.toFloat()), matrix))
+        FVec2(0F, 0F),
+        getTransformedFVec2(FVec2(img.width.toFloat(), 0F), matrix),
+        getTransformedFVec2(FVec2(0F, img.height.toFloat()), matrix),
+        getTransformedFVec2(FVec2(img.width.toFloat(), img.height.toFloat()), matrix))
 
     val translatedLeft = ceil(cornerCoordinates.minBy{ it.x }.x).toInt()
     val translatedTop = ceil(cornerCoordinates.minBy{ it.y }.y).toInt()
@@ -98,8 +98,8 @@ fun getAffineTransformedSimpleImage(input: MipMapsContainer, matrix: Array<Array
     {
         for (translatedX in translatedLeft until translatedRight) {
             for (translatedY in translatedTop until translatedBottom) {
-                val oldVec = getTransformedVec2(
-                    Vec2(translatedX.toFloat(), translatedY.toFloat()),
+                val oldVec = getTransformedFVec2(
+                    FVec2(translatedX.toFloat(), translatedY.toFloat()),
                     reversedMatrix)
 
                 val newX = translatedX - translatedLeft
@@ -123,8 +123,8 @@ fun getAffineTransformedSimpleImage(input: MipMapsContainer, matrix: Array<Array
 
         for (translatedX in translatedLeft until translatedRight) {
             for (translatedY in translatedTop until translatedBottom) {
-                val oldVec = getTransformedVec2(
-                    Vec2(translatedX.toFloat(), translatedY.toFloat()),
+                val oldVec = getTransformedFVec2(
+                    FVec2(translatedX.toFloat(), translatedY.toFloat()),
                     reversedMatrix)
 
                 val newX = translatedX - translatedLeft
