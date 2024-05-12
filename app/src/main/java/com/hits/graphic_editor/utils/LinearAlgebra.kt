@@ -33,6 +33,18 @@ data class FVec3(var x: Float, var y: Float, var z: Float)
     fun rotateOnAngle(xAngle: Float, yAngle: Float, zAngle: Float) {
         rotate(getRotationMatrix(xAngle, yAngle, zAngle))
     }
+    fun swap(other: FVec3)
+    {
+        val tempX = this.x
+        val tempY = this.y
+        val tempZ = this.z
+        this.x = other.x
+        this.y = other.y
+        this.z = other.z
+        other.x = tempX
+        other.y = tempY
+        other.z = tempZ
+    }
 }
 fun getAngle(v1: FVec3, v2:FVec3): Float
     = acos(v1.dotProduct(v2) / (v1.length() * v2.length()))

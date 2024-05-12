@@ -36,6 +36,9 @@ data class TextureUVs(
     val p2: UV,
     val p3: UV
 )
+fun calcTrianglePerpendicular(p1: FVec3, p2: FVec3, p3: FVec3):FVec3 {
+    return (p1-p3).crossProduct(p1-p2)
+}
 data class Triangle(
     var p1: FVec3,
     var p2: FVec3,
@@ -146,76 +149,96 @@ fun SimpleImage.drawFilledTriangle (p1: Vec2, p2: Vec2, p3: Vec2, color: IntColo
 }
 fun SimpleImage.drawTriangle (
     triangle: Triangle,
+    transformedP1: FVec3, transformedP2: FVec3, transformedP3: FVec3,
     p1: Vec2, p2: Vec2, p3: Vec2,
     texture: SimpleImage)
 {
     val p1UVs = triangle.textureUVs.p1.copy()
     val p2UVs = triangle.textureUVs.p2.copy()
     val p3UVs = triangle.textureUVs.p3.copy()
-    // Сортировка точек так, что p0.y <= p1.y <= y2
-    if (p2.y < p1.y) {p2.swap(p1); p2UVs.swap(p1UVs)}
-    if (p3.y < p1.y) {p3.swap(p1); p3UVs.swap(p1UVs)}
-    if (p3.y < p2.y) {p3.swap(p2); p3UVs.swap(p2UVs)}
 
-    // Вычисление координат x рёбер треугольника
+    val transfP1 = transformedP1.copy()
+    val transfP2 = transformedP2.copy()
+    val transfP3 = transformedP3.copy()
+
+    // Sorting that p0.y <= p1.y <= y2
+    if (p2.y < p1.y) {p2.swap(p1); p2UVs.swap(p1UVs); transfP2.swap(transfP1)}
+    if (p3.y < p1.y) {p3.swap(p1); p3UVs.swap(p1UVs); transfP3.swap(transfP1)}
+    if (p3.y < p2.y) {p3.swap(p2); p3UVs.swap(p2UVs); transfP3.swap(transfP2)}
+
+    // X coordinates of triangle edges
     val x12 = interpolate(p1.y, p1.x, p2.y, p2.x)
     val x23 = interpolate(p2.y, p2.x, p3.y, p3.x)
     val x13 = interpolate(p1.y, p1.x, p3.y, p3.x)
 
-    val u12 = interpolate(p1.y, p1UVs.u, p2.y, p2UVs.u)
-    val u23 = interpolate(p2.y, p2UVs.u, p3.y, p3UVs.u)
-    val u13 = interpolate(p1.y, p1UVs.u, p3.y, p3UVs.u)
+    val uDivZ12 = interpolate(p1.y, p1UVs.u/transfP1.z, p2.y, p2UVs.u/transfP2.z)
+    val uDivZ23 = interpolate(p2.y, p2UVs.u/transfP2.z, p3.y, p3UVs.u/transfP3.z)
+    val uDivZ13 = interpolate(p1.y, p1UVs.u/transfP1.z, p3.y, p3UVs.u/transfP3.z)
 
-    val v12 = interpolate(p1.y, p1UVs.v, p2.y, p2UVs.v)
-    val v23 = interpolate(p2.y, p2UVs.v, p3.y, p3UVs.v)
-    val v13 = interpolate(p1.y, p1UVs.v, p3.y, p3UVs.v)
+    val vDivZ12 = interpolate(p1.y, p1UVs.v/transfP1.z, p2.y, p2UVs.v/transfP2.z)
+    val vDivZ23 = interpolate(p2.y, p2UVs.v/transfP2.z, p3.y, p3UVs.v/transfP3.z)
+    val vDivZ13 = interpolate(p1.y, p1UVs.v/transfP1.z, p3.y, p3UVs.v/transfP3.z)
 
+    val revZ12 = interpolate(p1.y, 1/transfP1.z, p2.y,1/transfP2.z)
+    val revZ23 = interpolate(p2.y, 1/transfP2.z, p3.y, 1/transfP3.z)
+    val revZ13 = interpolate(p1.y, 1/transfP1.z, p3.y, 1/transfP3.z)
 
-    // Конкатенация коротких сторон
+    // Short edges concat
     x12.removeLast()
-    v12.removeLast()
-    u12.removeLast()
+    vDivZ12.removeLast()
+    uDivZ12.removeLast()
+    revZ12.removeLast()
+
     val x123 = (x12 + x23).toMutableList()
-    val u123 = (u12 + u23).toMutableList()
-    val v123 = (v12 + v23).toMutableList()
+    val u123 = (uDivZ12 + uDivZ23).toMutableList()
+    val v123 = (vDivZ12 + vDivZ23).toMutableList()
+    val revZ123 = (revZ12 + revZ23).toMutableList()
 
     val xLeft: MutableList<Int>
     val xRight: MutableList<Int>
-    val uLeft: MutableList<Float>
-    val uRight: MutableList<Float>
-    val vLeft: MutableList<Float>
-    val vRight: MutableList<Float>
+    val uDivZLeft: MutableList<Float>
+    val uDivZRight: MutableList<Float>
+    val vDivZLeft: MutableList<Float>
+    val vDivZRight: MutableList<Float>
+    val revZLeft: MutableList<Float>
+    val revZRight: MutableList<Float>
 
-    // Определяем, какая из сторон левая и правая
+    // Deduce which side is left and which is right
     val m = x123.size / 2
     if (x13[m] < x123[m]) {
         xLeft = x13
         xRight = x123
-        uLeft = u13
-        uRight = u123
-        vLeft = v13
-        vRight = v123
+        uDivZLeft = uDivZ13
+        uDivZRight = u123
+        vDivZLeft = vDivZ13
+        vDivZRight = v123
+        revZLeft = revZ13
+        revZRight = revZ123
     } else {
         xLeft = x123
         xRight = x13
-        uLeft = u123
-        uRight = u13
-        vLeft = v123
-        vRight = v13
+        uDivZLeft = u123
+        uDivZRight = uDivZ13
+        vDivZLeft = v123
+        vDivZRight = vDivZ13
+        revZLeft = revZ123
+        revZRight = revZ13
     }
 
-    // Отрисовка горизонтальных отрезков
+    // Horizontal segments drawing
     for (y in p1.y..p3.y) {
         val leftBound = xLeft[y - p1.y]
         val rightBound = xRight[y - p1.y]
 
-        val uSegment = interpolate(leftBound, uLeft[y - p1.y], rightBound, uRight[y - p1.y])
-        val vSegment = interpolate(leftBound, vLeft[y - p1.y], rightBound, vRight[y - p1.y])
+        val uDivZSegment = interpolate(leftBound, uDivZLeft[y - p1.y], rightBound, uDivZRight[y - p1.y])
+        val vDivZSegment = interpolate(leftBound, vDivZLeft[y - p1.y], rightBound, vDivZRight[y - p1.y])
+        val revZSegment = interpolate(leftBound, revZLeft[y - p1.y], rightBound, revZRight[y - p1.y])
 
         for (x in leftBound..rightBound) {
             if (x in 0..<this.width && y in 0..<this.height)
                 this[x, y] = getBilinearFilteredPixelInt(texture,
-                    uSegment[x - leftBound], vSegment[x - leftBound])
+                    uDivZSegment[x - leftBound] / revZSegment[x - leftBound],
+                    vDivZSegment[x - leftBound] / revZSegment[x - leftBound])
         }
     }
 }
@@ -237,15 +260,25 @@ class Scene(
     private fun renderObject(obj: SceneObject)
     {
         obj.triangles.forEach {
-            val fVec3ToCamera = camera.position - it.getMedian() - obj.position
-            if (getAngle(getRotatedFVec3(it.crossProductFVec3, obj.cachedRotationMatrix), fVec3ToCamera) < PI/2)
+            val fVec3ToCamera = camera.position - getRotatedFVec3(it.p1, obj.cachedRotationMatrix) - obj.position
+            val transformedP1 = getRotatedFVec3(it.p1, obj.cachedRotationMatrix) + obj.position
+            val transformedP2 = getRotatedFVec3(it.p2, obj.cachedRotationMatrix) + obj.position
+            val transformedP3 = getRotatedFVec3(it.p3, obj.cachedRotationMatrix) + obj.position
+
+            if (getAngle(
+                    getRotatedFVec3(it.crossProductFVec3, obj.cachedRotationMatrix),
+                    //calcTrianglePerpendicular(transformedP1, transformedP2, transformedP3),
+                    fVec3ToCamera) < PI/2)
             {
-                val projectedP1 = projectedFVec3(getRotatedFVec3(it.p1, obj.cachedRotationMatrix) + obj.position)
-                val projectedP2 = projectedFVec3(getRotatedFVec3(it.p2, obj.cachedRotationMatrix) + obj.position)
-                val projectedP3 = projectedFVec3(getRotatedFVec3(it.p3, obj.cachedRotationMatrix) + obj.position)
+                val projectedP1 = projectedFVec3(transformedP1)
+                val projectedP2 = projectedFVec3(transformedP2)
+                val projectedP3 = projectedFVec3(transformedP3)
 
                 canvas.drawTriangle(
                     it,
+                    transformedP1,
+                    transformedP2,
+                    transformedP3,
                     projectedP1,
                     projectedP2,
                     projectedP3,
@@ -266,7 +299,7 @@ class Scene(
 }
 data class Camera(
     var position: FVec3,
-    var distToCanvas: Float = 3F,
+    var distToCanvas: Float = 1F,
     var viewportHeight:Float = 1F,
     var viewportWidth:Float = 1F
 )
@@ -282,7 +315,7 @@ class Cube(
     override var texture: SimpleImage
 ) : SceneObject
 {
-    override var position = FVec3(0F, 0F, 14F)
+    override var position = FVec3(0F, 0F, 4F)
     override var rotation: FVec3 = FVec3(0F, 0F, 0F)
         set(vec){
             field = vec
