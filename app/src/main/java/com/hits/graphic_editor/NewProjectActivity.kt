@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.ViewGroup
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
@@ -13,6 +14,7 @@ import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.ui.filter.Filter
+import com.hits.graphic_editor.ui.filter.Retouch
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -114,6 +116,11 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     4 -> {
+                        val retouch = Retouch(image, applicationContext, binding, layoutInflater)
+                        retouch.showBottomMenu(
+                            topMenu = topMenu,
+                            bottomMenu = bottomMenu
+                        )
 
                     }
 
