@@ -13,7 +13,7 @@ import com.hits.graphic_editor.databinding.FilterRecyclerViewBinding
 import com.hits.graphic_editor.databinding.GrainSliderBinding
 import com.hits.graphic_editor.databinding.MosaicSliderBinding
 import com.hits.graphic_editor.databinding.RgbMenuBinding
-import com.hits.graphic_editor.getSuperSampledSimpleImage
+import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
 
 class Filter(
     private val binding: ActivityNewProjectBinding,

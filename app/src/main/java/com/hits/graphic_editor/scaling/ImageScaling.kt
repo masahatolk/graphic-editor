@@ -1,4 +1,4 @@
-package com.hits.graphic_editor
+package com.hits.graphic_editor.scaling
 
 import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.SimpleImage

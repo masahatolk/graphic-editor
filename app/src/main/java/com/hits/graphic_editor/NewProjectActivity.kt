@@ -13,6 +13,7 @@ import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
+import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.ui.filter.Filter
 import com.hits.graphic_editor.ui.filter.RGBMode
 
@@ -55,6 +56,7 @@ class NewProjectActivity : AppCompatActivity() {
 
         // --------------create necessary fields---------------
         processedImage.image = getSimpleImage(bitmap)
+        val newScaling = Scaling(binding, layoutInflater)
         val newRotation = Rotation(binding, layoutInflater)
         val newFilter = Filter(binding, layoutInflater, RGBMode.RED)
 
@@ -66,6 +68,7 @@ class NewProjectActivity : AppCompatActivity() {
             bottomMenu,
             extraTopMenu,
             processedImage,
+            newScaling,
             newRotation,
             newFilter
         )
@@ -81,7 +84,7 @@ class NewProjectActivity : AppCompatActivity() {
 
                 when (bottomMenu.root.selectedTabPosition) {
                     0 -> {
-
+                        newScaling.showBottomMenu()
                     }
 
                     1 -> {

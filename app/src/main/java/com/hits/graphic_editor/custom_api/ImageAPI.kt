@@ -2,7 +2,7 @@ package com.hits.graphic_editor.custom_api
 
 import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap
-import com.hits.graphic_editor.getSuperSampledSimpleImage
+import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
 
 
 data class SimpleImage(

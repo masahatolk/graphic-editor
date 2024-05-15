@@ -18,6 +18,8 @@ import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.rotation.removeAllRotateMenus
+import com.hits.graphic_editor.scaling.Scaling
+import com.hits.graphic_editor.scaling.removeAllScalingMenus
 import com.hits.graphic_editor.ui.filter.Filter
 import com.hits.graphic_editor.ui.filter.removeAllFilterMenus
 import java.io.File
@@ -31,6 +33,7 @@ fun setListenersToExtraTopMenu(
     bottomMenu: BottomMenuBinding,
     extraTopMenu: ExtraTopMenuBinding,
     processedImage: ProcessedImage,
+    scaling: Scaling,
     rotation: Rotation,
     filter: Filter
 ) {
@@ -39,7 +42,7 @@ fun setListenersToExtraTopMenu(
         binding.imageView.setImageBitmap(getBitMap(processedImage.image))
 
         removeExtraTopMenu(binding, extraTopMenu)
-        //TODO removeAllScalingMenus
+        removeAllScalingMenus(binding, scaling)
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
         //...
@@ -57,7 +60,7 @@ fun setListenersToExtraTopMenu(
         processedImage.image = getSimpleImage(bitmap)
 
         removeExtraTopMenu(binding, extraTopMenu)
-        //TODO removeAllScalingMenus
+        removeAllScalingMenus(binding, scaling)
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
         //...
@@ -126,7 +129,7 @@ fun setListenersToTopMenu(
             if (!directory.exists()) {
                 directory.mkdirs()
             }
-            val file: File = File(directory, fileName)
+            val file = File(directory, fileName)
             fos = FileOutputStream(file)
         }
         fos?.use {
