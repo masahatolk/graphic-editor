@@ -12,6 +12,7 @@ import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
+import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.ui.filter.Filter
 import com.hits.graphic_editor.ui.filter.RGBMode
@@ -57,6 +58,7 @@ class NewProjectActivity : AppCompatActivity() {
         processedImage.image = getSimpleImage(bitmap)
         val newRotation = Rotation(binding, layoutInflater)
         val newFilter = Filter(binding, layoutInflater, RGBMode.RED)
+        val newFaceDetection = FaceDetection(this, binding, layoutInflater, bitmap)
 
         // --------------add listeners to menus----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -67,7 +69,8 @@ class NewProjectActivity : AppCompatActivity() {
             extraTopMenu,
             processedImage,
             newRotation,
-            newFilter
+            newFilter,
+            newFaceDetection
         )
 
         // ------------add listener to bottom menu-------------
@@ -103,7 +106,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     5 -> {
-
+                        newFaceDetection.showBottomMenu()
                     }
 
                     6 -> {
