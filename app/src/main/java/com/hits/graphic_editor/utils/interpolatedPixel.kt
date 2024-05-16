@@ -10,8 +10,8 @@ import com.hits.graphic_editor.custom_api.red
 import kotlin.math.abs
 fun getBilinearFilteredPixelInt(img: SimpleImage, u: Float, v: Float): Int
 {
-    val floatX = u * (img.width - 1)
-    val floatY = v * (img.height - 1)
+    val floatX = u * (img.width - 2)
+    val floatY = v * (img.height - 2)
 
     val x = floatX.toInt()
     val y = floatY.toInt()
