@@ -65,7 +65,7 @@ data class MipMapsContainer(
         val constSizeCoeffs = arrayOf(0.15F, 0.30F, 0.5F, 0.65F, 0.8F, 0.92F)
     }
     constructor(simpleImg: SimpleImage) : this(img = simpleImg)
-    init{
+    suspend fun suspendInit(){
         for (coeff in constSizeCoeffs)
             this.mipMaps.add(getSuperSampledSimpleImage(this.img, coeff))
     }

@@ -4,10 +4,14 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityMainBinding
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -18,16 +22,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val drawable = binding.image1.drawable as BitmapDrawable
+        var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val mipMaps = MipMapsContainer(getSimpleImage(bitmap))
         binding.btn.setOnClickListener {
-            val drawable = binding.image1.drawable as BitmapDrawable
-            var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
-            /* ---------------------------------- */
-
-            val mipMaps = MipMapsContainer(getSimpleImage(bitmap))
-            bitmap = getBitMap(getScaledSimpleImage(mipMaps, 0.6F, false))
-
-            /* ---------------------------------- */
-            binding.image2.setImageBitmap(bitmap)
+            lifecycleScope.launch {
+                //mipMaps.suspendInit()
+                bitmap = getBitMap(getScaledSimpleImage(mipMaps, 2.6F, true))
+            }.invokeOnCompletion {
+                binding.image2.setImageBitmap(bitmap)
+            }
         }
+
     }
 }
