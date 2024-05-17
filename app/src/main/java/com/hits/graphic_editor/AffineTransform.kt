@@ -5,6 +5,10 @@ import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.utils.getBilinearFilteredPixelInt
 import com.hits.graphic_editor.utils.getTrilinearFilterBlendCoeff
 import com.hits.graphic_editor.utils.getTrilinearFilteredPixelInt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlin.math.ceil
 import kotlin.math.cos
 import kotlin.math.sin
@@ -62,9 +66,10 @@ fun getReversedTransformationMatrix(matrix: Array<Array<Float>>): Array<Array<Fl
         arrayOf(newAy, newBy,-matrix[1][2])
     )
 }
-fun getAffineTransformedSimpleImage(input: MipMapsContainer, matrix: Array<Array<Float>>): SimpleImage
+suspend
+fun getAffineTransformedSimpleImage(mipMapsContainer: MipMapsContainer, matrix: Array<Array<Float>>): SimpleImage
 {
-    val img = input.img
+    val img = mipMapsContainer.img
     val oldHeight = img.height
     val oldWidth = img.width
 
@@ -93,53 +98,72 @@ fun getAffineTransformedSimpleImage(input: MipMapsContainer, matrix: Array<Array
 
     val currCoeff = sqrt(newWidth * newHeight / (img.width * img.height).toFloat())
 
+    val jobs: MutableList<Job> = mutableListOf()
+
     if (currCoeff >= MipMapsContainer.constSizeCoeffs.last() ||
         currCoeff <= MipMapsContainer.constSizeCoeffs.first())
     {
         for (translatedX in translatedLeft until translatedRight) {
-            for (translatedY in translatedTop until translatedBottom) {
-                val oldVec = getTransformedVec2(
-                    Vec2(translatedX.toFloat(), translatedY.toFloat()),
-                    reversedMatrix)
+            jobs.add(CoroutineScope(Dispatchers.Default).launch {
+                    for (translatedY in translatedTop until translatedBottom) {
+                        val oldVec = getTransformedVec2(
+                            Vec2(translatedX.toFloat(), translatedY.toFloat()),
+                            reversedMatrix
+                        )
 
-                val newX = translatedX - translatedLeft
-                val newY = translatedY - translatedTop
+                        val newX = translatedX - translatedLeft
+                        val newY = translatedY - translatedTop
 
-                if (0 <= oldVec.x && oldVec.x < oldWidth &&
-                    0 <= oldVec.y && oldVec.y < oldHeight)
-                    newImg[newX, newY] = getBilinearFilteredPixelInt(
-                        img, oldVec.x / oldWidth, oldVec.y / oldHeight)
-            }
+                        if (0 <= oldVec.x && oldVec.x < oldWidth &&
+                            0 <= oldVec.y && oldVec.y < oldHeight
+                        )
+                            newImg[newX, newY] = getBilinearFilteredPixelInt(
+                                img, oldVec.x / oldWidth, oldVec.y / oldHeight
+                            )
+                    }
+                })
         }
     }
     else{
         val biggerImgIndex = MipMapsContainer.constSizeCoeffs.indexOfFirst { it >= currCoeff }
-        val biggerImg = input.mipMaps[biggerImgIndex]
-        val smallerImg = input.mipMaps[biggerImgIndex - 1]
+
+        //waits for mipmaps to generate
+        mipMapsContainer.jobs[biggerImgIndex - 1].join()
+        mipMapsContainer.jobs[biggerImgIndex].join()
+
+        val biggerImg = mipMapsContainer.mipMaps[biggerImgIndex]
+        val smallerImg = mipMapsContainer.mipMaps[biggerImgIndex - 1]
         val blendCoeff = getTrilinearFilterBlendCoeff(
             MipMapsContainer.constSizeCoeffs[biggerImgIndex - 1],
             MipMapsContainer.constSizeCoeffs[biggerImgIndex],
             currCoeff)
 
         for (translatedX in translatedLeft until translatedRight) {
-            for (translatedY in translatedTop until translatedBottom) {
-                val oldVec = getTransformedVec2(
-                    Vec2(translatedX.toFloat(), translatedY.toFloat()),
-                    reversedMatrix)
+            jobs.add(CoroutineScope(Dispatchers.Default).launch {
+                for (translatedY in translatedTop until translatedBottom) {
+                    val oldVec = getTransformedVec2(
+                        Vec2(translatedX.toFloat(), translatedY.toFloat()),
+                        reversedMatrix
+                    )
 
-                val newX = translatedX - translatedLeft
-                val newY = translatedY - translatedTop
+                    val newX = translatedX - translatedLeft
+                    val newY = translatedY - translatedTop
 
-                if (0 <= oldVec.x && oldVec.x < oldWidth &&
-                    0 <= oldVec.y && oldVec.y < oldHeight)
-                    newImg[newX, newY] = getTrilinearFilteredPixelInt(
-                        smallerImg, biggerImg, blendCoeff,
-                        oldVec.x / oldWidth, oldVec.y / oldHeight)
-            }
+                    if (0 <= oldVec.x && oldVec.x < oldWidth &&
+                        0 <= oldVec.y && oldVec.y < oldHeight
+                    )
+                        newImg[newX, newY] = getTrilinearFilteredPixelInt(
+                            smallerImg, biggerImg, blendCoeff,
+                            oldVec.x / oldWidth, oldVec.y / oldHeight
+                        )
+                }
+            })
         }
     }
+    jobs.forEach{it.join()}
     return newImg
 }
+suspend
 fun getRotatedSimpleImage(input: MipMapsContainer, angle: Float): SimpleImage
 {
     return getAffineTransformedSimpleImage(input,
