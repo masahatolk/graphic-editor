@@ -3,6 +3,11 @@ package com.hits.graphic_editor.custom_api
 import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap
 import com.hits.graphic_editor.getSuperSampledSimpleImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 data class SimpleImage(
     var pixels: IntArray,
@@ -58,15 +63,25 @@ fun Bitmap.setPixels(img: SimpleImage) =
     this.setPixels(img.pixels, 0, img.width, 0, 0, img.width, img.height)
 data class MipMapsContainer(
     var img: SimpleImage,
-    var mipMaps: MutableList<SimpleImage> = mutableListOf()
+    var mipMaps: MutableList<SimpleImage> = mutableListOf(),
+    var jobs: MutableList<Job> = mutableListOf()
 )
 {
     companion object {
         val constSizeCoeffs = arrayOf(0.15F, 0.30F, 0.5F, 0.65F, 0.8F, 0.92F)
     }
     constructor(simpleImg: SimpleImage) : this(img = simpleImg)
-    suspend fun suspendInit(){
-        for (coeff in constSizeCoeffs)
-            this.mipMaps.add(getSuperSampledSimpleImage(this.img, coeff))
+    init{
+        for (coeff in constSizeCoeffs) {
+            jobs.add(CoroutineScope(Dispatchers.Default).launch(start = CoroutineStart.LAZY) {
+                mipMaps.add(getSuperSampledSimpleImage(img, coeff))
+            })
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            jobs.forEach { it.join() }
+        }
+    }
+    fun cancelJobs(){
+        jobs.forEach{it.cancel()}
     }
 }

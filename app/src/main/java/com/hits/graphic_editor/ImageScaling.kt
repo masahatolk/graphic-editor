@@ -16,9 +16,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.job
 //import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.ceil
@@ -37,16 +38,16 @@ fun getBilinearFilteredSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
 
     val newImage = SimpleImage(newWidth, newHeight)
 
-    val deferreds: MutableList<Deferred<Unit>> = mutableListOf()
+    val jobs: MutableList<Job> = mutableListOf()
     for (y in 0 until newHeight) {
-        deferreds.add(GlobalScope.async {
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
             for (x in 0 until newWidth)
                 newImage[x, y] = getBilinearFilteredPixelInt(
                     img, x / newWidth.toFloat(), y / newHeight.toFloat()
                 )
         })
     }
-    deferreds.awaitAll()
+    jobs.forEach{ it.join() }
     return newImage
 }
 suspend
@@ -64,10 +65,10 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
     val newOldRatioY = newHeight / oldHeight.toFloat()
     val newOldRatioX = newWidth / oldWidth.toFloat()
 
-    val deferreds: MutableList<Deferred<Unit>> = mutableListOf()
+    val jobs: MutableList<Job> = mutableListOf()
     for (newY in 0 until newHeight)
     {
-        deferreds.add(GlobalScope.async {
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
             val oldY = oldHeight * newY / newHeight
             val yStep = (ceil((newY + 1) * oldHeight / newHeight.toFloat()) -
                     floor(newY * oldHeight / newHeight.toFloat())).roundToInt()
@@ -164,7 +165,7 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
             }
         })
     }
-    deferreds.awaitAll()
+    jobs.forEach{ it.join() }
 
     for (i in 0 until newWidth * newHeight)
     {
@@ -194,16 +195,20 @@ fun getTrilinearFilteredSimpleImage(input: MipMapsContainer, coeff: Float): Simp
             val blendCoeff = getTrilinearFilterBlendCoeff(
                 MipMapsContainer.constSizeCoeffs[i - 1], MipMapsContainer.constSizeCoeffs[i], coeff)
 
-            val deferreds: MutableList<Deferred<Unit>> = mutableListOf()
+            // waits for mipmaps to generate
+            input.jobs[i].join()
+            input.jobs[i - 1].join()
+
+            val jobs: MutableList<Job> = mutableListOf()
             for (y in 0 until newHeight)
-                deferreds.add(GlobalScope.async {
+                jobs.add(CoroutineScope(Dispatchers.Default).launch {
                     for (x in 0 until newWidth)
                         newImage[x, y] = getTrilinearFilteredPixelInt(
                             input.mipMaps[i - 1], input.mipMaps[i],
                             blendCoeff, x / newWidth.toFloat(), y / newHeight.toFloat()
                         )
                 })
-            deferreds.awaitAll()
+            jobs.forEach{ it.join() }
             break
         }
     }
@@ -225,12 +230,12 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
     val newHeight = (img.height * coeff).toInt()
     val newWidth = (img.width * coeff).toInt()
 
-    val deferreds: MutableList<Deferred<Unit>> = mutableListOf()
+    val jobs: MutableList<Job> = mutableListOf()
     //along rows
     val tempImg = SimpleImage(IntArray(newWidth * img.height), newWidth, img.height)
     var kernels = Array(newWidth){FloatArray(radius * 2)}
     for (newX in 0 until newWidth) {
-        deferreds.add(GlobalScope.async {
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
             var kernelSum = 0F
             val u = newX / newWidth.toFloat()
             val floatX = u * (img.width - 1)
@@ -245,11 +250,11 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
                 kernels[newX][i] /= kernelSum
         })
     }
-    deferreds.awaitAll()
-    deferreds.clear()
+    jobs.forEach{ it.join() }
+    jobs.clear()
     for (y in 0 until img.height)
     {
-        deferreds.add(GlobalScope.async {
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
             for (newX in 0 until newWidth) {
                 val u = newX / newWidth.toFloat()
                 val floatX = u * (img.width - 1)
@@ -278,14 +283,14 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
             }
         })
     }
-    deferreds.awaitAll()
-    deferreds.clear()
+    jobs.forEach{ it.join() }
+    jobs.clear()
 
     //along colums
     val newImg = SimpleImage(IntArray(newWidth * newHeight), newWidth, newHeight)
     kernels = Array(newHeight){FloatArray(radius * 2)}
     for (newY in 0 until newHeight) {
-        deferreds.add(GlobalScope.async {
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
             var kernelSum = 0F
             val v = newY / newHeight.toFloat()
             val floatY = v * (tempImg.height - 1)
@@ -300,12 +305,12 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
                 kernels[newY][i] /= kernelSum
         })
     }
-    deferreds.awaitAll()
-    deferreds.clear()
+    jobs.forEach{ it.join() }
+    jobs.clear()
 
     for (x in 0 until newWidth)
     {
-        deferreds.add(GlobalScope.async {
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
             for (newY in 0 until newHeight) {
                 val v = newY / newHeight.toFloat()
                 val floatY = v * (tempImg.height - 1)
@@ -334,8 +339,7 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
             }
         })
     }
-    deferreds.awaitAll()
-    deferreds.clear()
+    jobs.forEach{ it.join() }
 
     return newImg
 }

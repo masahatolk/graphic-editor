@@ -9,8 +9,12 @@ import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -25,14 +29,19 @@ class MainActivity : AppCompatActivity() {
         val drawable = binding.image1.drawable as BitmapDrawable
         var bitmap = drawable.bitmap.copy(Bitmap.Config.ARGB_8888, true)
         val mipMaps = MipMapsContainer(getSimpleImage(bitmap))
+        var currAlgorithmJob: Job = Job()
+        currAlgorithmJob.cancel()
+
         binding.btn.setOnClickListener {
             lifecycleScope.launch {
-                //mipMaps.suspendInit()
-                bitmap = getBitMap(getScaledSimpleImage(mipMaps, 2.6F, true))
-            }.invokeOnCompletion {
-                binding.image2.setImageBitmap(bitmap)
+                if (!currAlgorithmJob.isActive) {
+                    currAlgorithmJob = CoroutineScope(Dispatchers.Default).launch {
+                        bitmap = getBitMap(getScaledSimpleImage(mipMaps, 3.6F, false))
+                    }
+                    currAlgorithmJob.join()
+                    binding.image2.setImageBitmap(bitmap)
+                }
             }
         }
-
     }
 }
