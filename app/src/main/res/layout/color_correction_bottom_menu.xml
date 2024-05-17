@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.tabs.TabLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/filter_bottom_menu"
+    android:id="@+id/color_correction_bottom_menu"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:tabMode="scrollable"
     app:tabTextAppearance="@style/TabText">
-
-    <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="None" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
@@ -45,12 +40,12 @@
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dots" />
+        android:text="Mosaic" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Triangulation" />
+        android:text="Grain" />
 
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"

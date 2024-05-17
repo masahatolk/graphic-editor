@@ -1,16 +1,16 @@
-package com.hits.graphic_editor.ui.filter
+package com.hits.graphic_editor.ui.color_correction
 
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.ChannelShiftSliderBinding
+import com.hits.graphic_editor.databinding.ColorCorrectionRecyclerViewBinding
 import com.hits.graphic_editor.databinding.ContrastSliderBinding
-import com.hits.graphic_editor.databinding.FilterRecyclerViewBinding
 import com.hits.graphic_editor.databinding.GrainSliderBinding
 import com.hits.graphic_editor.databinding.MosaicSliderBinding
 import com.hits.graphic_editor.databinding.RgbMenuBinding
 
-fun addFilterBottomMenu (binding: ActivityNewProjectBinding, filterBottomMenu: FilterRecyclerViewBinding) {
+fun addFilterBottomMenu (binding: ActivityNewProjectBinding, filterBottomMenu: ColorCorrectionRecyclerViewBinding) {
     binding.root.addView(
         filterBottomMenu.root.rootView,
         ConstraintLayout.LayoutParams(
@@ -22,7 +22,7 @@ fun addFilterBottomMenu (binding: ActivityNewProjectBinding, filterBottomMenu: F
     )
 }
 
-fun removeFilterBottomMenu (binding: ActivityNewProjectBinding, filterBottomMenu: FilterRecyclerViewBinding) {
+fun removeFilterBottomMenu (binding: ActivityNewProjectBinding, filterBottomMenu: ColorCorrectionRecyclerViewBinding) {
     binding.root.removeView(filterBottomMenu.root)
 }
 fun addContrastSlider (binding: ActivityNewProjectBinding, contrastSlider: ContrastSliderBinding) {
@@ -112,8 +112,8 @@ fun removeRgbMenu (binding: ActivityNewProjectBinding, rgbMenu: RgbMenuBinding) 
     binding.root.removeView(rgbMenu.root)
 }
 
-fun removeAllFilterMenus (binding: ActivityNewProjectBinding, filter: Filter) {
-    removeFilterBottomMenu(binding, filter.filterBottomMenu)
+fun removeAllFilterMenus (binding: ActivityNewProjectBinding, filter: ColorCorrection) {
+    removeFilterBottomMenu(binding, filter.colorCorrectionBottomMenu)
     removeContrastSlider(binding, filter.contrastSlider)
     removeRgbMenu(binding, filter.rgbMenu)
     removeMosaicSlider(binding, filter.mosaicSlider)
