@@ -9,6 +9,13 @@ import com.hits.graphic_editor.utils.getAngle
 import com.hits.graphic_editor.utils.getBilinearFilteredPixelInt
 import com.hits.graphic_editor.utils.getRotatedFVec3
 import com.hits.graphic_editor.utils.getRotationMatrix
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -54,34 +61,39 @@ data class Triangle(
             (p1.z + p2.z + p3.z) / 3)
     }
 }
-fun interpolate (x1: Int, f1: Int, x2: Int, f2: Int): MutableList<Int>
+fun interpolate (x1: Int, f1: Int, x2: Int, f2: Int): Deferred<MutableList<Int>>
 {
-    if (x1 == x2) {
-        return mutableListOf(f1)
+    return CoroutineScope(Dispatchers.Default).async {
+        if (x1 == x2) {
+            return@async mutableListOf(f1)
+        }
+        val values = mutableListOf<Int>()
+        val step = (f2 - f1) / (x2 - x1).toFloat()
+        var f = f1.toFloat()
+        for (i in x1..x2) {
+            values.add(f.toInt())
+            f += step
+        }
+        return@async values
     }
-    val values = mutableListOf<Int>()
-    val step = (f2 - f1) / (x2 - x1).toFloat()
-    var f = f1.toFloat()
-    for (i in x1..x2) {
-        values.add(f.toInt())
-        f += step
-    }
-    return values
 }
-fun interpolate (x1: Int, f1: Float, x2: Int, f2: Float): MutableList<Float>
+fun interpolate (x1: Int, f1: Float, x2: Int, f2: Float): Deferred<MutableList<Float>>
 {
-    if (x1 == x2) {
-        return mutableListOf(f1)
+    return CoroutineScope(Dispatchers.Default).async {
+        if (x1 == x2) {
+            return@async mutableListOf(f1)
+        }
+        val values = mutableListOf<Float>()
+        val step = (f2 - f1) / (x2 - x1).toFloat()
+        var f = f1
+        for (i in x1..x2) {
+            values.add(f)
+            f += step
+        }
+        return@async values
     }
-    val values = mutableListOf<Float>()
-    val step = (f2 - f1) / (x2 - x1).toFloat()
-    var f = f1
-    for (i in x1..x2) {
-        values.add(f)
-        f += step
-    }
-    return values
 }
+suspend
 fun SimpleImage.drawLine(firstPoint: Vec2, secondPoint: Vec2, color: IntColor) {
     val p1 = firstPoint.copy()
     val p2 = secondPoint.copy()
@@ -89,7 +101,7 @@ fun SimpleImage.drawLine(firstPoint: Vec2, secondPoint: Vec2, color: IntColor) {
         if (p1.x > p2.x) {
             p1.swap(p2)
         }
-        val ys = interpolate(p1.x, p1.y, p2.x, p2.y)
+        val ys = interpolate(p1.x, p1.y, p2.x, p2.y).await()
         for (x in p1.x..p2.x) {
             this[x, ys[x - p1.x]] = color
         }
@@ -97,12 +109,13 @@ fun SimpleImage.drawLine(firstPoint: Vec2, secondPoint: Vec2, color: IntColor) {
         if (p1.y > p2.y) {
             p1.swap(p2)
         }
-        val xs = interpolate(p1.y, p1.x, p2.y, p2.x)
+        val xs = interpolate(p1.y, p1.x, p2.y, p2.x).await()
         for (y in p1.y..p2.y) {
             this[xs[y - p1.y], y] = color
         }
     }
 }
+suspend
 fun SimpleImage.drawTriangle (
     triangle: Triangle,
     transformedP1: FVec3, transformedP2: FVec3, transformedP3: FVec3,
@@ -123,21 +136,34 @@ fun SimpleImage.drawTriangle (
     if (p3.y < p2.y) {p3.swap(p2); p3UVs.swap(p2UVs); transfP3.swap(transfP2)}
 
     // X coordinates of triangle edges
-    val x12 = interpolate(p1.y, p1.x, p2.y, p2.x)
-    val x23 = interpolate(p2.y, p2.x, p3.y, p3.x)
-    val x13 = interpolate(p1.y, p1.x, p3.y, p3.x)
+    val _x12 = interpolate(p1.y, p1.x, p2.y, p2.x)
+    val _x23 = interpolate(p2.y, p2.x, p3.y, p3.x)
+    val _x13 = interpolate(p1.y, p1.x, p3.y, p3.x)
 
-    val uDivZ12 = interpolate(p1.y, p1UVs.u/transfP1.z, p2.y, p2UVs.u/transfP2.z)
-    val uDivZ23 = interpolate(p2.y, p2UVs.u/transfP2.z, p3.y, p3UVs.u/transfP3.z)
-    val uDivZ13 = interpolate(p1.y, p1UVs.u/transfP1.z, p3.y, p3UVs.u/transfP3.z)
+    val _uDivZ12 = interpolate(p1.y, p1UVs.u/transfP1.z, p2.y, p2UVs.u/transfP2.z)
+    val _uDivZ23 = interpolate(p2.y, p2UVs.u/transfP2.z, p3.y, p3UVs.u/transfP3.z)
+    val _uDivZ13 = interpolate(p1.y, p1UVs.u/transfP1.z, p3.y, p3UVs.u/transfP3.z)
 
-    val vDivZ12 = interpolate(p1.y, p1UVs.v/transfP1.z, p2.y, p2UVs.v/transfP2.z)
-    val vDivZ23 = interpolate(p2.y, p2UVs.v/transfP2.z, p3.y, p3UVs.v/transfP3.z)
-    val vDivZ13 = interpolate(p1.y, p1UVs.v/transfP1.z, p3.y, p3UVs.v/transfP3.z)
+    val _vDivZ12 = interpolate(p1.y, p1UVs.v/transfP1.z, p2.y, p2UVs.v/transfP2.z)
+    val _vDivZ23 = interpolate(p2.y, p2UVs.v/transfP2.z, p3.y, p3UVs.v/transfP3.z)
+    val _vDivZ13 = interpolate(p1.y, p1UVs.v/transfP1.z, p3.y, p3UVs.v/transfP3.z)
 
-    val revZ12 = interpolate(p1.y, 1/transfP1.z, p2.y,1/transfP2.z)
-    val revZ23 = interpolate(p2.y, 1/transfP2.z, p3.y, 1/transfP3.z)
-    val revZ13 = interpolate(p1.y, 1/transfP1.z, p3.y, 1/transfP3.z)
+    val _revZ12 = interpolate(p1.y, 1/transfP1.z, p2.y,1/transfP2.z)
+    val _revZ23 = interpolate(p2.y, 1/transfP2.z, p3.y, 1/transfP3.z)
+    val _revZ13 = interpolate(p1.y, 1/transfP1.z, p3.y, 1/transfP3.z)
+
+    val x12 = _x12.await()
+    val x23 = _x23.await()
+    val x13 = _x13.await()
+    val uDivZ12 = _uDivZ12.await()
+    val uDivZ23 = _uDivZ23.await()
+    val uDivZ13 = _uDivZ13.await()
+    val vDivZ12 = _vDivZ12.await()
+    val vDivZ23 = _vDivZ23.await()
+    val vDivZ13 = _vDivZ13.await()
+    val revZ12 = _revZ12.await()
+    val revZ23 = _revZ23.await()
+    val revZ13 = _revZ13.await()
 
     // Short edges concat
     x12.removeLast()
@@ -181,22 +207,35 @@ fun SimpleImage.drawTriangle (
         revZRight = revZ13
     }
 
+    val jobs: MutableList<Job> = mutableListOf()
     // Horizontal segments drawing
     for (y in p1.y..p3.y) {
-        val leftBound = xLeft[y - p1.y]
-        val rightBound = xRight[y - p1.y]
+        jobs.add(CoroutineScope(Dispatchers.Default).launch {
+            val leftBound = xLeft[y - p1.y]
+            val rightBound = xRight[y - p1.y]
 
-        val uDivZSegment = interpolate(leftBound, uDivZLeft[y - p1.y], rightBound, uDivZRight[y - p1.y])
-        val vDivZSegment = interpolate(leftBound, vDivZLeft[y - p1.y], rightBound, vDivZRight[y - p1.y])
-        val revZSegment = interpolate(leftBound, revZLeft[y - p1.y], rightBound, revZRight[y - p1.y])
+            val _uDivZSegment =
+                interpolate(leftBound, uDivZLeft[y - p1.y], rightBound, uDivZRight[y - p1.y])
+            val _vDivZSegment =
+                interpolate(leftBound, vDivZLeft[y - p1.y], rightBound, vDivZRight[y - p1.y])
+            val _revZSegment =
+                interpolate(leftBound, revZLeft[y - p1.y], rightBound, revZRight[y - p1.y])
 
-        for (x in leftBound..rightBound) {
-            if (x in 0..<this.width && y in 0..<this.height)
-                this[x, y] = getBilinearFilteredPixelInt(texture,
-                    uDivZSegment[x - leftBound] / revZSegment[x - leftBound],
-                    vDivZSegment[x - leftBound] / revZSegment[x - leftBound])
-        }
+            val uDivZSegment = _uDivZSegment.await()
+            val vDivZSegment = _vDivZSegment.await()
+            val revZSegment = _revZSegment.await()
+
+            for (x in leftBound..rightBound) {
+                if (x in 0..<width && y in 0..<height)
+                    this@drawTriangle[x, y] = getBilinearFilteredPixelInt(
+                        texture,
+                        uDivZSegment[x - leftBound] / revZSegment[x - leftBound],
+                        vDivZSegment[x - leftBound] / revZSegment[x - leftBound]
+                    )
+            }
+        })
     }
+    jobs.forEach { it.join() }
 }
 class Scene(
     var canvas: SimpleImage,
@@ -206,9 +245,11 @@ class Scene(
 {
     fun renderFrame() {
         canvas.pixels.fill(0)
-        renderObject(sceneObj)
+        runBlocking {
+            renderObject(sceneObj)
+        }
     }
-    private fun renderObject(obj: SceneObject)
+    private suspend fun renderObject(obj: SceneObject)
     {
         obj.triangles.forEach {
             val fVec3ToCamera = camera.position - getRotatedFVec3(it.p1, obj.cachedRotationMatrix) - obj.position
@@ -332,4 +373,7 @@ fun Scene.setCameraFOV(newFOV: Int) {
 }
 fun Scene.rotateObject(deltaRotation: FVec3) {
     this.sceneObj.rotation += deltaRotation
+}
+fun Scene.setResolution(pixels: Int) {
+    this.canvas = SimpleImage(pixels, pixels)
 }
