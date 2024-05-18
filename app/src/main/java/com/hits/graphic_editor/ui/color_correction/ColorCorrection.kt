@@ -15,6 +15,7 @@ import com.hits.graphic_editor.databinding.GrainSliderBinding
 import com.hits.graphic_editor.databinding.MosaicSliderBinding
 import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
+import kotlinx.coroutines.runBlocking
 
 class ColorCorrection(
     override val binding: ActivityNewProjectBinding,
@@ -61,7 +62,7 @@ class ColorCorrection(
 
 
     override fun showBottomMenu() {
-        smallSimpleImage = getSuperSampledSimpleImage(this.simpleImage, 0.5F)
+        runBlocking {getSuperSampledSimpleImage(simpleImage, 0.5F)}
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
 
