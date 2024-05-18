@@ -33,8 +33,8 @@ const val FLOAT_PRECISION = 1e-8
 suspend
 fun getBilinearFilteredSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
 {
-    val newHeight = (img.height * coeff).toInt()
-    val newWidth = (img.width * coeff).toInt()
+    val newHeight = (img.height * coeff).roundToInt()
+    val newWidth = (img.width * coeff).roundToInt()
 
     val newImage = SimpleImage(newWidth, newHeight)
 
@@ -56,8 +56,8 @@ fun getSuperSampledSimpleImage(img: SimpleImage, coeff: Float): SimpleImage
     val oldHeight = img.height
     val oldWidth = img.width
 
-    val newHeight = (oldHeight * coeff).toInt()
-    val newWidth = (oldWidth * coeff).toInt()
+    val newHeight = (oldHeight * coeff).roundToInt()
+    val newWidth = (oldWidth * coeff).roundToInt()
 
     val newPixels = IntArray(newWidth * newHeight)
     val newChannels = FloatArray(newWidth * newHeight * 4)
@@ -184,8 +184,8 @@ fun getTrilinearFilteredSimpleImage(input: MipMapsContainer, coeff: Float): Simp
         coeff >= MipMapsContainer.constSizeCoeffs.last())
         return getBilinearFilteredSimpleImage(input.img, coeff)
 
-    val newWidth = (input.img.width * coeff).toInt()
-    val newHeight = (input.img.height * coeff).toInt()
+    val newWidth = (input.img.width * coeff).roundToInt()
+    val newHeight = (input.img.height * coeff).roundToInt()
     val newImage = SimpleImage(IntArray(newWidth * newHeight), newWidth, newHeight)
 
     for (i in 1 until MipMapsContainer.constSizeCoeffs.size)
@@ -227,8 +227,8 @@ fun getConvolutionedSimpleImage(img: SimpleImage, coeff: Float, radius:Int = 3):
         return (radius * sin(normX) * sin(normX / radius) /
                 (normX * normX)).toFloat()
     }
-    val newHeight = (img.height * coeff).toInt()
-    val newWidth = (img.width * coeff).toInt()
+    val newHeight = (img.height * coeff).roundToInt()
+    val newWidth = (img.width * coeff).roundToInt()
 
     val jobs: MutableList<Job> = mutableListOf()
     //along rows
@@ -356,4 +356,18 @@ fun getScaledSimpleImage(mipMaps: MipMapsContainer, scaleCoeff: Float, antiAlias
 
     return if(antiAliasing) getConvolutionedSimpleImage(mipMaps.img, scaleCoeff)
     else getBilinearFilteredSimpleImage(mipMaps.img, scaleCoeff)
+}
+suspend
+fun getScaledSimpleImageByNewWidth(
+    mipMaps: MipMapsContainer, newWidth: Int, antiAliasing: Boolean = false): SimpleImage
+{
+    val scaleCoeff = newWidth / mipMaps.img.width.toFloat()
+    return getScaledSimpleImage(mipMaps, scaleCoeff, antiAliasing)
+}
+suspend
+fun getScaledSimpleImageByNewHeight(
+    mipMaps: MipMapsContainer, newHeight: Int, antiAliasing: Boolean = false): SimpleImage
+{
+    val scaleCoeff = newHeight / mipMaps.img.height.toFloat()
+    return getScaledSimpleImage(mipMaps, scaleCoeff, antiAliasing)
 }

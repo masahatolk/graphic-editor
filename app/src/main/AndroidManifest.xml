@@ -12,7 +12,6 @@
     <application
         android:largeHeap="true"
         android:allowBackup="true"
-        android:hardwareAccelerated="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -33,7 +32,7 @@
         </provider>
 
         <activity
-            android:name=".CubeActivity"
+            android:name=".cube_3d.CubeActivity"
             android:exported="false" />
         <activity
             android:name=".NewProjectActivity"

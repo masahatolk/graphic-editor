@@ -1,12 +1,8 @@
 package com.hits.graphic_editor
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
@@ -18,9 +14,17 @@ import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
-import com.hits.graphic_editor.ui.color_correction.ColorCorrection
+import com.hits.graphic_editor.color_correction.ColorCorrection
+import com.hits.graphic_editor.ui.addBottomMenu
+import com.hits.graphic_editor.ui.addExtraTopMenu
+import com.hits.graphic_editor.ui.addTopMenu
+import com.hits.graphic_editor.ui.removeBottomMenu
+import com.hits.graphic_editor.ui.removeTopMenu
+import com.hits.graphic_editor.ui.setListenersToExtraTopMenu
+import com.hits.graphic_editor.ui.setListenersToTopMenu
+import com.hits.graphic_editor.utils.FilterMode
+import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
-import java.io.IOException
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -65,8 +69,8 @@ class NewProjectActivity : AppCompatActivity() {
 
         // -------------- create necessary fields ---------------
         val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
-        val newScaling = Scaling(binding, layoutInflater)
-        val newRotation = Rotation(binding, layoutInflater)
+        val newScaling = Scaling(binding, layoutInflater, processedImage)
+        val newRotation = Rotation(binding, layoutInflater, processedImage)
         val newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------
@@ -91,21 +95,17 @@ class NewProjectActivity : AppCompatActivity() {
                 removeBottomMenu(binding, bottomMenu)
                 addExtraTopMenu(binding, extraTopMenu)
 
+                processedImage.switchStackMode()
                 when (bottomMenu.root.selectedTabPosition) {
                     FilterMode.SCALING.ordinal -> {
-                        processedImage.switchStackMode()
-                        newScaling.simpleImage = processedImage.getSimpleImage()
                         newScaling.showBottomMenu()
                     }
 
                     FilterMode.ROTATION.ordinal -> {
-                        processedImage.switchStackMode()
-                        newRotation.simpleImage = processedImage.getSimpleImage()
                         newRotation.showBottomMenu()
                     }
 
                     FilterMode.COLOR_CORRECTION.ordinal -> {
-                        processedImage.switchStackMode()
                         newColorCorrection.showBottomMenu()
                     }
 
