@@ -29,13 +29,13 @@ class ColorCorrectionRecyclerViewAdapter(
 
         if (viewType == 0) {
             val binding: ItemFaceDetectionBinding =
-                ItemFaceDetectionBinding.inflate(inflater, parent, false)
+                ItemFaceDetectionBinding.inflate(inflater)
             binding.root.setOnClickListener(this)
             vh = FaceDetectionViewHolder(binding)
 
         } else {
             val binding: ItemColorCorrectionBinding =
-                ItemColorCorrectionBinding.inflate(inflater, parent, false)
+                ItemColorCorrectionBinding.inflate(inflater)
             binding.root.setOnClickListener(this)
             vh = ColorCorrectionViewHolder(binding)
         }

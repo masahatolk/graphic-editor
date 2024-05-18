@@ -40,7 +40,7 @@ class ColorCorrection(
         ColorCorrectionRecyclerViewBinding.inflate(layoutInflater)
     }
     val contrastSlider: ContrastSliderBinding by lazy {
-        ContrastSliderBinding.inflate(layoutInflater, binding.root, false)
+        ContrastSliderBinding.inflate(layoutInflater)
     }
     val rgbMenu: RgbMenuBinding by lazy {
         RgbMenuBinding.inflate(layoutInflater)
@@ -145,6 +145,8 @@ class ColorCorrection(
             }
 
             ColorCorrectionMode.RGB -> {
+
+                removeRgbMenu(binding, rgbMenu)
                 addRgbMenu(binding, rgbMenu)
 
                 if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
@@ -185,6 +187,7 @@ class ColorCorrection(
 
             ColorCorrectionMode.MOSAIC -> {
 
+                removeMosaicSlider(binding, mosaicSlider)
                 addMosaicSlider(binding, mosaicSlider)
 
                 if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
@@ -212,6 +215,7 @@ class ColorCorrection(
 
             ColorCorrectionMode.GRAIN -> {
 
+                removeGrainSlider(binding, grainSlider)
                 addGrainSlider(binding, grainSlider)
 
                 if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
@@ -238,6 +242,8 @@ class ColorCorrection(
             }
 
             ColorCorrectionMode.CHANNEL_SHIFT -> {
+
+                removeChannelShiftSlider(binding, channelShiftSlider)
                 addChannelShiftSlider(binding, channelShiftSlider)
 
                 if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(

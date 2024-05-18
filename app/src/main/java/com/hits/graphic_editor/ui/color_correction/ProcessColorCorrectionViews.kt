@@ -27,7 +27,7 @@ fun removeFilterBottomMenu (binding: ActivityNewProjectBinding, filterBottomMenu
 }
 fun addContrastSlider (binding: ActivityNewProjectBinding, contrastSlider: ContrastSliderBinding) {
     binding.root.addView(
-        contrastSlider.root.rootView,
+        contrastSlider.root,
         ConstraintLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
@@ -44,7 +44,7 @@ fun removeContrastSlider (binding: ActivityNewProjectBinding, contrastSlider: Co
 
 fun addMosaicSlider (binding: ActivityNewProjectBinding, mosaicSlider: MosaicSliderBinding) {
     binding.root.addView(
-        mosaicSlider.root.rootView,
+        mosaicSlider.root,
         ConstraintLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
@@ -61,7 +61,7 @@ fun removeMosaicSlider (binding: ActivityNewProjectBinding, mosaicSlider: Mosaic
 
 fun addChannelShiftSlider (binding: ActivityNewProjectBinding, channelShiftSlider: ChannelShiftSliderBinding) {
     binding.root.addView(
-        channelShiftSlider.root.rootView,
+        channelShiftSlider.root,
         ConstraintLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
@@ -79,7 +79,7 @@ fun removeChannelShiftSlider (binding: ActivityNewProjectBinding, channelShiftSl
 
 fun addGrainSlider (binding: ActivityNewProjectBinding, grainSlider: GrainSliderBinding) {
     binding.root.addView(
-        grainSlider.root.rootView,
+        grainSlider.root,
         ConstraintLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
@@ -97,7 +97,7 @@ fun removeGrainSlider (binding: ActivityNewProjectBinding, grainSlider: GrainSli
 
 fun addRgbMenu (binding: ActivityNewProjectBinding, rgbMenu: RgbMenuBinding) {
     binding.root.addView(
-        rgbMenu.root.rootView,
+        rgbMenu.root,
         ConstraintLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
