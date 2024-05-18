@@ -1,4 +1,4 @@
-package com.hits.graphic_editor.ui.filter
+package com.hits.graphic_editor.ui.color_correction
 
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.alpha

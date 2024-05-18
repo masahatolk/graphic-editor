@@ -12,10 +12,9 @@ import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.rotation.Rotation
-import com.hits.graphic_editor.ui.filter.Filter
-import com.hits.graphic_editor.ui.filter.RGBMode
+import com.hits.graphic_editor.scaling.Scaling
+import com.hits.graphic_editor.ui.color_correction.ColorCorrection
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -56,9 +55,9 @@ class NewProjectActivity : AppCompatActivity() {
 
         // --------------create necessary fields---------------
         processedImage.image = getSimpleImage(bitmap)
+        val newScaling = Scaling(binding, layoutInflater)
         val newRotation = Rotation(binding, layoutInflater)
-        val newFilter = Filter(binding, layoutInflater, RGBMode.RED)
-        val newFaceDetection = FaceDetection(this, binding, layoutInflater, bitmap)
+        val newColorCorrection = ColorCorrection(binding, layoutInflater)
 
         // --------------add listeners to menus----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -68,9 +67,9 @@ class NewProjectActivity : AppCompatActivity() {
             bottomMenu,
             extraTopMenu,
             processedImage,
+            newScaling,
             newRotation,
-            newFilter,
-            newFaceDetection
+            newColorCorrection
         )
 
         // ------------add listener to bottom menu-------------
@@ -83,45 +82,42 @@ class NewProjectActivity : AppCompatActivity() {
                 addExtraTopMenu(binding, extraTopMenu)
 
                 when (bottomMenu.root.selectedTabPosition) {
-                    0 -> {
-
+                    FilterMode.SCALING.ordinal -> {
+                        newScaling.simpleImage = processedImage.image
+                        newScaling.showBottomMenu()
                     }
 
-                    1 -> {
+                    FilterMode.ROTATION.ordinal -> {
                         newRotation.simpleImage = processedImage.image
                         newRotation.showBottomMenu()
                     }
 
-                    2 -> {
+                    FilterMode.COLOR_CORRECTION.ordinal -> {
+                        newColorCorrection.simpleImage = processedImage.image
+                        newColorCorrection.showBottomMenu()
+                    }
+
+                    FilterMode.RETOUCH.ordinal -> {
 
                     }
 
-                    3 -> {
-                        newFilter.simpleImage = processedImage.image
-                        newFilter.showBottomMenu()
-                    }
-
-                    4 -> {
+                    FilterMode.FACE_DETECTION.ordinal -> {
 
                     }
 
-                    5 -> {
-                        newFaceDetection.showBottomMenu()
-                    }
-
-                    6 -> {
+                    FilterMode.SPLINE.ordinal -> {
 
                     }
 
-                    7 -> {
+                    FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
 
                     }
 
-                    8 -> {
+                    FilterMode.UNSHARP_MASKING.ordinal -> {
 
                     }
 
-                    9 -> {
+                    FilterMode.CUBE.ordinal -> {
 
                     }
                 }

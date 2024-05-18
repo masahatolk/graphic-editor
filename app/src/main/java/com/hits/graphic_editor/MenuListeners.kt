@@ -16,12 +16,12 @@ import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import com.hits.graphic_editor.face_detection.FaceDetection
-import com.hits.graphic_editor.face_detection.removeAllFaceDetectionMenus
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.rotation.removeAllRotateMenus
-import com.hits.graphic_editor.ui.filter.Filter
-import com.hits.graphic_editor.ui.filter.removeAllFilterMenus
+import com.hits.graphic_editor.scaling.Scaling
+import com.hits.graphic_editor.scaling.removeAllScalingMenus
+import com.hits.graphic_editor.ui.color_correction.ColorCorrection
+import com.hits.graphic_editor.ui.color_correction.removeAllFilterMenus
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -33,19 +33,18 @@ fun setListenersToExtraTopMenu(
     bottomMenu: BottomMenuBinding,
     extraTopMenu: ExtraTopMenuBinding,
     processedImage: ProcessedImage,
+    scaling: Scaling,
     rotation: Rotation,
-    filter: Filter,
-    faceDetection: FaceDetection
+    filter: ColorCorrection
 ) {
     extraTopMenu.close.setOnClickListener {
 
         binding.imageView.setImageBitmap(getBitMap(processedImage.image))
 
         removeExtraTopMenu(binding, extraTopMenu)
-        //TODO removeAllScalingMenus
+        removeAllScalingMenus(binding, scaling)
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
-        removeAllFaceDetectionMenus(binding, faceDetection)
         //...
 
         addTopMenu(binding, topMenu)
@@ -55,16 +54,15 @@ fun setListenersToExtraTopMenu(
     extraTopMenu.save.setOnClickListener {
 
         processedImage.undoStack.add(processedImage.image)
-        processedImage.redoStack.removeAll(processedImage.redoStack)
+        processedImage.redoStack.clear()
 
         val bitmap = (binding.imageView.getDrawable() as BitmapDrawable).bitmap
         processedImage.image = getSimpleImage(bitmap)
 
         removeExtraTopMenu(binding, extraTopMenu)
-        //TODO removeAllScalingMenus
+        removeAllScalingMenus(binding, scaling)
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
-        removeAllFaceDetectionMenus(binding, faceDetection)
         //...
 
         addTopMenu(binding, topMenu)
@@ -86,20 +84,18 @@ fun setListenersToTopMenu(
 
     topMenu.undo.setOnClickListener(){
     if(processedImage.undoStack.isNotEmpty()) {
-        val bitmap = (binding.imageView.getDrawable() as BitmapDrawable).bitmap
-        processedImage.redoStack.add(getSimpleImage(bitmap))
-        processedImage.image = processedImage.undoStack[processedImage.undoStack.size - 1]
-        processedImage.undoStack.removeAt(processedImage.undoStack.size - 1)
+        processedImage.redoStack.add(processedImage.image)
+        processedImage.image = processedImage.undoStack.last()
+        processedImage.undoStack.removeLast()
         binding.imageView.setImageBitmap(getBitMap(processedImage.image))
     }
 }
 
     topMenu.redo.setOnClickListener(){
         if(processedImage.redoStack.isNotEmpty()) {
-            val bitmap = (binding.imageView.getDrawable() as BitmapDrawable).bitmap
-            processedImage.undoStack.add(getSimpleImage(bitmap))
-            processedImage.image = processedImage.redoStack[processedImage.redoStack.size - 1]
-            processedImage.redoStack.removeAt(processedImage.redoStack.size - 1)
+            processedImage.undoStack.add(processedImage.image)
+            processedImage.image = processedImage.redoStack.last()
+            processedImage.redoStack.removeLast()
             binding.imageView.setImageBitmap(getBitMap(processedImage.image))
         }
     }
@@ -150,6 +146,4 @@ fun setListenersToTopMenu(
         intent.putExtra(Intent.EXTRA_STREAM, uri)
         context.startActivity(Intent.createChooser(intent,"Share using"))
     }
-
-
 }

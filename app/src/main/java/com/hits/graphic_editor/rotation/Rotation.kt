@@ -2,15 +2,16 @@ package com.hits.graphic_editor.rotation
 
 import android.graphics.Bitmap
 import android.view.LayoutInflater
+import com.hits.graphic_editor.Filter
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.RotationBottomMenuBinding
 
 class Rotation(
-    private val binding: ActivityNewProjectBinding,
-    private val layoutInflater: LayoutInflater
-) {
+    override val binding: ActivityNewProjectBinding,
+    override val layoutInflater: LayoutInflater
+) : Filter {
 
     lateinit var simpleImage : SimpleImage
     private var lastRotatedBitmap: Bitmap? = null
@@ -37,7 +38,7 @@ class Rotation(
         }
     }
 
-    fun showBottomMenu() {
+    override fun showBottomMenu() {
         addRotateButton(binding, rotateButton)
         showRotateButton()
     }
