@@ -15,6 +15,7 @@ import com.hits.graphic_editor.databinding.GrainSliderBinding
 import com.hits.graphic_editor.databinding.MosaicSliderBinding
 import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
+import kotlinx.coroutines.runBlocking
 
 class ColorCorrection(
     override val binding: ActivityNewProjectBinding,
@@ -61,7 +62,7 @@ class ColorCorrection(
 
 
     override fun showBottomMenu() {
-        smallSimpleImage = getSuperSampledSimpleImage(this.simpleImage, 0.5F)
+        runBlocking{ smallSimpleImage = getSuperSampledSimpleImage(simpleImage, 0.5F) }
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
 
@@ -72,19 +73,19 @@ class ColorCorrection(
 
         when (filterMode) {
             ColorCorrectionMode.INVERSION -> {
-                binding.imageView.setImageBitmap(getBitMap(inverse(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(inverse(simpleImage)))
             }
 
             ColorCorrectionMode.GRAYSCALE -> {
-                binding.imageView.setImageBitmap(getBitMap(grayscale(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(grayscale(simpleImage)))
             }
 
             ColorCorrectionMode.BLACK_AND_WHITE -> {
-                binding.imageView.setImageBitmap(getBitMap(blackAndWhite(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(blackAndWhite(simpleImage)))
             }
 
             ColorCorrectionMode.SEPIA -> {
-                binding.imageView.setImageBitmap(getBitMap(sepia(this.simpleImage)))
+                binding.imageView.setImageBitmap(getBitMap(sepia(simpleImage)))
             }
 
             ColorCorrectionMode.CONTRAST -> {
@@ -92,14 +93,14 @@ class ColorCorrection(
                 addContrastSlider(binding, contrastSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(contrast(this.simpleImage, contrastCoefficient))
+                    getBitMap(contrast(simpleImage, contrastCoefficient))
                 )
 
                 val slider: Slider = contrastSlider.contrastSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     contrastCoefficient = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(contrast(this.simpleImage, contrastCoefficient))
+                        getBitMap(contrast(simpleImage, contrastCoefficient))
                     )
                 })
             }
@@ -107,7 +108,7 @@ class ColorCorrection(
             ColorCorrectionMode.RGB -> {
                 addRgbMenu(binding, rgbMenu)
 
-                binding.imageView.setImageBitmap(getBitMap(rgb(this.simpleImage, rgbMode)))
+                binding.imageView.setImageBitmap(getBitMap(rgb(simpleImage, rgbMode)))
 
                 rgbMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
@@ -145,14 +146,14 @@ class ColorCorrection(
                 addMosaicSlider(binding, mosaicSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(mosaic(this.simpleImage, squareSide))
+                    getBitMap(mosaic(simpleImage, squareSide))
                 )
 
                 val slider: Slider = mosaicSlider.mosaicSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     squareSide = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(mosaic(this.simpleImage, squareSide))
+                        getBitMap(mosaic(simpleImage, squareSide))
                     )
                 })
             }
@@ -162,14 +163,14 @@ class ColorCorrection(
                 addGrainSlider(binding, grainSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(grain(this.simpleImage, grainNumber))
+                    getBitMap(grain(simpleImage, grainNumber))
                 )
 
                 val slider: Slider = grainSlider.grainSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     grainNumber = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(grain(this.simpleImage, grainNumber))
+                        getBitMap(grain(simpleImage, grainNumber))
                     )
                 })
             }
@@ -178,7 +179,7 @@ class ColorCorrection(
                 addChannelShiftSlider(binding, channelShiftSlider)
 
                 binding.imageView.setImageBitmap(
-                    getBitMap(channelShift(this.simpleImage, horizontalShift, verticalShift))
+                    getBitMap(channelShift(simpleImage, horizontalShift, verticalShift))
                 )
 
                 val verticalSlider: Slider = channelShiftSlider.verticalSlider
@@ -187,13 +188,13 @@ class ColorCorrection(
                 verticalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     verticalShift = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(channelShift(this.simpleImage, horizontalShift, verticalShift))
+                        getBitMap(channelShift(simpleImage, horizontalShift, verticalShift))
                     )
                 })
                 horizontalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     horizontalShift = p1.toInt()
                     binding.imageView.setImageBitmap(
-                        getBitMap(channelShift(this.simpleImage, horizontalShift, verticalShift))
+                        getBitMap(channelShift(simpleImage, horizontalShift, verticalShift))
                     )
                 })
             }

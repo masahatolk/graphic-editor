@@ -16,6 +16,8 @@ import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
+import com.hits.graphic_editor.face_detection.FaceDetection
+import com.hits.graphic_editor.face_detection.removeAllFaceDetectionMenus
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.rotation.removeAllRotateMenus
 import com.hits.graphic_editor.scaling.Scaling
@@ -35,7 +37,8 @@ fun setListenersToExtraTopMenu(
     processedImage: ProcessedImage,
     scaling: Scaling,
     rotation: Rotation,
-    filter: ColorCorrection
+    filter: ColorCorrection,
+    faceDetection: FaceDetection
 ) {
     extraTopMenu.close.setOnClickListener {
 
@@ -45,6 +48,7 @@ fun setListenersToExtraTopMenu(
         removeAllScalingMenus(binding, scaling)
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
+        removeAllFaceDetectionMenus(binding, faceDetection)
         //...
 
         addTopMenu(binding, topMenu)
@@ -63,6 +67,7 @@ fun setListenersToExtraTopMenu(
         removeAllScalingMenus(binding, scaling)
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
+        removeAllFaceDetectionMenus(binding, faceDetection)
         //...
 
         addTopMenu(binding, topMenu)
