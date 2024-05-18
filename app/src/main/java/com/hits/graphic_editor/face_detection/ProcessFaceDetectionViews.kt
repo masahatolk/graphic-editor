@@ -15,10 +15,9 @@ fun addFaceDetectionBottomMenu(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply {
-            bottomToBottom = binding.root.id
+            bottomToBottom = binding.guideline.id
             leftToLeft = binding.root.id
             rightToRight = binding.root.id
-            verticalBias = 0.3F
         }
     )
 }

@@ -5,5 +5,14 @@ enum class RGBMode {
 }
 
 enum class ColorCorrectionMode {
-    INVERSION, GRAYSCALE, BLACK_AND_WHITE, SEPIA, CONTRAST, RGB, MOSAIC, GRAIN, CHANNEL_SHIFT
+    FACE_DETECTION,
+    INVERSION,
+    GRAYSCALE,
+    BLACK_AND_WHITE,
+    SEPIA,
+    CONTRAST,
+    RGB,
+    MOSAIC,
+    GRAIN,
+    CHANNEL_SHIFT
 }

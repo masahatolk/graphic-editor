@@ -70,8 +70,8 @@ class NewProjectActivity : AppCompatActivity() {
         processedImage.image = getSimpleImage(bitmap)
         val newScaling = Scaling(binding, layoutInflater)
         val newRotation = Rotation(binding, layoutInflater)
-        val newColorCorrection = ColorCorrection(binding, layoutInflater)
         val newFaceDetection = FaceDetection(this, binding, layoutInflater)
+        val newColorCorrection = ColorCorrection(binding, layoutInflater, newFaceDetection)
 
         // --------------add listeners to menus----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -114,11 +114,6 @@ class NewProjectActivity : AppCompatActivity() {
 
                     FilterMode.RETOUCH.ordinal -> {
 
-                    }
-
-                    FilterMode.FACE_DETECTION.ordinal -> {
-                        newFaceDetection.simpleImage = processedImage.image
-                        newFaceDetection.showBottomMenu()
                     }
 
                     FilterMode.SPLINE.ordinal -> {
