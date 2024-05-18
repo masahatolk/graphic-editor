@@ -1,6 +1,10 @@
 package com.hits.graphic_editor
 
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +19,16 @@ import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.ui.color_correction.ColorCorrection
+import kotlinx.coroutines.runBlocking
+import java.io.IOException
 
 
 class NewProjectActivity : AppCompatActivity() {
 
+    // ------------ UI elements ------------
     private val binding: ActivityNewProjectBinding by lazy {
         ActivityNewProjectBinding.inflate(layoutInflater)
     }
-
-    private var pickedPhoto: Uri? = null
     val topMenu: TopMenuBinding by lazy {
         TopMenuBinding.inflate(layoutInflater)
     }
@@ -33,33 +38,38 @@ class NewProjectActivity : AppCompatActivity() {
     val extraTopMenu: ExtraTopMenuBinding by lazy {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
-    private var processedImage: ProcessedImage = ProcessedImage()
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        // ------------get photo from MainActivity------------
-        val photo = intent?.getStringExtra("photo")
+        // ------------ get photo from MainActivity ------------
+        val photo = intent.getStringExtra("photo")
+        val selectedPhotoUri = photo!!.toUri()
+        val selectedPhotoBitmap: Bitmap
 
-        pickedPhoto = photo?.toUri()
-        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, pickedPhoto)
+        runBlocking {
+            selectedPhotoBitmap = ImageDecoder.decodeBitmap(
+                ImageDecoder.createSource(applicationContext.contentResolver, selectedPhotoUri)
+            ) { decoder, _, _ ->
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                decoder.isMutableRequired = true
+            }
+        }
 
-        binding.imageView.setImageURI(pickedPhoto)
+        binding.imageView.setImageURI(selectedPhotoUri)
 
-        // -------------------add main menus-------------------
+        // ------------------- add main menus -------------------
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
 
-        // --------------create necessary fields---------------
-        processedImage.image = getSimpleImage(bitmap)
+        // -------------- create necessary fields ---------------
+        val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
         val newScaling = Scaling(binding, layoutInflater)
         val newRotation = Rotation(binding, layoutInflater)
-        val newColorCorrection = ColorCorrection(binding, layoutInflater)
+        val newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage)
 
-        // --------------add listeners to menus----------------
+        // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
         setListenersToExtraTopMenu(
             binding,
@@ -72,7 +82,7 @@ class NewProjectActivity : AppCompatActivity() {
             newColorCorrection
         )
 
-        // ------------add listener to bottom menu-------------
+        // ------------ add listener to bottom menu -------------
         bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -83,17 +93,19 @@ class NewProjectActivity : AppCompatActivity() {
 
                 when (bottomMenu.root.selectedTabPosition) {
                     FilterMode.SCALING.ordinal -> {
-                        newScaling.simpleImage = processedImage.image
+                        processedImage.switchStackMode()
+                        newScaling.simpleImage = processedImage.getSimpleImage()
                         newScaling.showBottomMenu()
                     }
 
                     FilterMode.ROTATION.ordinal -> {
-                        newRotation.simpleImage = processedImage.image
+                        processedImage.switchStackMode()
+                        newRotation.simpleImage = processedImage.getSimpleImage()
                         newRotation.showBottomMenu()
                     }
 
                     FilterMode.COLOR_CORRECTION.ordinal -> {
-                        newColorCorrection.simpleImage = processedImage.image
+                        processedImage.switchStackMode()
                         newColorCorrection.showBottomMenu()
                     }
 

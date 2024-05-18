@@ -239,8 +239,8 @@ fun grain(simpleImage: SimpleImage, number: Int): SimpleImage {
     for (i in 0 until img.height) {
         for (j in 0 until img.width) {
 
-            val temp = random()
-            if(temp < 0.5) {
+            val temp = (0..1).random()
+            if(temp == 0) {
                 val coefficient = 1 - number.toFloat() / 100
 
                 val red = getTruncatedChannel((img[j, i].red() * coefficient).toInt())

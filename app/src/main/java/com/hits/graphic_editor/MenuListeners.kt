@@ -39,7 +39,8 @@ fun setListenersToExtraTopMenu(
 ) {
     extraTopMenu.close.setOnClickListener {
 
-        binding.imageView.setImageBitmap(getBitMap(processedImage.image))
+        processedImage.switchStackMode(false)
+        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
 
         removeExtraTopMenu(binding, extraTopMenu)
         removeAllScalingMenus(binding, scaling)
@@ -53,11 +54,8 @@ fun setListenersToExtraTopMenu(
 
     extraTopMenu.save.setOnClickListener {
 
-        processedImage.undoStack.add(processedImage.image)
-        processedImage.redoStack.clear()
-
-        val bitmap = (binding.imageView.getDrawable() as BitmapDrawable).bitmap
-        processedImage.image = getSimpleImage(bitmap)
+        processedImage.switchStackMode(true)
+        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
 
         removeExtraTopMenu(binding, extraTopMenu)
         removeAllScalingMenus(binding, scaling)
@@ -68,6 +66,17 @@ fun setListenersToExtraTopMenu(
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
     }
+
+    /*
+    extraTopMenu.undo.setOnClickListener() {
+        processedImage.undo()
+        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+    }
+
+    extraTopMenu.redo.setOnClickListener(){
+        processedImage.redo()
+        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+    }*/
 }
 
 fun setListenersToTopMenu(
@@ -82,22 +91,14 @@ fun setListenersToTopMenu(
         activity.finish()
     }
 
-    topMenu.undo.setOnClickListener(){
-    if(processedImage.undoStack.isNotEmpty()) {
-        processedImage.redoStack.add(processedImage.image)
-        processedImage.image = processedImage.undoStack.last()
-        processedImage.undoStack.removeLast()
-        binding.imageView.setImageBitmap(getBitMap(processedImage.image))
+    topMenu.undo.setOnClickListener() {
+        processedImage.undo()
+        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
     }
-}
 
     topMenu.redo.setOnClickListener(){
-        if(processedImage.redoStack.isNotEmpty()) {
-            processedImage.undoStack.add(processedImage.image)
-            processedImage.image = processedImage.redoStack.last()
-            processedImage.redoStack.removeLast()
-            binding.imageView.setImageBitmap(getBitMap(processedImage.image))
-        }
+        processedImage.redo()
+        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
     }
 
     topMenu.download.setOnClickListener() {
@@ -137,7 +138,7 @@ fun setListenersToTopMenu(
     }
 
     topMenu.share.setOnClickListener() {
-        val bitmap = (binding.imageView.getDrawable() as BitmapDrawable).bitmap
+        val bitmap = (binding.imageView.drawable as BitmapDrawable).bitmap
         val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Image", null)
         val uri: Uri = Uri.parse(path)
 
