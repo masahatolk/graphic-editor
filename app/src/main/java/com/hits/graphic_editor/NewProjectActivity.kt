@@ -3,6 +3,8 @@ package com.hits.graphic_editor
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
@@ -15,6 +17,7 @@ import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.color_correction.ColorCorrection
+import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
 import com.hits.graphic_editor.ui.addTopMenu
@@ -25,7 +28,7 @@ import com.hits.graphic_editor.ui.setListenersToTopMenu
 import com.hits.graphic_editor.utils.FilterMode
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
-
+import org.opencv.android.OpenCVLoader
 
 class NewProjectActivity : AppCompatActivity() {
 
@@ -45,6 +48,13 @@ class NewProjectActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (OpenCVLoader.initLocal()) {
+            Log.i("TEST", "OpenCV loaded successfully")
+        } else {
+            Log.e("TEST", "OpenCV initialization failed!")
+            (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show()
+            return
+        }
         setContentView(binding.root)
 
         // ------------ get photo from MainActivity ------------
@@ -71,7 +81,8 @@ class NewProjectActivity : AppCompatActivity() {
         val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
         val newScaling = Scaling(binding, layoutInflater, processedImage)
         val newRotation = Rotation(binding, layoutInflater, processedImage)
-        val newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage)
+        val newFaceDetection = FaceDetection(this, binding, layoutInflater)
+        val newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
 
         // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -83,7 +94,8 @@ class NewProjectActivity : AppCompatActivity() {
             processedImage,
             newScaling,
             newRotation,
-            newColorCorrection
+            newColorCorrection,
+            newFaceDetection
         )
 
         // ------------ add listener to bottom menu -------------
@@ -110,10 +122,6 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.RETOUCH.ordinal -> {
-
-                    }
-
-                    FilterMode.FACE_DETECTION.ordinal -> {
 
                     }
 

@@ -1,4 +1,4 @@
-package com.hits.graphic_editor.ui.color_correction
+package com.hits.graphic_editor.color_correction
 
 import android.view.LayoutInflater
 import com.google.android.material.slider.Slider
@@ -16,25 +16,24 @@ import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.face_detection.removeFaceDetectionBottomMenu
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
+import com.hits.graphic_editor.ui.color_correction.ColorCorrectionAlgorithms
+import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
 import org.opencv.core.Mat
 import org.opencv.core.MatOfRect
 
-
 class ColorCorrection(
     val binding: ActivityNewProjectBinding,
     private val layoutInflater: LayoutInflater,
+    private val processedImage: ProcessedImage,
     private val faceDetection: FaceDetection
 ) : ColorCorrectionAlgorithms() {
 
     // -----------------create necessary fields-----------------
-    lateinit var simpleImage: SimpleImage
     private lateinit var smallSimpleImage: SimpleImage
-
 
     private lateinit var matrix: Mat
     private lateinit var faces: MatOfRect
-
 
     val colorCorrectionBottomMenu: ColorCorrectionRecyclerViewBinding by lazy {
         ColorCorrectionRecyclerViewBinding.inflate(layoutInflater)
@@ -62,12 +61,11 @@ class ColorCorrection(
         })
     }
 
-
     fun showBottomMenu() {
-        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(simpleImage, 0.15F) }
+        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.05F) }
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
-        matrix = faceDetection.getMatrix(simpleImage)
+        matrix = faceDetection.getMatrix(processedImage.getSimpleImage())
         faces = faceDetection.detectFaces(matrix)
 
         addFilterBottomMenu(binding, colorCorrectionBottomMenu)
@@ -77,43 +75,23 @@ class ColorCorrection(
 
         when (filterMode) {
             ColorCorrectionMode.FACE_DETECTION -> {
-                faceDetection.showBottomMenu(simpleImage)
+                faceDetection.showBottomMenu(processedImage.getSimpleImageBeforeFiltering())
             }
 
             ColorCorrectionMode.INVERSION -> {
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::inverse)
-                    )
-                )
-                else binding.imageView.setImageBitmap(getBitMap(inverse(simpleImage)))
+                applyFilter(::inverse)
             }
 
             ColorCorrectionMode.GRAYSCALE -> {
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::grayscale)
-                    )
-                )
-                else binding.imageView.setImageBitmap(getBitMap(grayscale(simpleImage)))
+                applyFilter(::grayscale)
             }
 
             ColorCorrectionMode.BLACK_AND_WHITE -> {
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::blackAndWhite)
-                    )
-                )
-                else binding.imageView.setImageBitmap(getBitMap(blackAndWhite(simpleImage)))
+                applyFilter(::blackAndWhite)
             }
 
             ColorCorrectionMode.SEPIA -> {
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::sepia)
-                    )
-                )
-                else binding.imageView.setImageBitmap(getBitMap(sepia(simpleImage)))
+                applyFilter(::sepia)
             }
 
             ColorCorrectionMode.CONTRAST -> {
@@ -121,26 +99,12 @@ class ColorCorrection(
                 removeContrastSlider(binding, contrastSlider)
                 addContrastSlider(binding, contrastSlider)
 
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::contrast)
-                    )
-                )
-                else binding.imageView.setImageBitmap(
-                    getBitMap(contrast(simpleImage))
-                )
+                applyFilter(::contrast)
 
                 val slider: Slider = contrastSlider.contrastSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     contrastCoefficient = p1.toInt()
-                    if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                        getBitMap(
-                            processFaces(simpleImage, ::contrast)
-                        )
-                    )
-                    else binding.imageView.setImageBitmap(
-                        getBitMap(contrast(simpleImage))
-                    )
+                    applyFilter(::contrast)
                 })
             }
 
@@ -149,12 +113,7 @@ class ColorCorrection(
                 removeRgbMenu(binding, rgbMenu)
                 addRgbMenu(binding, rgbMenu)
 
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::rgb)
-                    )
-                )
-                else binding.imageView.setImageBitmap(getBitMap(rgb(simpleImage)))
+                applyFilter(::rgb)
 
                 rgbMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
@@ -172,12 +131,7 @@ class ColorCorrection(
                                 rgbMode = RGBMode.BLUE
                             }
                         }
-                        if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                            getBitMap(
-                                processFaces(simpleImage, ::rgb)
-                            )
-                        )
-                        else binding.imageView.setImageBitmap(getBitMap(rgb(this@ColorCorrection.simpleImage)))
+                        applyFilter(::rgb)
                     }
 
                     override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -190,26 +144,12 @@ class ColorCorrection(
                 removeMosaicSlider(binding, mosaicSlider)
                 addMosaicSlider(binding, mosaicSlider)
 
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::mosaic)
-                    )
-                )
-                else binding.imageView.setImageBitmap(
-                    getBitMap(mosaic(simpleImage))
-                )
+                applyFilter(::mosaic)
 
                 val slider: Slider = mosaicSlider.mosaicSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     squareSide = p1.toInt()
-                    if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                        getBitMap(
-                            processFaces(simpleImage, ::mosaic)
-                        )
-                    )
-                    else binding.imageView.setImageBitmap(
-                        getBitMap(mosaic(simpleImage))
-                    )
+                    applyFilter(::mosaic)
                 })
             }
 
@@ -218,26 +158,12 @@ class ColorCorrection(
                 removeGrainSlider(binding, grainSlider)
                 addGrainSlider(binding, grainSlider)
 
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::grain)
-                    )
-                )
-                else binding.imageView.setImageBitmap(
-                    getBitMap(grain(simpleImage))
-                )
+                applyFilter(::grain)
 
                 val slider: Slider = grainSlider.grainSlider
                 slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     grainNumber = p1.toInt()
-                    if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                        getBitMap(
-                            processFaces(simpleImage, ::grain)
-                        )
-                    )
-                    else binding.imageView.setImageBitmap(
-                        getBitMap(grain(simpleImage))
-                    )
+                    applyFilter(::grain)
                 })
             }
 
@@ -246,39 +172,18 @@ class ColorCorrection(
                 removeChannelShiftSlider(binding, channelShiftSlider)
                 addChannelShiftSlider(binding, channelShiftSlider)
 
-                if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                    getBitMap(
-                        processFaces(simpleImage, ::channelShift)
-                    )
-                )
-                else binding.imageView.setImageBitmap(
-                    getBitMap(channelShift(simpleImage))
-                )
+                applyFilter(::channelShift)
 
                 val verticalSlider: Slider = channelShiftSlider.verticalSlider
                 val horizontalSlider: Slider = channelShiftSlider.horizontalSlider
 
                 verticalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     verticalShift = p1.toInt()
-                    if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                        getBitMap(
-                            processFaces(simpleImage, ::channelShift)
-                        )
-                    )
-                    else binding.imageView.setImageBitmap(
-                        getBitMap(channelShift(simpleImage))
-                    )
+                    applyFilter(::channelShift)
                 })
                 horizontalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
                     horizontalShift = p1.toInt()
-                    if (faceDetection.isDetectionApplied) binding.imageView.setImageBitmap(
-                        getBitMap(
-                            processFaces(simpleImage, ::channelShift)
-                        )
-                    )
-                    else binding.imageView.setImageBitmap(
-                        getBitMap(channelShift(simpleImage))
-                    )
+                    applyFilter(::channelShift)
                 })
             }
         }
@@ -365,6 +270,17 @@ class ColorCorrection(
         )
 
         return items
+    }
+
+    private fun applyFilter(function: (img: SimpleImage) -> SimpleImage) {
+        if (faceDetection.isDetectionApplied){
+            processedImage.addToLocalStack(processFaces(processedImage.getSimpleImageBeforeFiltering(), function))
+            binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        }
+        else{
+            processedImage.addToLocalStack(function(processedImage.getSimpleImageBeforeFiltering()))
+            binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        }
     }
 
     private fun processFaces(
