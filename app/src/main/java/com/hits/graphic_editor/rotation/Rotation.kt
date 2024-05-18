@@ -2,15 +2,17 @@ package com.hits.graphic_editor.rotation
 
 import android.graphics.Bitmap
 import android.view.LayoutInflater
-import com.hits.graphic_editor.Filter
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.RotationBottomMenuBinding
+import com.hits.graphic_editor.utils.ProcessedImage
 
 class Rotation(
     override val binding: ActivityNewProjectBinding,
-    override val layoutInflater: LayoutInflater
+    override val layoutInflater: LayoutInflater,
+    override val processedImage: ProcessedImage
 ) : Filter {
 
     lateinit var simpleImage : SimpleImage

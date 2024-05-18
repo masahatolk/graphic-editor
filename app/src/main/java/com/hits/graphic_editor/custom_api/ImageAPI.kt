@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 
 data class SimpleImage(
@@ -92,7 +93,8 @@ data class MipMapsContainer(
     var jobs: MutableList<Job> = mutableListOf()
 ) {
     companion object {
-        val constSizeCoeffs = arrayOf(0.15F, 0.30F, 0.5F, 0.65F, 0.8F, 0.92F)
+        //val constSizeCoeffs = arrayOf(0.15F, 0.30F, 0.5F, 0.65F, 0.8F, 0.92F)
+        val constSizeCoeffs = arrayOf(0.2F, 0.4F, 0.6F, 0.8F)
     }
 
     constructor(simpleImg: SimpleImage) : this(img = simpleImg)
