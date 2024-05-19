@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <SeekBar
+        android:id="@+id/radiusSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:max="20"
+        android:progress="10"
+        android:progressTint="#9C27B0"
+        android:thumbTint="#7B1FA2"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/iconLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/radiusValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Радиус размытия: 10"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/radiusSeekBar"
+        app:layout_constraintStart_toStartOf="@id/radiusSeekBar"
+        app:layout_constraintEnd_toEndOf="@id/radiusSeekBar" />
+
+    <SeekBar
+        android:id="@+id/amountSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:max="200"
+        android:progress="100"
+        android:progressTint="#9C27B0"
+        android:thumbTint="#7B1FA2"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/iconLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/amountValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Коэффициент усиления: 1.0"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/amountSeekBar"
+        app:layout_constraintStart_toStartOf="@id/amountSeekBar"
+        app:layout_constraintEnd_toEndOf="@id/amountSeekBar" />
+
+    <SeekBar
+        android:id="@+id/thresholdSeekBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:max="255"
+        android:progress="0"
+        android:progressTint="#9C27B0"
+        android:thumbTint="#7B1FA2"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/iconLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/thresholdValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Порог: 0"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/thresholdSeekBar"
+        app:layout_constraintStart_toStartOf="@id/thresholdSeekBar"
+        app:layout_constraintEnd_toEndOf="@id/thresholdSeekBar" />
+
+
+    <LinearLayout
+        android:id="@+id/iconLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/applyButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/radiusIcon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="8dp"
+            android:contentDescription="@string/radius_icon_desc"
+            android:src="@drawable/ic_radius_24dp"/>
+
+        <ImageView
+            android:id="@+id/amountIcon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="8dp"
+            android:contentDescription="@string/amount_icon_desc"
+            android:src="@drawable/ic_amount_24dp" />
+
+        <ImageView
+            android:id="@+id/thresholdIcon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="8dp"
+            android:contentDescription="@string/threshold_icon_desc"
+            android:src="@drawable/ic_threshold_24dp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/applyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Apply"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

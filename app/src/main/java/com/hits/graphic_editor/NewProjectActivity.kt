@@ -15,6 +15,7 @@ import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.ui.color_correction.ColorCorrection
+import com.hits.graphic_editor.unsharp_mask.UnsharpMask
 
 
 class NewProjectActivity : AppCompatActivity() {
@@ -58,6 +59,7 @@ class NewProjectActivity : AppCompatActivity() {
         val newScaling = Scaling(binding, layoutInflater)
         val newRotation = Rotation(binding, layoutInflater)
         val newColorCorrection = ColorCorrection(binding, layoutInflater)
+        val newUnsharpMask = UnsharpMask(binding,layoutInflater)
 
         // --------------add listeners to menus----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -114,7 +116,8 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.UNSHARP_MASKING.ordinal -> {
-
+                        newUnsharpMask.simpleImage = processedImage.image
+                        newUnsharpMask.showBottomMenu()
                     }
 
                     FilterMode.CUBE.ordinal -> {

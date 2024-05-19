@@ -13,4 +13,8 @@
     <string name="temp_images_dir">temp_images</string>
     <string name="temp_image">temp_image.jpg</string>
 <!--    <string name="authorities">com.hits.graphic-editor</string>-->
+
+    <string name="radius_icon_desc">Icon for adjusting the blur radius</string>
+    <string name="amount_icon_desc">Icon for adjusting the amount</string>
+    <string name="threshold_icon_desc">Icon for adjusting the threshold</string>
 </resources>
