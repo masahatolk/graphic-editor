@@ -24,6 +24,8 @@ import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.scaling.removeAllScalingMenus
 import com.hits.graphic_editor.color_correction.ColorCorrection
 import com.hits.graphic_editor.color_correction.removeAllFilterMenus
+import com.hits.graphic_editor.spline.Spline
+import com.hits.graphic_editor.spline.removeAllSplineMenus
 import com.hits.graphic_editor.utils.ProcessedImage
 import java.io.File
 import java.io.FileOutputStream
@@ -39,7 +41,8 @@ fun setListenersToExtraTopMenu(
     scaling: Scaling,
     rotation: Rotation,
     filter: ColorCorrection,
-    faceDetection: FaceDetection
+    faceDetection: FaceDetection,
+    spline: Spline
 ) {
     extraTopMenu.close.setOnClickListener {
 
@@ -51,6 +54,7 @@ fun setListenersToExtraTopMenu(
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
         removeAllFaceDetectionMenus(binding, faceDetection)
+        removeAllSplineMenus(binding, spline)
         //...
 
         addTopMenu(binding, topMenu)
@@ -67,6 +71,7 @@ fun setListenersToExtraTopMenu(
         removeAllRotateMenus(binding, rotation)
         removeAllFilterMenus(binding, filter)
         removeAllFaceDetectionMenus(binding, faceDetection)
+        removeAllSplineMenus(binding, spline)
         //...
 
         addTopMenu(binding, topMenu)

@@ -1,15 +1,20 @@
 package com.hits.graphic_editor
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import com.github.dhaval2404.colorpicker.ColorPickerDialog
+import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.hits.graphic_editor.color_correction.ColorCorrection
+import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
@@ -18,6 +23,7 @@ import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
+import com.hits.graphic_editor.spline.Spline
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
 import com.hits.graphic_editor.ui.addTopMenu
@@ -51,11 +57,15 @@ class NewProjectActivity : AppCompatActivity() {
     private lateinit var newFaceDetection: FaceDetection
     private lateinit var newColorCorrection: ColorCorrection
     private lateinit var newRotation: Rotation
+    private lateinit var newSpline: Spline
+    private lateinit var colorPicker: ColorPickerDialog.Builder
 
 
-
+    @SuppressLint("ResourceType")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // ------------------ opencv loading ------------------
         if (OpenCVLoader.initLocal()) {
             Log.i("TEST", "OpenCV loaded successfully")
         } else {
@@ -63,6 +73,15 @@ class NewProjectActivity : AppCompatActivity() {
             (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show()
             return
         }
+
+        // ------------- color picker for splines -------------
+        colorPicker = ColorPickerDialog
+            .Builder(this)
+            .setTitle("Pick Theme")
+            .setColorShape(ColorShape.SQAURE)
+            .setDefaultColor(Color.BLACK)
+
+
         setContentView(binding.root)
 
         // ------------ get photo from MainActivity ------------
@@ -85,12 +104,14 @@ class NewProjectActivity : AppCompatActivity() {
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
 
-        // -------------- create necessary fields ---------------
+        // ------------- initialize necessary fields -------------
         processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
         newScaling = Scaling(binding, layoutInflater, processedImage)
         newRotation = Rotation(binding, layoutInflater, processedImage)
         newFaceDetection = FaceDetection(this, binding, layoutInflater)
-        newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
+        newColorCorrection =
+            ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
+        newSpline = Spline(binding, layoutInflater, getBitMap(processedImage.getSimpleImage()), colorPicker)
 
         // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -103,7 +124,8 @@ class NewProjectActivity : AppCompatActivity() {
             newScaling,
             newRotation,
             newColorCorrection,
-            newFaceDetection
+            newFaceDetection,
+            newSpline
         )
 
         // ------------ add listener to bottom menu -------------
@@ -122,42 +144,42 @@ class NewProjectActivity : AppCompatActivity() {
         supportActionBar?.hide()
     }
 
-    fun onTabSelectedProcess () {
+    fun onTabSelectedProcess() {
         removeTopMenu(binding, topMenu)
         removeBottomMenu(binding, bottomMenu)
         addExtraTopMenu(binding, extraTopMenu)
 
-                processedImage.switchStackMode()
-                when (bottomMenu.root.selectedTabPosition) {
-                    ColorCorrectionMode.SCALING.ordinal -> {
-                        newScaling.showBottomMenu()
-                    }
+        processedImage.switchStackMode()
+        when (bottomMenu.root.selectedTabPosition) {
+            ColorCorrectionMode.SCALING.ordinal -> {
+                newScaling.showBottomMenu()
+            }
 
-                    ColorCorrectionMode.ROTATION.ordinal -> {
-                        newRotation.showBottomMenu()
-                    }
+            ColorCorrectionMode.ROTATION.ordinal -> {
+                newRotation.showBottomMenu()
+            }
 
-                    ColorCorrectionMode.COLOR_CORRECTION.ordinal -> {
-                        newColorCorrection.showBottomMenu()
-                    }
+            ColorCorrectionMode.COLOR_CORRECTION.ordinal -> {
+                newColorCorrection.showBottomMenu()
+            }
 
-                    ColorCorrectionMode.RETOUCH.ordinal -> {
+            ColorCorrectionMode.RETOUCH.ordinal -> {
 
-                    }
+            }
 
-                    ColorCorrectionMode.SPLINE.ordinal -> {
+            ColorCorrectionMode.SPLINE.ordinal -> {
+                newSpline.showBottomMenu()
+            }
 
-                    }
+            ColorCorrectionMode.AFFINE_TRANSFORMATION.ordinal -> {
 
-                    ColorCorrectionMode.AFFINE_TRANSFORMATION.ordinal -> {
+            }
 
-                    }
+            ColorCorrectionMode.UNSHARP_MASKING.ordinal -> {
 
-                    ColorCorrectionMode.UNSHARP_MASKING.ordinal -> {
+            }
 
-                    }
-
-                    ColorCorrectionMode.CUBE.ordinal -> {
+            ColorCorrectionMode.CUBE.ordinal -> {
 
             }
         }

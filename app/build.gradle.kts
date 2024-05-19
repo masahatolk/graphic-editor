@@ -45,4 +45,5 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.activity)
     implementation("org.opencv:opencv:4.9.0")
+    implementation("com.github.Dhaval2404:ColorPicker:2.3")
 }
