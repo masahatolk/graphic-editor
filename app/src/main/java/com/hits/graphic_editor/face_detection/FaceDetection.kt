@@ -34,7 +34,8 @@ class FaceDetection(
 
     fun showBottomMenu(simpleImage: SimpleImage) {
         addFaceDetectionBottomMenu(binding, faceDetectionBottomMenu)
-        binding.imageView.setImageBitmap(getBitMap(simpleImage))
+        if(isDetectionApplied) binding.imageView.setImageBitmap(getDetection(simpleImage))
+        else binding.imageView.setImageBitmap(getBitMap(simpleImage))
 
         faceDetectionBottomMenu.faceDetectionChip.setOnClickListener {
             isDetectionApplied = !isDetectionApplied

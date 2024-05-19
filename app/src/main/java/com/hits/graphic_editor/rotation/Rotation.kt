@@ -15,7 +15,7 @@ class Rotation(
     override val processedImage: ProcessedImage
 ) : Filter {
 
-    lateinit var simpleImage : SimpleImage
+    private lateinit var simpleImage : SimpleImage
     private var lastRotatedBitmap: Bitmap? = null
     private var totalRotationAngle: Int = 0
 

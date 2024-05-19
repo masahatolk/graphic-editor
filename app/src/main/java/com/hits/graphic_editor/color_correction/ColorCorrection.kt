@@ -34,6 +34,7 @@ class ColorCorrection(
 
     private lateinit var matrix: Mat
     private lateinit var faces: MatOfRect
+    private var lastMode: ColorCorrectionMode? = null
 
     val colorCorrectionBottomMenu: ColorCorrectionRecyclerViewBinding by lazy {
         ColorCorrectionRecyclerViewBinding.inflate(layoutInflater)
@@ -62,7 +63,7 @@ class ColorCorrection(
     }
 
     fun showBottomMenu() {
-        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.05F) }
+        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.15F) }
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
         matrix = faceDetection.getMatrix(processedImage.getSimpleImage())
@@ -75,116 +76,129 @@ class ColorCorrection(
 
         when (filterMode) {
             ColorCorrectionMode.FACE_DETECTION -> {
-                faceDetection.showBottomMenu(processedImage.getSimpleImageBeforeFiltering())
+                if (lastMode != ColorCorrectionMode.FACE_DETECTION)
+                {
+                    faceDetection.showBottomMenu(processedImage.getSimpleImageBeforeFiltering())
+                    lastMode = ColorCorrectionMode.FACE_DETECTION
+                }
             }
 
             ColorCorrectionMode.INVERSION -> {
+                lastMode = ColorCorrectionMode.INVERSION
                 applyFilter(::inverse)
             }
 
             ColorCorrectionMode.GRAYSCALE -> {
+                lastMode = ColorCorrectionMode.GRAYSCALE
                 applyFilter(::grayscale)
             }
 
             ColorCorrectionMode.BLACK_AND_WHITE -> {
+                lastMode = ColorCorrectionMode.BLACK_AND_WHITE
                 applyFilter(::blackAndWhite)
             }
 
             ColorCorrectionMode.SEPIA -> {
+                lastMode = ColorCorrectionMode.SEPIA
                 applyFilter(::sepia)
             }
 
             ColorCorrectionMode.CONTRAST -> {
-
-                removeContrastSlider(binding, contrastSlider)
-                addContrastSlider(binding, contrastSlider)
-
                 applyFilter(::contrast)
 
-                val slider: Slider = contrastSlider.contrastSlider
-                slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
-                    contrastCoefficient = p1.toInt()
-                    applyFilter(::contrast)
-                })
+                if (lastMode != ColorCorrectionMode.CONTRAST) {
+                    addContrastSlider(binding, contrastSlider)
+
+                    val slider: Slider = contrastSlider.contrastSlider
+                    slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
+                        contrastCoefficient = p1.toInt()
+                        applyFilter(::contrast)
+                    })
+                    lastMode = ColorCorrectionMode.CONTRAST
+                }
             }
 
             ColorCorrectionMode.RGB -> {
-
-                removeRgbMenu(binding, rgbMenu)
-                addRgbMenu(binding, rgbMenu)
-
                 applyFilter(::rgb)
 
-                rgbMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
+                if (lastMode != ColorCorrectionMode.RGB) {
+                    addRgbMenu(binding, rgbMenu)
 
-                    override fun onTabSelected(p0: TabLayout.Tab?) {
-                        when (rgbMenu.root.selectedTabPosition) {
-                            0 -> {
-                                rgbMode = RGBMode.RED
-                            }
+                    rgbMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
-                            1 -> {
-                                rgbMode = RGBMode.GREEN
-                            }
+                        override fun onTabSelected(p0: TabLayout.Tab?) {
+                            when (rgbMenu.root.selectedTabPosition) {
+                                0 -> {
+                                    rgbMode = RGBMode.RED
+                                }
 
-                            2 -> {
-                                rgbMode = RGBMode.BLUE
+                                1 -> {
+                                    rgbMode = RGBMode.GREEN
+                                }
+
+                                2 -> {
+                                    rgbMode = RGBMode.BLUE
+                                }
                             }
+                            applyFilter(::rgb)
                         }
-                        applyFilter(::rgb)
-                    }
 
-                    override fun onTabUnselected(tab: TabLayout.Tab) {}
-                    override fun onTabReselected(tab: TabLayout.Tab) {}
-                })
+                        override fun onTabUnselected(tab: TabLayout.Tab) {}
+                        override fun onTabReselected(tab: TabLayout.Tab) {}
+                    })
+                    lastMode = ColorCorrectionMode.RGB
+                }
             }
 
             ColorCorrectionMode.MOSAIC -> {
-
-                removeMosaicSlider(binding, mosaicSlider)
-                addMosaicSlider(binding, mosaicSlider)
-
                 applyFilter(::mosaic)
 
-                val slider: Slider = mosaicSlider.mosaicSlider
-                slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
-                    squareSide = p1.toInt()
-                    applyFilter(::mosaic)
-                })
+                if(lastMode != ColorCorrectionMode.MOSAIC) {
+                    addMosaicSlider(binding, mosaicSlider)
+
+                    val slider: Slider = mosaicSlider.mosaicSlider
+                    slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
+                        squareSide = p1.toInt()
+                        applyFilter(::mosaic)
+                    })
+                    lastMode = ColorCorrectionMode.MOSAIC
+                }
             }
 
             ColorCorrectionMode.GRAIN -> {
-
-                removeGrainSlider(binding, grainSlider)
-                addGrainSlider(binding, grainSlider)
-
                 applyFilter(::grain)
 
-                val slider: Slider = grainSlider.grainSlider
-                slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
-                    grainNumber = p1.toInt()
-                    applyFilter(::grain)
-                })
+                if(lastMode != ColorCorrectionMode.GRAIN){
+                    addGrainSlider(binding, grainSlider)
+
+                    val slider: Slider = grainSlider.grainSlider
+                    slider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
+                        grainNumber = p1.toInt()
+                        applyFilter(::grain)
+                    })
+                    lastMode = ColorCorrectionMode.GRAIN
+                }
             }
 
             ColorCorrectionMode.CHANNEL_SHIFT -> {
-
-                removeChannelShiftSlider(binding, channelShiftSlider)
-                addChannelShiftSlider(binding, channelShiftSlider)
-
                 applyFilter(::channelShift)
 
-                val verticalSlider: Slider = channelShiftSlider.verticalSlider
-                val horizontalSlider: Slider = channelShiftSlider.horizontalSlider
+                if(lastMode != ColorCorrectionMode.CHANNEL_SHIFT) {
+                    addChannelShiftSlider(binding, channelShiftSlider)
 
-                verticalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
-                    verticalShift = p1.toInt()
-                    applyFilter(::channelShift)
-                })
-                horizontalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
-                    horizontalShift = p1.toInt()
-                    applyFilter(::channelShift)
-                })
+                    val verticalSlider: Slider = channelShiftSlider.verticalSlider
+                    val horizontalSlider: Slider = channelShiftSlider.horizontalSlider
+
+                    verticalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
+                        verticalShift = p1.toInt()
+                        applyFilter(::channelShift)
+                    })
+                    horizontalSlider.addOnChangeListener(Slider.OnChangeListener { p0, p1, p2 ->
+                        horizontalShift = p1.toInt()
+                        applyFilter(::channelShift)
+                    })
+                    lastMode = ColorCorrectionMode.CHANNEL_SHIFT
+                }
             }
         }
 
