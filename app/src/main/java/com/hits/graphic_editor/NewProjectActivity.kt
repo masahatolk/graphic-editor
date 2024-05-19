@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.hits.graphic_editor.affine_transform.AffineTransform
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
@@ -17,6 +18,7 @@ import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.color_correction.ColorCorrection
+import com.hits.graphic_editor.cube_3d.Cube3D
 import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
@@ -78,11 +80,13 @@ class NewProjectActivity : AppCompatActivity() {
         addBottomMenu(binding, bottomMenu)
 
         // -------------- create necessary fields ---------------
-        val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
+        val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap), binding.imageView)
         val newScaling = Scaling(binding, layoutInflater, processedImage)
         val newRotation = Rotation(binding, layoutInflater, processedImage)
-        val newFaceDetection = FaceDetection(this, binding, layoutInflater)
+        val newFaceDetection = FaceDetection(this, binding, layoutInflater, processedImage)
         val newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
+        val newAffineTransform = AffineTransform(binding, layoutInflater, processedImage)
+        val newCube3D = Cube3D(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -95,7 +99,9 @@ class NewProjectActivity : AppCompatActivity() {
             newScaling,
             newRotation,
             newColorCorrection,
-            newFaceDetection
+            newFaceDetection,
+            newAffineTransform,
+            newCube3D
         )
 
         // ------------ add listener to bottom menu -------------
@@ -130,7 +136,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
-
+                        newAffineTransform.showBottomMenu()
                     }
 
                     FilterMode.UNSHARP_MASKING.ordinal -> {
@@ -138,7 +144,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.CUBE.ordinal -> {
-
+                        newCube3D.showBottomMenu()
                     }
                 }
             }

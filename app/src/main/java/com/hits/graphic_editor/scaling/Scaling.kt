@@ -1,6 +1,8 @@
 package com.hits.graphic_editor.scaling
 
 import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
@@ -14,13 +16,16 @@ class Scaling (
     override val layoutInflater: LayoutInflater,
     override val processedImage: ProcessedImage
 ): Filter {
-    val scalingBottomMenu: ScalingBottomMenuBinding by lazy {
-        ScalingBottomMenuBinding.inflate(layoutInflater)
+    override fun removeAllMenus () {
+        removeScalingBottomMenu()
+    }
+    override fun showBottomMenu () {
+        addScalingBottomMenu()
+        setListeners()
     }
 
-    override fun showBottomMenu () {
-        addScalingBottomMenu(binding, scalingBottomMenu)
-        setListeners()
+    private val scalingBottomMenu: ScalingBottomMenuBinding by lazy {
+        ScalingBottomMenuBinding.inflate(layoutInflater)
     }
 
     private fun setListeners() {
@@ -37,5 +42,21 @@ class Scaling (
                 binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
             }
         }
+    }
+    private fun addScalingBottomMenu () {
+        binding.root.addView(
+            scalingBottomMenu.root.rootView,
+            ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomToBottom = binding.root.id
+                leftToLeft = binding.root.id
+                rightToRight = binding.root.id
+            }
+        )
+    }
+    private fun removeScalingBottomMenu () {
+        binding.root.removeView(scalingBottomMenu.root)
     }
 }

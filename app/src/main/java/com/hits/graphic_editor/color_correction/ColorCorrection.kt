@@ -17,17 +17,18 @@ import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.face_detection.removeFaceDetectionBottomMenu
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
 import com.hits.graphic_editor.ui.color_correction.ColorCorrectionAlgorithms
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
 import org.opencv.core.Mat
 import org.opencv.core.MatOfRect
 
 class ColorCorrection(
-    val binding: ActivityNewProjectBinding,
-    private val layoutInflater: LayoutInflater,
-    private val processedImage: ProcessedImage,
+    override val binding: ActivityNewProjectBinding,
+    override val layoutInflater: LayoutInflater,
+    override val processedImage: ProcessedImage,
     private val faceDetection: FaceDetection
-) : ColorCorrectionAlgorithms() {
+) : ColorCorrectionAlgorithms(), Filter {
 
     // -----------------create necessary fields-----------------
     private lateinit var smallSimpleImage: SimpleImage
@@ -61,7 +62,7 @@ class ColorCorrection(
         })
     }
 
-    fun showBottomMenu() {
+    override fun showBottomMenu() {
         runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.05F) }
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
@@ -69,6 +70,10 @@ class ColorCorrection(
         faces = faceDetection.detectFaces(matrix)
 
         addFilterBottomMenu(binding, colorCorrectionBottomMenu)
+    }
+
+    override fun removeAllMenus() {
+        removeAllFilterMenus(binding, this)
     }
 
     fun updateFilterMode(filterMode: ColorCorrectionMode) {

@@ -2,6 +2,8 @@ package com.hits.graphic_editor.rotation
 
 import android.graphics.Bitmap
 import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
@@ -24,7 +26,6 @@ class Rotation(
     }
 
     private fun showRotateButton() {
-
         lastRotatedBitmap = null
 
         rotateButton.rotateButton.setOnClickListener {
@@ -41,8 +42,31 @@ class Rotation(
     }
 
     override fun showBottomMenu() {
-        addRotateButton(binding, rotateButton)
+        addRotateButton()
         showRotateButton()
+    }
+
+    private fun addRotateButton() {
+        binding.root.addView(
+            rotateButton.root.rootView,
+            ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomToBottom = binding.root.id
+                leftToLeft = binding.root.id
+                rightToRight = binding.root.id
+                verticalBias = 0.3F
+            }
+        )
+    }
+
+    private fun removeButton() {
+        binding.root.removeView(rotateButton.root)
+    }
+
+    override fun removeAllMenus () {
+        removeButton()
     }
 
 

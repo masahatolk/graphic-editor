@@ -1,7 +1,9 @@
 package com.hits.graphic_editor.utils
 
+import android.widget.ImageView
 import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.SimpleImage
+import com.hits.graphic_editor.custom_api.getBitMap
 import kotlin.math.min
 fun <T> MutableList<T>.shrinkSize(size: Int)
 {
@@ -9,7 +11,8 @@ fun <T> MutableList<T>.shrinkSize(size: Int)
         this.removeLast()
 }
 class ProcessedImage(
-    image: SimpleImage
+    image: SimpleImage,
+    private var imageView: ImageView
 ) {
     private var mipMapsContainer: MipMapsContainer = MipMapsContainer(image)
 
@@ -35,6 +38,13 @@ class ProcessedImage(
         else localStackIndex = (localStackIndex - 1).coerceAtLeast(0)
     }
     /**
+     * Скорее всего пригодится только это
+     */
+    fun undoAndSetImageToView(){
+        undo()
+        imageView.setImageBitmap(getBitMap(this.getSimpleImage()))
+    }
+    /**
      * Сразу после вызываем 'getSimpleImage' для получения текущего изображения
      */
     fun redo() {
@@ -46,6 +56,13 @@ class ProcessedImage(
             mipMapsContainer = MipMapsContainer(globalStack[globalStackIndex])
         }
         else localStackIndex = min(localStack.size - 1, localStackIndex + 1)
+    }
+    /**
+     * Скорее всего пригодится только это
+     */
+    fun redoAndSetImageToView(){
+        redo()
+        imageView.setImageBitmap(getBitMap(this.getSimpleImage()))
     }
     fun getSimpleImage(): SimpleImage{
         if (isInGlobalStack) return globalStack[globalStackIndex]

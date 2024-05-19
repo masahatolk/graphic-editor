@@ -7,6 +7,8 @@ import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.FaceDetectionBottomMenuBinding
+import com.hits.graphic_editor.utils.Filter
+import com.hits.graphic_editor.utils.ProcessedImage
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.core.MatOfRect
@@ -19,9 +21,10 @@ import java.io.File
 
 class FaceDetection(
     private val context: Context,
-    private val binding: ActivityNewProjectBinding,
-    private val layoutInflater: LayoutInflater
-) {
+    override val binding: ActivityNewProjectBinding,
+    override val layoutInflater: LayoutInflater,
+    override val processedImage: ProcessedImage
+): Filter {
 
     val faceDetectionBottomMenu: FaceDetectionBottomMenuBinding by lazy {
         FaceDetectionBottomMenuBinding.inflate(layoutInflater)
@@ -95,4 +98,12 @@ class FaceDetection(
                 }
             }
         }
+
+    override fun showBottomMenu() {
+        TODO("Not yet implemented")
+    }
+
+    override fun removeAllMenus() {
+        removeFaceDetectionBottomMenu(binding, this.faceDetectionBottomMenu)
+    }
 }
