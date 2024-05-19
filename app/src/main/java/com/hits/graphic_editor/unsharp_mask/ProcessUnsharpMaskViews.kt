@@ -63,7 +63,6 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             unsharpMask.blurRadius = progress.toFloat()
             unsharpMaskBinding.radiusValue.text = "Радиус размытия: $progress"
-            unsharpMask.applyUnsharpMasking()
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -74,7 +73,6 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             unsharpMask.amount = progress / 100f
             unsharpMaskBinding.amountValue.text = "Коэффициент усиления: ${unsharpMask.amount}"
-            unsharpMask.applyUnsharpMasking()
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -85,7 +83,6 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             unsharpMask.threshold = progress
             unsharpMaskBinding.thresholdValue.text = "Порог: $progress"
-            unsharpMask.applyUnsharpMasking()
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -95,6 +92,6 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
 
 private fun setupApplyButtonListener(unsharpMask: UnsharpMask, unsharpMaskBinding: UnsharpmaskBottomMenuBinding) {
     unsharpMaskBinding.applyButton.setOnClickListener {
-        unsharpMask.applyChanges()
+        unsharpMask.applyUnsharpMasking()
     }
 }
