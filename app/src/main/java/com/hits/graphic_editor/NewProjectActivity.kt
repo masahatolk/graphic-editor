@@ -1,8 +1,10 @@
 package com.hits.graphic_editor
 
-import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.os.Bundle
-import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
@@ -14,16 +16,15 @@ import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
-import com.hits.graphic_editor.ui.color_correction.ColorCorrection
-
+import kotlinx.coroutines.runBlocking
+import org.opencv.android.OpenCVLoader
 
 class NewProjectActivity : AppCompatActivity() {
 
+    // ------------ UI elements ------------
     private val binding: ActivityNewProjectBinding by lazy {
         ActivityNewProjectBinding.inflate(layoutInflater)
     }
-
-    private var pickedPhoto: Uri? = null
     private val topMenu: TopMenuBinding by lazy {
         TopMenuBinding.inflate(layoutInflater)
     }
@@ -36,6 +37,7 @@ class NewProjectActivity : AppCompatActivity() {
     private var processedImage: ProcessedImage = ProcessedImage()
 
     private lateinit var newScaling: Scaling
+    private lateinit var newFaceDetection: FaceDetection
     private lateinit var newColorCorrection: ColorCorrection
     private lateinit var newRotation: Rotation
 
@@ -43,27 +45,43 @@ class NewProjectActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (OpenCVLoader.initLocal()) {
+            Log.i("TEST", "OpenCV loaded successfully")
+        } else {
+            Log.e("TEST", "OpenCV initialization failed!")
+            (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show()
+            return
+        }
         setContentView(binding.root)
 
-        // ------------get photo from MainActivity------------
-        val photo = intent?.getStringExtra("photo")
+        // ------------ get photo from MainActivity ------------
+        val photo = intent.getStringExtra("photo")
+        val selectedPhotoUri = photo!!.toUri()
+        val selectedPhotoBitmap: Bitmap
 
-        pickedPhoto = photo?.toUri()
-        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, pickedPhoto)
+        runBlocking {
+            selectedPhotoBitmap = ImageDecoder.decodeBitmap(
+                ImageDecoder.createSource(applicationContext.contentResolver, selectedPhotoUri)
+            ) { decoder, _, _ ->
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                decoder.isMutableRequired = true
+            }
+        }
 
-        binding.imageView.setImageURI(pickedPhoto)
+        binding.imageView.setImageURI(selectedPhotoUri)
 
-        // -------------------add main menus-------------------
+        // ------------------- add main menus -------------------
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
 
-        // --------------create necessary fields---------------
-        processedImage.image = getSimpleImage(bitmap)
-        newScaling = Scaling(binding, layoutInflater)
-        newRotation = Rotation(binding, layoutInflater)
-        newColorCorrection = ColorCorrection(binding, layoutInflater)
+        // -------------- create necessary fields ---------------
+        processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
+        newScaling = Scaling(binding, layoutInflater, processedImage)
+        newRotation = Rotation(binding, layoutInflater, processedImage)
+        newFaceDetection = FaceDetection(this, binding, layoutInflater)
+        newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
 
-        // --------------add listeners to menus----------------
+        // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
         setListenersToExtraTopMenu(
             binding,
@@ -73,10 +91,11 @@ class NewProjectActivity : AppCompatActivity() {
             processedImage,
             newScaling,
             newRotation,
-            newColorCorrection
+            newColorCorrection,
+            newFaceDetection
         )
 
-        // ------------add listener to bottom menu-------------
+        // ------------ add listener to bottom menu -------------
         bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -97,43 +116,37 @@ class NewProjectActivity : AppCompatActivity() {
         removeBottomMenu(binding, bottomMenu)
         addExtraTopMenu(binding, extraTopMenu)
 
-        when (bottomMenu.root.selectedTabPosition) {
-            FilterMode.SCALING.ordinal -> {
-                newScaling.simpleImage = processedImage.image
-                newScaling.showBottomMenu()
-            }
+                processedImage.switchStackMode()
+                when (bottomMenu.root.selectedTabPosition) {
+                    FilterMode.SCALING.ordinal -> {
+                        newScaling.showBottomMenu()
+                    }
 
-            FilterMode.ROTATION.ordinal -> {
-                newRotation.simpleImage = processedImage.image
-                newRotation.showBottomMenu()
-            }
+                    FilterMode.ROTATION.ordinal -> {
+                        newRotation.showBottomMenu()
+                    }
 
-            FilterMode.COLOR_CORRECTION.ordinal -> {
-                newColorCorrection.simpleImage = processedImage.image
-                newColorCorrection.showBottomMenu()
-            }
+                    FilterMode.COLOR_CORRECTION.ordinal -> {
+                        newColorCorrection.showBottomMenu()
+                    }
 
-            FilterMode.RETOUCH.ordinal -> {
+                    FilterMode.RETOUCH.ordinal -> {
 
-            }
+                    }
 
-            FilterMode.FACE_DETECTION.ordinal -> {
+                    FilterMode.SPLINE.ordinal -> {
 
-            }
+                    }
 
-            FilterMode.SPLINE.ordinal -> {
+                    FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
 
-            }
+                    }
 
-            FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
+                    FilterMode.UNSHARP_MASKING.ordinal -> {
 
-            }
+                    }
 
-            FilterMode.UNSHARP_MASKING.ordinal -> {
-
-            }
-
-            FilterMode.CUBE.ordinal -> {
+                    FilterMode.CUBE.ordinal -> {
 
             }
         }

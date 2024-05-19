@@ -3,7 +3,12 @@ package com.hits.graphic_editor.custom_api
 import android.graphics.Bitmap
 import androidx.core.graphics.createBitmap
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 
 data class SimpleImage(
     var pixels: IntArray,
@@ -43,6 +48,24 @@ data class SimpleImage(
         result = 31 * result + width
         return result
     }
+
+    fun getPixels(x: Int, y: Int, width: Int, height: Int): IntArray {
+        var pixels = IntArray(height * width)
+
+        for (i in 0 until height) {
+            for (j in 0 until width) {
+                pixels[i * width + j] = this.pixels[(y + i) * this.width + (x + j)]
+            }
+        }
+        return pixels
+    }
+
+    fun setPixels(x: Int, y: Int, settedPixels: IntArray, width: Int) {
+
+        for (i in settedPixels.indices) {
+            pixels[(y + i / width) * this.width + (i % width + x)] = settedPixels[i]
+        }
+    }
 }
 
 fun getBitMap(img: SimpleImage): Bitmap {
@@ -66,16 +89,28 @@ fun Bitmap.setPixels(img: SimpleImage) =
 
 data class MipMapsContainer(
     var img: SimpleImage,
-    var mipMaps: MutableList<SimpleImage> = mutableListOf()
+    var mipMaps: MutableList<SimpleImage> = mutableListOf(),
+    var jobs: MutableList<Job> = mutableListOf()
 ) {
     companion object {
-        val constSizeCoeffs = arrayOf(0.15F, 0.30F, 0.5F, 0.65F, 0.8F, 0.92F)
+        //val constSizeCoeffs = arrayOf(0.15F, 0.30F, 0.5F, 0.65F, 0.8F, 0.92F)
+        val constSizeCoeffs = arrayOf(0.2F, 0.4F, 0.6F, 0.8F)
     }
 
     constructor(simpleImg: SimpleImage) : this(img = simpleImg)
 
     init {
-        for (coeff in constSizeCoeffs)
-            this.mipMaps.add(getSuperSampledSimpleImage(this.img, coeff))
+        for (coeff in constSizeCoeffs) {
+            jobs.add(CoroutineScope(Dispatchers.Default).launch(start = CoroutineStart.LAZY) {
+                mipMaps.add(getSuperSampledSimpleImage(img, coeff))
+            })
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            jobs.forEach { it.join() }
+        }
+    }
+
+    fun cancelJobs() {
+        jobs.forEach { it.cancel() }
     }
 }

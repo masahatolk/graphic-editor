@@ -34,12 +34,6 @@
     <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:icon="@drawable/ic_face_recognition_24dp"
-        android:text="FD" />
-
-    <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:icon="@drawable/ic_splines_24dp"
         android:text="Spline" />
 

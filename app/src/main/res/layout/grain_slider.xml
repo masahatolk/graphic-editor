@@ -8,7 +8,7 @@
         android:id="@+id/grain_slider"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:value="10"
+        android:value="50"
         android:valueFrom="5"
         android:valueTo="90"
         android:stepSize="1"
