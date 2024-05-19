@@ -24,16 +24,20 @@ class NewProjectActivity : AppCompatActivity() {
     }
 
     private var pickedPhoto: Uri? = null
-    val topMenu: TopMenuBinding by lazy {
+    private val topMenu: TopMenuBinding by lazy {
         TopMenuBinding.inflate(layoutInflater)
     }
-    val bottomMenu: BottomMenuBinding by lazy {
+    private val bottomMenu: BottomMenuBinding by lazy {
         BottomMenuBinding.inflate(layoutInflater)
     }
-    val extraTopMenu: ExtraTopMenuBinding by lazy {
+    private val extraTopMenu: ExtraTopMenuBinding by lazy {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
     private var processedImage: ProcessedImage = ProcessedImage()
+
+    private lateinit var newScaling: Scaling
+    private lateinit var newColorCorrection: ColorCorrection
+    private lateinit var newRotation: Rotation
 
 
 
@@ -55,9 +59,9 @@ class NewProjectActivity : AppCompatActivity() {
 
         // --------------create necessary fields---------------
         processedImage.image = getSimpleImage(bitmap)
-        val newScaling = Scaling(binding, layoutInflater)
-        val newRotation = Rotation(binding, layoutInflater)
-        val newColorCorrection = ColorCorrection(binding, layoutInflater)
+        newScaling = Scaling(binding, layoutInflater)
+        newRotation = Rotation(binding, layoutInflater)
+        newColorCorrection = ColorCorrection(binding, layoutInflater)
 
         // --------------add listeners to menus----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -76,57 +80,62 @@ class NewProjectActivity : AppCompatActivity() {
         bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
             override fun onTabSelected(tab: TabLayout.Tab) {
-
-                removeTopMenu(binding, topMenu)
-                removeBottomMenu(binding, bottomMenu)
-                addExtraTopMenu(binding, extraTopMenu)
-
-                when (bottomMenu.root.selectedTabPosition) {
-                    FilterMode.SCALING.ordinal -> {
-                        newScaling.simpleImage = processedImage.image
-                        newScaling.showBottomMenu()
-                    }
-
-                    FilterMode.ROTATION.ordinal -> {
-                        newRotation.simpleImage = processedImage.image
-                        newRotation.showBottomMenu()
-                    }
-
-                    FilterMode.COLOR_CORRECTION.ordinal -> {
-                        newColorCorrection.simpleImage = processedImage.image
-                        newColorCorrection.showBottomMenu()
-                    }
-
-                    FilterMode.RETOUCH.ordinal -> {
-
-                    }
-
-                    FilterMode.FACE_DETECTION.ordinal -> {
-
-                    }
-
-                    FilterMode.SPLINE.ordinal -> {
-
-                    }
-
-                    FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
-
-                    }
-
-                    FilterMode.UNSHARP_MASKING.ordinal -> {
-
-                    }
-
-                    FilterMode.CUBE.ordinal -> {
-
-                    }
-                }
+                onTabSelectedProcess()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                onTabSelectedProcess()
+            }
         })
 
         supportActionBar?.hide()
+    }
+
+    fun onTabSelectedProcess () {
+        removeTopMenu(binding, topMenu)
+        removeBottomMenu(binding, bottomMenu)
+        addExtraTopMenu(binding, extraTopMenu)
+
+        when (bottomMenu.root.selectedTabPosition) {
+            FilterMode.SCALING.ordinal -> {
+                newScaling.simpleImage = processedImage.image
+                newScaling.showBottomMenu()
+            }
+
+            FilterMode.ROTATION.ordinal -> {
+                newRotation.simpleImage = processedImage.image
+                newRotation.showBottomMenu()
+            }
+
+            FilterMode.COLOR_CORRECTION.ordinal -> {
+                newColorCorrection.simpleImage = processedImage.image
+                newColorCorrection.showBottomMenu()
+            }
+
+            FilterMode.RETOUCH.ordinal -> {
+
+            }
+
+            FilterMode.FACE_DETECTION.ordinal -> {
+
+            }
+
+            FilterMode.SPLINE.ordinal -> {
+
+            }
+
+            FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
+
+            }
+
+            FilterMode.UNSHARP_MASKING.ordinal -> {
+
+            }
+
+            FilterMode.CUBE.ordinal -> {
+
+            }
+        }
     }
 }
