@@ -8,4 +8,5 @@ interface Filter {
     val layoutInflater: LayoutInflater
     val processedImage: ProcessedImage
     fun showBottomMenu()
+    fun removeAllMenus ()
 }

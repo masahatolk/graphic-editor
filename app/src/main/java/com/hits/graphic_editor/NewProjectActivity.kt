@@ -9,15 +9,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
-import com.hits.graphic_editor.color_correction.ColorCorrection
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
+import com.hits.graphic_editor.color_correction.ColorCorrection
+import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
 import com.hits.graphic_editor.ui.addTopMenu
@@ -25,7 +25,7 @@ import com.hits.graphic_editor.ui.removeBottomMenu
 import com.hits.graphic_editor.ui.removeTopMenu
 import com.hits.graphic_editor.ui.setListenersToExtraTopMenu
 import com.hits.graphic_editor.ui.setListenersToTopMenu
-import com.hits.graphic_editor.utils.ColorCorrectionMode
+import com.hits.graphic_editor.utils.FilterMode
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
 import org.opencv.android.OpenCVLoader
@@ -36,13 +36,13 @@ class NewProjectActivity : AppCompatActivity() {
     private val binding: ActivityNewProjectBinding by lazy {
         ActivityNewProjectBinding.inflate(layoutInflater)
     }
-    private val topMenu: TopMenuBinding by lazy {
+    val topMenu: TopMenuBinding by lazy {
         TopMenuBinding.inflate(layoutInflater)
     }
-    private val bottomMenu: BottomMenuBinding by lazy {
+    val bottomMenu: BottomMenuBinding by lazy {
         BottomMenuBinding.inflate(layoutInflater)
     }
-    private val extraTopMenu: ExtraTopMenuBinding by lazy {
+    val extraTopMenu: ExtraTopMenuBinding by lazy {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
     private lateinit var processedImage: ProcessedImage
@@ -51,6 +51,8 @@ class NewProjectActivity : AppCompatActivity() {
     private lateinit var newFaceDetection: FaceDetection
     private lateinit var newColorCorrection: ColorCorrection
     private lateinit var newRotation: Rotation
+    private lateinit var newAffineTransform: AffineTransform
+    private lateinit var newCube3D: Cube3D
 
 
 
@@ -86,11 +88,13 @@ class NewProjectActivity : AppCompatActivity() {
         addBottomMenu(binding, bottomMenu)
 
         // -------------- create necessary fields ---------------
-        processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap))
+        processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap), binding.imageView)
         newScaling = Scaling(binding, layoutInflater, processedImage)
         newRotation = Rotation(binding, layoutInflater, processedImage)
-        newFaceDetection = FaceDetection(this, binding, layoutInflater)
+        newFaceDetection = FaceDetection(this, binding, layoutInflater, processedImage)
         newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
+        newAffineTransform = AffineTransform(binding, layoutInflater, processedImage)
+        newCube3D = Cube3D(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
@@ -103,7 +107,9 @@ class NewProjectActivity : AppCompatActivity() {
             newScaling,
             newRotation,
             newColorCorrection,
-            newFaceDetection
+            newFaceDetection,
+            newAffineTransform,
+            newCube3D
         )
 
         // ------------ add listener to bottom menu -------------

@@ -11,19 +11,17 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
 import com.hits.graphic_editor.NewProjectActivity
+import com.hits.graphic_editor.affine_transform.AffineTransform
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.face_detection.FaceDetection
-import com.hits.graphic_editor.face_detection.removeAllFaceDetectionMenus
 import com.hits.graphic_editor.rotation.Rotation
-import com.hits.graphic_editor.rotation.removeAllRotateMenus
 import com.hits.graphic_editor.scaling.Scaling
-import com.hits.graphic_editor.scaling.removeAllScalingMenus
 import com.hits.graphic_editor.color_correction.ColorCorrection
-import com.hits.graphic_editor.color_correction.removeAllFilterMenus
+import com.hits.graphic_editor.cube_3d.Cube3D
 import com.hits.graphic_editor.utils.ProcessedImage
 import java.io.File
 import java.io.FileOutputStream
@@ -39,7 +37,9 @@ fun setListenersToExtraTopMenu(
     scaling: Scaling,
     rotation: Rotation,
     filter: ColorCorrection,
-    faceDetection: FaceDetection
+    faceDetection: FaceDetection,
+    affine: AffineTransform,
+    cube: Cube3D
 ) {
     extraTopMenu.close.setOnClickListener {
 
@@ -47,10 +47,12 @@ fun setListenersToExtraTopMenu(
         binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
 
         removeExtraTopMenu(binding, extraTopMenu)
-        removeAllScalingMenus(binding, scaling)
-        removeAllRotateMenus(binding, rotation)
-        removeAllFilterMenus(binding, filter)
-        removeAllFaceDetectionMenus(binding, faceDetection)
+        scaling.removeAllMenus()
+        rotation.removeAllMenus()
+        filter.removeAllMenus()
+        faceDetection.removeAllMenus()
+        affine.removeAllMenus()
+        cube.removeAllMenus()
         //...
 
         addTopMenu(binding, topMenu)
@@ -63,25 +65,24 @@ fun setListenersToExtraTopMenu(
         binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
 
         removeExtraTopMenu(binding, extraTopMenu)
-        removeAllScalingMenus(binding, scaling)
-        removeAllRotateMenus(binding, rotation)
-        removeAllFilterMenus(binding, filter)
-        removeAllFaceDetectionMenus(binding, faceDetection)
+        scaling.removeAllMenus()
+        rotation.removeAllMenus()
+        filter.removeAllMenus()
+        faceDetection.removeAllMenus()
+        affine.removeAllMenus()
+        cube.removeAllMenus()
         //...
 
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
     }
-
     /*
     extraTopMenu.undo.setOnClickListener() {
-        processedImage.undo()
-        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        processedImage.undoAndSetImageToView()
     }
 
     extraTopMenu.redo.setOnClickListener(){
-        processedImage.redo()
-        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        processedImage.redoAndSetImageToView()
     }*/
 }
 
@@ -98,17 +99,15 @@ fun setListenersToTopMenu(
     }
 
     topMenu.undo.setOnClickListener() {
-        processedImage.undo()
-        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        processedImage.undoAndSetImageToView()
     }
 
     topMenu.redo.setOnClickListener(){
-        processedImage.redo()
-        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        processedImage.redoAndSetImageToView()
     }
 
     topMenu.download.setOnClickListener() {
-        val bitmap = (binding.imageView.getDrawable() as BitmapDrawable).bitmap
+        val bitmap = (binding.imageView.drawable as BitmapDrawable).bitmap
         val fileName = "${System.currentTimeMillis()}" + ".png"
         var fos: OutputStream? = null
 
