@@ -114,4 +114,11 @@ class ProcessedImage(
     fun getMipMapsContainer(): MipMapsContainer{
         return this.mipMapsContainer
     }
+    fun setImageToView() {
+        imageView.setImageBitmap(getBitMap(getSimpleImage()))
+    }
+    fun addToLocalStackAndSetImageToView(img: SimpleImage){
+        addToLocalStack(img)
+        setImageToView()
+    }
 }

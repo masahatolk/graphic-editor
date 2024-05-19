@@ -14,12 +14,7 @@ import com.hits.graphic_editor.utils.getTrilinearFilteredPixelInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.job
 //import kotlinx.coroutines.*
 import kotlin.math.abs
 import kotlin.math.ceil

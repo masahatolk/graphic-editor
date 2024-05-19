@@ -2,9 +2,11 @@ package com.hits.graphic_editor
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
@@ -48,6 +50,7 @@ class NewProjectActivity : AppCompatActivity() {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (OpenCVLoader.initLocal()) {
@@ -85,7 +88,7 @@ class NewProjectActivity : AppCompatActivity() {
         val newRotation = Rotation(binding, layoutInflater, processedImage)
         val newFaceDetection = FaceDetection(this, binding, layoutInflater, processedImage)
         val newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
-        val newAffineTransform = AffineTransform(binding, layoutInflater, processedImage)
+        val newAffineTransform = AffineTransform(this, binding, layoutInflater, processedImage)
         val newCube3D = Cube3D(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------

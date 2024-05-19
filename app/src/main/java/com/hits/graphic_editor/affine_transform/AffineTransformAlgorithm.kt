@@ -23,7 +23,7 @@ data class PointTransfer(
 )
 fun getAffineTransformationMatrix(
     transf1: PointTransfer, transf2: PointTransfer, transf3: PointTransfer
-): Array<Array<Float>>
+): Array<Array<Float>>?
 {
     // start X coordinates
     val a = arrayOf(transf1.fromX, transf2.fromX, transf3.fromX)
@@ -34,20 +34,25 @@ fun getAffineTransformationMatrix(
     // new Y coordinates
     val c2 = arrayOf(transf1.toY, transf2.toY, transf3.toY)
 
-    fun getTransformCoeffs(c: Array<Float>): Array<Float>
+    fun getTransformCoeffs(c: Array<Float>): Array<Float>?
     {
-        val x2 = ((a[1]-a[0])*(c[2]-c[0])-(a[2]-a[0])*(c[1]-c[0]))/
-                ((a[1]-a[0])*(b[2]-b[0])-(a[2]-a[0])*(b[1]-b[0]))
-        val x1 = ((c[2]-c[0])-(b[2]-b[0])*x2)/(a[2]-a[0])
+        val x2Div = (a[1]-a[0])*(b[2]-b[0])-(a[2]-a[0])*(b[1]-b[0])
+        val x1Div = a[2]-a[0]
+
+        if (x2Div == 0F || x1Div == 0F)
+            return null
+
+        val x2 = ((a[1]-a[0])*(c[2]-c[0])-(a[2]-a[0])*(c[1]-c[0])) / x2Div
+        val x1 = ((c[2]-c[0])-(b[2]-b[0])*x2) / x1Div
         val x3 = c[0]-a[0]*x1-b[0]*x2
 
         return arrayOf(x1, x2, x3)
     }
 
-    return arrayOf(
-        getTransformCoeffs(c1),
-        getTransformCoeffs(c2)
-    )
+    val row1 = getTransformCoeffs(c1) ?: return null
+    val row2 = getTransformCoeffs(c2) ?: return null
+
+    return arrayOf(row1, row2)
 }
 fun getReversedTransformationMatrix(matrix: Array<Array<Float>>): Array<Array<Float>>
 {
@@ -165,11 +170,12 @@ fun getAffineTransformedSimpleImage(mipMapsContainer: MipMapsContainer, matrix: 
     return newImg
 }
 suspend
-fun getRotatedSimpleImage(input: MipMapsContainer, angle: Float): SimpleImage
+fun getAffineTransformedSimpleImage(
+    mipMapsContainer: MipMapsContainer,
+    transf1: PointTransfer,
+    transf2: PointTransfer,
+    transf3: PointTransfer):SimpleImage?
 {
-    return getAffineTransformedSimpleImage(input,
-        arrayOf(
-            arrayOf(cos(angle),-sin(angle),0F),
-            arrayOf(sin(angle),cos(angle),0F)
-        ))
+    val matrix = getAffineTransformationMatrix(transf1, transf2, transf3) ?: return null
+    return getAffineTransformedSimpleImage(mipMapsContainer, matrix)
 }
