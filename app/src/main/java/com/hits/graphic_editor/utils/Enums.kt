@@ -1,6 +1,6 @@
 package com.hits.graphic_editor.utils
 
-enum class FilterMode {
+enum class ColorCorrectionMode {
     SCALING,
     ROTATION,
     COLOR_CORRECTION,

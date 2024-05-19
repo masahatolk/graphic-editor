@@ -9,13 +9,24 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.hits.graphic_editor.color_correction.ColorCorrection
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
+import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
+import com.hits.graphic_editor.ui.addBottomMenu
+import com.hits.graphic_editor.ui.addExtraTopMenu
+import com.hits.graphic_editor.ui.addTopMenu
+import com.hits.graphic_editor.ui.removeBottomMenu
+import com.hits.graphic_editor.ui.removeTopMenu
+import com.hits.graphic_editor.ui.setListenersToExtraTopMenu
+import com.hits.graphic_editor.ui.setListenersToTopMenu
+import com.hits.graphic_editor.utils.ColorCorrectionMode
+import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
 import org.opencv.android.OpenCVLoader
 
@@ -34,7 +45,7 @@ class NewProjectActivity : AppCompatActivity() {
     private val extraTopMenu: ExtraTopMenuBinding by lazy {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
-    private var processedImage: ProcessedImage = ProcessedImage()
+    private lateinit var processedImage: ProcessedImage
 
     private lateinit var newScaling: Scaling
     private lateinit var newFaceDetection: FaceDetection
@@ -118,35 +129,35 @@ class NewProjectActivity : AppCompatActivity() {
 
                 processedImage.switchStackMode()
                 when (bottomMenu.root.selectedTabPosition) {
-                    FilterMode.SCALING.ordinal -> {
+                    ColorCorrectionMode.SCALING.ordinal -> {
                         newScaling.showBottomMenu()
                     }
 
-                    FilterMode.ROTATION.ordinal -> {
+                    ColorCorrectionMode.ROTATION.ordinal -> {
                         newRotation.showBottomMenu()
                     }
 
-                    FilterMode.COLOR_CORRECTION.ordinal -> {
+                    ColorCorrectionMode.COLOR_CORRECTION.ordinal -> {
                         newColorCorrection.showBottomMenu()
                     }
 
-                    FilterMode.RETOUCH.ordinal -> {
+                    ColorCorrectionMode.RETOUCH.ordinal -> {
 
                     }
 
-                    FilterMode.SPLINE.ordinal -> {
+                    ColorCorrectionMode.SPLINE.ordinal -> {
 
                     }
 
-                    FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
+                    ColorCorrectionMode.AFFINE_TRANSFORMATION.ordinal -> {
 
                     }
 
-                    FilterMode.UNSHARP_MASKING.ordinal -> {
+                    ColorCorrectionMode.UNSHARP_MASKING.ordinal -> {
 
                     }
 
-                    FilterMode.CUBE.ordinal -> {
+                    ColorCorrectionMode.CUBE.ordinal -> {
 
             }
         }
