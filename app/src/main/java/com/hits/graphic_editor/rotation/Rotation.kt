@@ -4,11 +4,11 @@ import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.RotationBottomMenuBinding
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 
 class Rotation(
@@ -17,12 +17,16 @@ class Rotation(
     override val processedImage: ProcessedImage
 ) : Filter {
 
-    private lateinit var simpleImage : SimpleImage
+    private lateinit var simpleImage: SimpleImage
     private var lastRotatedBitmap: Bitmap? = null
     private var totalRotationAngle: Int = 0
 
-    val rotateButton: RotationBottomMenuBinding by lazy {
+    private val rotateButton: RotationBottomMenuBinding by lazy {
         RotationBottomMenuBinding.inflate(layoutInflater)
+    }
+
+    private val rotationSlider = RotationSlider(binding.root.context).apply {
+        value = 123.0
     }
 
     private fun showRotateButton() {
@@ -42,13 +46,17 @@ class Rotation(
     }
 
     override fun showBottomMenu() {
+        simpleImage = processedImage.getSimpleImage()
+
         addRotateButton()
         showRotateButton()
-    }
 
-    private fun addRotateButton() {
         binding.root.addView(
-            rotateButton.root.rootView,
+            rotationSlider.apply {
+                setOnScrollChangeListener { v, scrollX, _, oldScrollX, _ ->
+                    value += (scrollX - oldScrollX) * 0.1
+                }
+            },
             ConstraintLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -56,7 +64,20 @@ class Rotation(
                 bottomToBottom = binding.root.id
                 leftToLeft = binding.root.id
                 rightToRight = binding.root.id
-                verticalBias = 0.3F
+            }
+        )
+    }
+
+    private fun addRotateButton() {
+        binding.root.addView(
+            rotateButton.root,
+            ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomToBottom = binding.guideline.id
+                leftToLeft = binding.root.id
+                rightToRight = binding.root.id
             }
         )
     }
@@ -65,7 +86,7 @@ class Rotation(
         binding.root.removeView(rotateButton.root)
     }
 
-    override fun removeAllMenus () {
+    override fun removeAllMenus() {
         removeButton()
     }
 
