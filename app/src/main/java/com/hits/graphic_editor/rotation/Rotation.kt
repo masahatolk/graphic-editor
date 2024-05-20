@@ -3,6 +3,7 @@ package com.hits.graphic_editor.rotation
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.hits.graphic_editor.affine_transform.AffineTransformedResult
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
@@ -24,6 +25,7 @@ class Rotation(
     }
 
     private var totalDegreeAngle: Int = 0
+    private lateinit var imageResult: AffineTransformedResult
     private val bottomMenuBinding: RotationBottomMenuBinding by lazy {
         RotationBottomMenuBinding.inflate(layoutInflater)
     }
@@ -31,16 +33,16 @@ class Rotation(
     private fun setListenerToRotate90Button() {
         //rotate90Button
         bottomMenuBinding.rotateButton.setOnClickListener {
-            totalDegreeAngle = (totalDegreeAngle + 90) % 360
+            totalDegreeAngle = (totalDegreeAngle + 30) % 360
             runBlocking {
-                processedImage.addToLocalStack(
-                    getRotatedSimpleImage(
-                        processedImage.getMipMapsContainer(),
-                        totalDegreeAngle
-                    )
+                imageResult = getRotatedImageResult(
+                    processedImage.getMipMapsContainer(),
+                    totalDegreeAngle
                 )
             }
-            binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+            processedImage.addToLocalStackAndSetImageToView(
+                imageResult.getCropPreviewSimpleImage()
+            )
         }
     }
 

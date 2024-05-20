@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Toast
 import com.hits.graphic_editor.NewProjectActivity
@@ -23,6 +24,10 @@ import com.hits.graphic_editor.scaling.Scaling
 import com.hits.graphic_editor.color_correction.ColorCorrection
 import com.hits.graphic_editor.cube_3d.Cube3D
 import com.hits.graphic_editor.utils.ProcessedImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -102,54 +107,61 @@ fun setListenersToTopMenu(
         processedImage.undoAndSetImageToView()
     }
 
-    topMenu.redo.setOnClickListener(){
+    topMenu.redo.setOnClickListener() {
         processedImage.redoAndSetImageToView()
     }
 
     topMenu.download.setOnClickListener() {
-        val bitmap = (binding.imageView.drawable as BitmapDrawable).bitmap
-        val fileName = "${System.currentTimeMillis()}" + ".png"
-        var fos: OutputStream? = null
+        CoroutineScope(Dispatchers.IO).launch {
+            val bitmap = getBitMap(processedImage.getSimpleImage())
+            val fileName = "${System.currentTimeMillis()}" + ".png"
+            var fos: OutputStream? = null
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            context.contentResolver?.also { resolver ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                context.contentResolver?.also { resolver ->
 
-                val contentValues = ContentValues().apply {
+                    val contentValues = ContentValues().apply {
 
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                    }
+
+                    val imageUri: Uri? =
+                        resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+                    fos = imageUri?.let { resolver.openOutputStream(it) }
                 }
-
-                val imageUri: Uri? =
-                    resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-                fos = imageUri?.let { resolver.openOutputStream(it) }
+            } else {
+                val root = Environment.getExternalStorageDirectory()
+                val directory = File("$root/DemoApps")
+                if (!directory.exists()) {
+                    directory.mkdirs()
+                }
+                val file = File(directory, fileName)
+                fos = FileOutputStream(file)
             }
-        }
-        else {
-            val root = Environment.getExternalStorageDirectory()
-            val directory = File("$root/DemoApps")
-            if (!directory.exists()) {
-                directory.mkdirs()
+            fos?.use {
+                activity.runOnUiThread {
+                    Toast.makeText(context, "Saving image to the gallery...", Toast.LENGTH_SHORT).show()
+                }
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                activity.runOnUiThread {
+                    Toast.makeText(context, "Image saved to the gallery!", Toast.LENGTH_SHORT).show()
+                }
             }
-            val file = File(directory, fileName)
-            fos = FileOutputStream(file)
-        }
-        fos?.use {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
-            Toast.makeText(context, "image saved to the gallery", Toast.LENGTH_SHORT).show()
         }
     }
 
     topMenu.share.setOnClickListener() {
         val bitmap = (binding.imageView.drawable as BitmapDrawable).bitmap
-        val path = MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Image", null)
+        val path =
+            MediaStore.Images.Media.insertImage(context.contentResolver, bitmap, "Image", null)
         val uri: Uri = Uri.parse(path)
 
         val intent = Intent(Intent.ACTION_SEND)
-        intent.type="image/png"
+        intent.type = "image/png"
         intent.putExtra(Intent.EXTRA_STREAM, uri)
-        context.startActivity(Intent.createChooser(intent,"Share using"))
+        context.startActivity(Intent.createChooser(intent, "Share using"))
     }
 }

@@ -1,7 +1,9 @@
 package com.hits.graphic_editor.utils
 
 import kotlin.math.acos
+import kotlin.math.ceil
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -59,8 +61,28 @@ data class Vec2(var x: Int, var y: Int)
         other.x = tempX
         other.y = tempY
     }
+    operator fun minus(another: Vec2) =
+        Vec2(this.x - another.x, this.y - another.y)
+    operator fun plus(another: Vec2) =
+        Vec2(this.x + another.x, this.y + another.y)
+    operator fun div(divisor: Int) =
+        Vec2(this.x / divisor, this.y / divisor)
+    fun distTo(another: Vec2): Float =
+        sqrt((this.x - another.x) * (this.x - another.x) +
+                (this.y - another.y) * (this.y - another.y).toFloat())
 }
 data class FVec2(var x: Float, var y: Float)
+{
+    fun roundToVec2():Vec2{
+        return Vec2(x.roundToInt(), y.roundToInt())
+    }
+    fun floorToVec2():Vec2{
+        return Vec2(x.toInt(), y.toInt())
+    }
+    fun ceilToVec2():Vec2{
+        return Vec2(ceil(x).toInt(), ceil(y).toInt())
+    }
+}
 fun getRotationMatrix(vec: FVec3):Array<Array<Float>>
     =getRotationMatrix(vec.x, vec.y, vec.z)
 fun getRotationMatrix(xAngle: Float, yAngle: Float, zAngle: Float):Array<Array<Float>>

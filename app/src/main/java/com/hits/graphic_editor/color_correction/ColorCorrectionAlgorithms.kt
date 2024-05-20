@@ -1,4 +1,4 @@
-package com.hits.graphic_editor.ui.color_correction
+package com.hits.graphic_editor.color_correction
 
 import com.hits.graphic_editor.color_correction.RGBMode
 import com.hits.graphic_editor.custom_api.SimpleImage

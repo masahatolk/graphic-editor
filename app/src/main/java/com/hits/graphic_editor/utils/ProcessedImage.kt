@@ -22,7 +22,7 @@ class ProcessedImage(
     private var localStackIndex: Int = 0
     private var isInGlobalStack = true
 
-    private var maxLocalStackSize = 3
+    private var maxLocalStackSize = 1
     private var maxGlobalStackSize = 5
     /**
      * Сразу после вызываем 'getSimpleImage' для получения текущего изображения

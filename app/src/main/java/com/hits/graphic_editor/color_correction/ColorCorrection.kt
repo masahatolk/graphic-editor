@@ -16,7 +16,7 @@ import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.face_detection.removeFaceDetectionBottomMenu
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
-import com.hits.graphic_editor.ui.color_correction.ColorCorrectionAlgorithms
+import com.hits.graphic_editor.color_correction.ColorCorrectionAlgorithms
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.runBlocking
@@ -278,13 +278,13 @@ class ColorCorrection(
     }
 
     private fun applyFilter(function: (img: SimpleImage) -> SimpleImage) {
-        if (faceDetection.isDetectionApplied){
-            processedImage.addToLocalStack(processFaces(processedImage.getSimpleImageBeforeFiltering(), function))
-            binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+        if (faceDetection.isDetectionApplied) {
+            processedImage.addToLocalStackAndSetImageToView(
+                processFaces(processedImage.getSimpleImageBeforeFiltering(), function))
         }
         else{
-            processedImage.addToLocalStack(function(processedImage.getSimpleImageBeforeFiltering()))
-            binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
+            processedImage.addToLocalStackAndSetImageToView(
+                processFaces(processedImage.getSimpleImageBeforeFiltering(), function))
         }
     }
 

@@ -29,10 +29,10 @@ class AffineTransform(
         val pointerEndXs = mutableListOf(0F, 0F, 0F)
         val pointerEndYs = mutableListOf(0F, 0F, 0F)
 
-        var isRunning = false
+        //var isRunning = false
         binding.imageView.setOnTouchListener{ _, event ->
-            if (isRunning) return@setOnTouchListener true
-            isRunning = true
+            //if (isRunning) return@setOnTouchListener true
+            //isRunning = true
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (pointerIds[0] == HASNT_OCCURRED) {
@@ -59,8 +59,8 @@ class AffineTransform(
 
                             if (pointerIds.all { it != HASNT_OCCURRED }) {
                                 pointerIds.replaceAll { _ -> HASNT_OCCURRED }
-                                val transformedImg = runBlocking {
-                                    getAffineTransformedSimpleImage(
+                                val transformedImage = runBlocking {
+                                    getAffineTransformedResult(
                                         processedImage.getMipMapsContainer(),
                                         PointTransfer(
                                             pointerStartXs[0],
@@ -80,10 +80,10 @@ class AffineTransform(
                                             pointerStartYs[2],
                                             pointerEndYs[2]
                                         )
-                                    )
+                                    )?.transformedImage
                                 }
-                                if (transformedImg != null) {
-                                    processedImage.addToLocalStackAndSetImageToView(transformedImg)
+                                if (transformedImage != null) {
+                                    processedImage.addToLocalStackAndSetImageToView(transformedImage)
                                 }
                                 else{
                                     Toast.makeText(context, "No valid transform!", Toast.LENGTH_SHORT).show()
@@ -100,8 +100,8 @@ class AffineTransform(
 
                             if (pointerIds.all { it != HASNT_OCCURRED }) {
                                 pointerIds.replaceAll { _ -> HASNT_OCCURRED }
-                                val transformedImg = runBlocking {
-                                    getAffineTransformedSimpleImage(
+                                val transformedImage = runBlocking {
+                                    getAffineTransformedResult(
                                         processedImage.getMipMapsContainer(),
                                         PointTransfer(
                                             pointerStartXs[0],
@@ -121,10 +121,10 @@ class AffineTransform(
                                             pointerStartYs[2],
                                             pointerEndYs[2]
                                         )
-                                    )
+                                    )?.transformedImage
                                 }
-                                if (transformedImg != null) {
-                                    processedImage.addToLocalStackAndSetImageToView(transformedImg)
+                                if (transformedImage != null) {
+                                    processedImage.addToLocalStackAndSetImageToView(transformedImage)
                                 }
                                 else{
                                     Toast.makeText(context, "No valid transform!", Toast.LENGTH_SHORT).show()
@@ -134,7 +134,7 @@ class AffineTransform(
                     }
                 }
             }
-            isRunning = false
+            //isRunning = false
             true
         }
     }

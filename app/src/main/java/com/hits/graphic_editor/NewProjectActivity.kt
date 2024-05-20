@@ -74,9 +74,8 @@ class NewProjectActivity : AppCompatActivity() {
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                 decoder.isMutableRequired = true
             }
+            binding.imageView.setImageBitmap(selectedPhotoBitmap)
         }
-
-        binding.imageView.setImageURI(selectedPhotoUri)
 
         // ------------------- add main menus -------------------
         addTopMenu(binding, topMenu)
@@ -84,6 +83,7 @@ class NewProjectActivity : AppCompatActivity() {
 
         // -------------- create necessary fields ---------------
         val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap), binding.imageView)
+
         val newScaling = Scaling(binding, layoutInflater, processedImage)
         val newRotation = Rotation(binding, layoutInflater, processedImage)
         val newFaceDetection = FaceDetection(this, binding, layoutInflater, processedImage)

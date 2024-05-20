@@ -1,6 +1,7 @@
 package com.hits.graphic_editor.rotation
 
-import com.hits.graphic_editor.affine_transform.getAffineTransformedSimpleImage
+import com.hits.graphic_editor.affine_transform.AffineTransformedResult
+import com.hits.graphic_editor.affine_transform.getAffineTransformedResult
 import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.SimpleImage
 import kotlinx.coroutines.CoroutineScope
@@ -57,15 +58,15 @@ private suspend fun getRotated270DegreesSimpleImage(img: SimpleImage): SimpleIma
 }
 
 suspend
-fun getRotatedSimpleImage(input: MipMapsContainer, degAngle: Int): SimpleImage
+fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int): AffineTransformedResult
 {
-    if (degAngle == 0) return getRotated0DegreesSimpleImage(input.img)
-    if (degAngle == 90) return getRotated90DegreesSimpleImage(input.img)
-    if (degAngle == 180) return getRotated180DegreesSimpleImage(input.img)
-    if (degAngle == 270) return getRotated270DegreesSimpleImage(input.img)
+    if (degAngle == 0) return AffineTransformedResult(getRotated0DegreesSimpleImage(input.img), null)
+    if (degAngle == 90) return AffineTransformedResult(getRotated90DegreesSimpleImage(input.img), null)
+    if (degAngle == 180) return AffineTransformedResult(getRotated180DegreesSimpleImage(input.img), null)
+    if (degAngle == 270) return AffineTransformedResult(getRotated270DegreesSimpleImage(input.img), null)
 
     val angleRadians: Float = Math.toRadians(degAngle.toDouble()).toFloat()
-    return getAffineTransformedSimpleImage(input,
+    return getAffineTransformedResult(input,
         arrayOf(
             arrayOf(cos(angleRadians),-sin(angleRadians),0F),
             arrayOf(sin(angleRadians), cos(angleRadians),0F)
