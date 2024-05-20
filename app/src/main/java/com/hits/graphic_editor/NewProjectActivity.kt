@@ -2,22 +2,26 @@ package com.hits.graphic_editor
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
+import com.hits.graphic_editor.affine_transform.AffineTransform
+import com.hits.graphic_editor.color_correction.ColorCorrection
+import com.hits.graphic_editor.cube_3d.Cube3D
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
+import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.rotation.Rotation
 import com.hits.graphic_editor.scaling.Scaling
-import com.hits.graphic_editor.color_correction.ColorCorrection
-import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
 import com.hits.graphic_editor.ui.addTopMenu
@@ -55,7 +59,7 @@ class NewProjectActivity : AppCompatActivity() {
     private lateinit var newCube3D: Cube3D
 
 
-
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (OpenCVLoader.initLocal()) {
@@ -92,7 +96,8 @@ class NewProjectActivity : AppCompatActivity() {
         newScaling = Scaling(binding, layoutInflater, processedImage)
         newRotation = Rotation(binding, layoutInflater, processedImage)
         newFaceDetection = FaceDetection(this, binding, layoutInflater, processedImage)
-        newColorCorrection = ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
+        newColorCorrection =
+            ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
         newAffineTransform = AffineTransform(binding, layoutInflater, processedImage)
         newCube3D = Cube3D(binding, layoutInflater, processedImage)
 
@@ -128,42 +133,42 @@ class NewProjectActivity : AppCompatActivity() {
         supportActionBar?.hide()
     }
 
-    fun onTabSelectedProcess () {
+    fun onTabSelectedProcess() {
         removeTopMenu(binding, topMenu)
         removeBottomMenu(binding, bottomMenu)
         addExtraTopMenu(binding, extraTopMenu)
 
-                processedImage.switchStackMode()
-                when (bottomMenu.root.selectedTabPosition) {
-                    ColorCorrectionMode.SCALING.ordinal -> {
-                        newScaling.showBottomMenu()
-                    }
+        processedImage.switchStackMode()
+        when (bottomMenu.root.selectedTabPosition) {
+            FilterMode.SCALING.ordinal -> {
+                newScaling.showBottomMenu()
+            }
 
-                    ColorCorrectionMode.ROTATION.ordinal -> {
-                        newRotation.showBottomMenu()
-                    }
+            FilterMode.ROTATION.ordinal -> {
+                newRotation.showBottomMenu()
+            }
 
-                    ColorCorrectionMode.COLOR_CORRECTION.ordinal -> {
-                        newColorCorrection.showBottomMenu()
-                    }
+            FilterMode.COLOR_CORRECTION.ordinal -> {
+                newColorCorrection.showBottomMenu()
+            }
 
-                    ColorCorrectionMode.RETOUCH.ordinal -> {
+            FilterMode.RETOUCH.ordinal -> {
 
-                    }
+            }
 
-                    ColorCorrectionMode.SPLINE.ordinal -> {
+            FilterMode.SPLINE.ordinal -> {
 
-                    }
+            }
 
-                    ColorCorrectionMode.AFFINE_TRANSFORMATION.ordinal -> {
+            FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
 
-                    }
+            }
 
-                    ColorCorrectionMode.UNSHARP_MASKING.ordinal -> {
+            FilterMode.UNSHARP_MASKING.ordinal -> {
 
-                    }
+            }
 
-                    ColorCorrectionMode.CUBE.ordinal -> {
+            FilterMode.CUBE.ordinal -> {
 
             }
         }
