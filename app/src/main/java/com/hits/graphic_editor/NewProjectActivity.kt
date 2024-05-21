@@ -14,7 +14,6 @@ import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.hits.graphic_editor.color_correction.ColorCorrection
-import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
@@ -111,7 +110,7 @@ class NewProjectActivity : AppCompatActivity() {
         newFaceDetection = FaceDetection(this, binding, layoutInflater)
         newColorCorrection =
             ColorCorrection(binding, layoutInflater, processedImage, newFaceDetection)
-        newSpline = Spline(binding, layoutInflater, getBitMap(processedImage.getSimpleImage()), colorPicker)
+        newSpline = Spline(binding, layoutInflater, processedImage, colorPicker)
 
         // -------------- add listeners to top menus ----------------
         setListenersToTopMenu(this, binding, this, topMenu, processedImage)
