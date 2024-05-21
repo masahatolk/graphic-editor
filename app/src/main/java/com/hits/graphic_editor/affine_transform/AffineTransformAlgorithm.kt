@@ -93,12 +93,12 @@ data class AffineTransformedResult(
         val cropOffset = cashedCropOffset
 
         val resultImg = SimpleImage(
-            transformedImage.width - cropOffset.x * 2,
-            transformedImage.height - cropOffset.y * 2
+            transformedImage.width - (cropOffset.x + 1) * 2,
+            transformedImage.height - (cropOffset.y + 1) * 2
         )
         for (x in 0 until resultImg.width)
             for (y in 0 until resultImg.height)
-                resultImg[x, y] = transformedImage[x + cropOffset.x, y + cropOffset.y]
+                resultImg[x, y] = transformedImage[x + cropOffset.x + 1, y + cropOffset.y + 1]
 
         return resultImg
     }
@@ -113,16 +113,10 @@ private fun getCropOffset(
             return Vec2(((img.width - ratioXY * img.height)/2).toInt(),0)
         return Vec2(0, ((img.height - ratioXY * img.width)/2).toInt())
     }
-    val leftTopLine = arrayOf(
-        edgePoints.leftY,
-        edgePoints.topX,
-        -edgePoints.leftY * edgePoints.topX
-    )
-    val topRightLine = arrayOf(
-        -edgePoints.rightY,
-        (img.width - edgePoints.topX),
-        edgePoints.topX * edgePoints.rightY
-    )
+    fun relationToLeftTopLine(x: Int, y: Int) =
+        edgePoints.leftY * x + edgePoints.topX * y -edgePoints.leftY * edgePoints.topX
+    fun relationToTopRightLine(x: Int, y: Int) =
+        -edgePoints.rightY * x + (img.width - edgePoints.topX) * y + edgePoints.topX * edgePoints.rightY
 
     var leftWidth = 0
     var rightWidth = img.width - 1
@@ -134,18 +128,19 @@ private fun getCropOffset(
         ltPoint = Vec2((img.width - 1 - midWidth) / 2, (img.height - 1 - midHeight) / 2)
         val trPoint = Vec2((img.width - 1 + midWidth) / 2, (img.height - 1 - midHeight) / 2)
 
-        val signLT = leftTopLine[0] * ltPoint.x +
-                leftTopLine[1] * ltPoint.y + leftTopLine[2]
-        val signTR = topRightLine[0] * trPoint.x +
-                topRightLine[1] * trPoint.y + topRightLine[2]
-
-        if (signLT == 0 && signTR ==0)
-            return ltPoint
+        val signLT = relationToLeftTopLine(ltPoint.x, ltPoint.y)
+        val signTR = relationToTopRightLine(trPoint.x,trPoint.y)
 
         if (signLT > 0 && signTR > 0)
             leftWidth = midWidth + 1
         else rightWidth = midWidth - 1
     }
+    while (relationToLeftTopLine(ltPoint.x, ltPoint.y) <= 0 ||
+        relationToTopRightLine(ltPoint.x, ltPoint.y) <= 0){
+        ltPoint.x++
+        ltPoint.y++
+    }
+
     return ltPoint
 }
 private fun getAffineTransformationMatrix(

@@ -1,5 +1,6 @@
 package com.hits.graphic_editor.color_correction
 
+import android.graphics.Bitmap
 import android.view.LayoutInflater
 import com.google.android.material.slider.Slider
 import com.google.android.material.tabs.TabLayout
@@ -16,7 +17,6 @@ import com.hits.graphic_editor.databinding.RgbMenuBinding
 import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.face_detection.removeFaceDetectionBottomMenu
 import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
-import com.hits.graphic_editor.color_correction.ColorCorrectionAlgorithms
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.CoroutineScope
@@ -68,6 +68,10 @@ class ColorCorrection(
     private val openClInitJob = CoroutineScope(Dispatchers.Default).launch {
         faces = faceDetection.detectFaces(faceDetection.getMatrix(processedImage.getSimpleImage())).toArray()
     }
+    private lateinit var cachedDetectionBm: Bitmap
+    private val cachedDetectionJob = CoroutineScope(Dispatchers.IO).launch {
+        cachedDetectionBm = faceDetection.getDetection(processedImage.getSimpleImageBeforeFiltering())
+    }
 
     override fun onStart() {
         runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.09F) }
@@ -84,7 +88,8 @@ class ColorCorrection(
 
         when (filterMode) {
             ColorCorrectionMode.FACE_DETECTION -> {
-                faceDetection.showBottomMenu(processedImage.getSimpleImageBeforeFiltering())
+                runBlocking {cachedDetectionJob.join()}
+                faceDetection.showBottomMenu(cachedDetectionBm)
             }
 
             ColorCorrectionMode.INVERSION -> {

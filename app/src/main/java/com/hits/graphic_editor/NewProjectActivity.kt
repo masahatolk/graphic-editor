@@ -70,7 +70,8 @@ class NewProjectActivity : AppCompatActivity() {
         // ---------------- open cv init ----------------
         if (OpenCVLoader.initLocal()) {
             Log.i("TEST", "OpenCV loaded successfully")
-        } else {
+        }
+        else {
             Log.e("TEST", "OpenCV initialization failed!")
             (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show()
             return
@@ -80,17 +81,15 @@ class NewProjectActivity : AppCompatActivity() {
         // ------------ get photo from MainActivity ------------
         val photo = intent.getStringExtra("photo")
         val selectedPhotoUri = photo!!.toUri()
-        val selectedPhotoBitmap: Bitmap
-
-        runBlocking {
-            selectedPhotoBitmap = ImageDecoder.decodeBitmap(
+        val selectedPhotoBitmap: Bitmap = runBlocking {
+            ImageDecoder.decodeBitmap(
                 ImageDecoder.createSource(applicationContext.contentResolver, selectedPhotoUri)
             ) { decoder, _, _ ->
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
                 decoder.isMutableRequired = true
             }
-            binding.imageView.setImageBitmap(selectedPhotoBitmap)
         }
+        binding.imageView.setImageBitmap(selectedPhotoBitmap)
 
         // ------------------- add main menus -------------------
         addTopMenu(binding, topMenu)

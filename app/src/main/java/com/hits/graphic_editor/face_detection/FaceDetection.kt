@@ -35,14 +35,14 @@ class FaceDetection(
     var isDetectionApplied = false
 
 
-    fun showBottomMenu(simpleImage: SimpleImage) {
+    fun showBottomMenu(cachedDetectionBm: Bitmap) {
         addFaceDetectionBottomMenu(binding, faceDetectionBottomMenu)
-        binding.imageView.setImageBitmap(getBitMap(simpleImage))
+        processedImage.addToLocalStackAndSetImageToView(processedImage.getSimpleImageBeforeFiltering())
 
         faceDetectionBottomMenu.faceDetectionChip.setOnClickListener {
             isDetectionApplied = !isDetectionApplied
-            if(isDetectionApplied) binding.imageView.setImageBitmap(getDetection(simpleImage))
-            else binding.imageView.setImageBitmap(getBitMap(simpleImage))
+            if(isDetectionApplied) binding.imageView.setImageBitmap(cachedDetectionBm)
+            else binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImageBeforeFiltering()))
         }
     }
 
