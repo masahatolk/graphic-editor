@@ -19,9 +19,14 @@ import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
 import com.hits.graphic_editor.color_correction.ColorCorrectionAlgorithms
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.opencv.core.Mat
 import org.opencv.core.MatOfRect
+import org.opencv.core.Rect
 
 class ColorCorrection(
     override val binding: ActivityNewProjectBinding,
@@ -33,8 +38,7 @@ class ColorCorrection(
     // -----------------create necessary fields-----------------
     private lateinit var smallSimpleImage: SimpleImage
 
-    private lateinit var matrix: Mat
-    private lateinit var faces: MatOfRect
+    private lateinit var faces: Array<Rect>
 
     val colorCorrectionBottomMenu: ColorCorrectionRecyclerViewBinding by lazy {
         ColorCorrectionRecyclerViewBinding.inflate(layoutInflater)
@@ -61,18 +65,18 @@ class ColorCorrection(
             }
         })
     }
+    private val openClInitJob = CoroutineScope(Dispatchers.Default).launch {
+        faces = faceDetection.detectFaces(faceDetection.getMatrix(processedImage.getSimpleImage())).toArray()
+    }
 
-    override fun showBottomMenu() {
-        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.05F) }
+    override fun onStart() {
+        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.09F) }
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
-        matrix = faceDetection.getMatrix(processedImage.getSimpleImage())
-        faces = faceDetection.detectFaces(matrix)
-
         addFilterBottomMenu(binding, colorCorrectionBottomMenu)
     }
 
-    override fun removeAllMenus() {
+    override fun onClose() {
         removeAllFilterMenus(binding, this)
     }
 
@@ -284,7 +288,7 @@ class ColorCorrection(
         }
         else{
             processedImage.addToLocalStackAndSetImageToView(
-                processFaces(processedImage.getSimpleImageBeforeFiltering(), function))
+                function(processedImage.getSimpleImageBeforeFiltering()))
         }
     }
 
@@ -293,7 +297,8 @@ class ColorCorrection(
         function: (img: SimpleImage) -> SimpleImage
     ): SimpleImage {
         val img = simpleImage.copy(pixels = simpleImage.pixels.clone())
-        for (face in faces.toArray()) {
+        runBlocking { openClInitJob.join()}
+        for (face in faces) {
             val pixels = img.getPixels(face.x, face.y, face.width, face.height)
             var faceSimpleImage = SimpleImage(
                 pixels,

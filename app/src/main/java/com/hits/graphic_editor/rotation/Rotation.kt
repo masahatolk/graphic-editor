@@ -16,20 +16,25 @@ class Rotation(
     override val layoutInflater: LayoutInflater,
     override val processedImage: ProcessedImage
 ) : Filter {
-    override fun showBottomMenu() {
+    override fun onStart() {
         addRotate90Button()
         setListenerToRotate90Button()
     }
-    override fun removeAllMenus () {
+    override fun onClose() {
+        processedImage.addToLocalStack(imageResult.getCroppedSimpleImage())
         removeRotate90Button()
     }
 
     private var totalDegreeAngle: Int = 0
-    private lateinit var imageResult: AffineTransformedResult
+    private var imageResult: AffineTransformedResult = runBlocking {
+        getRotatedImageResult(
+            processedImage.getMipMapsContainer(),
+            totalDegreeAngle,
+        )
+    }
     private val bottomMenuBinding: RotationBottomMenuBinding by lazy {
         RotationBottomMenuBinding.inflate(layoutInflater)
     }
-
     private fun setListenerToRotate90Button() {
         //rotate90Button
         bottomMenuBinding.rotateButton.setOnClickListener {
@@ -37,15 +42,14 @@ class Rotation(
             runBlocking {
                 imageResult = getRotatedImageResult(
                     processedImage.getMipMapsContainer(),
-                    totalDegreeAngle
+                    totalDegreeAngle,
+                )
+                processedImage.addToLocalStackAndSetImageToView(
+                    imageResult.getCropPreviewSimpleImage()
                 )
             }
-            processedImage.addToLocalStackAndSetImageToView(
-                imageResult.getCropPreviewSimpleImage()
-            )
         }
     }
-
     private fun addRotate90Button() {
         binding.root.addView(
             bottomMenuBinding.root.rootView,
@@ -64,4 +68,3 @@ class Rotation(
         binding.root.removeView(bottomMenuBinding.root)
     }
 }
-

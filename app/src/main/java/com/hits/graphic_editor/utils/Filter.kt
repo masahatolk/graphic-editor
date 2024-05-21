@@ -7,6 +7,6 @@ interface Filter {
     val binding: ActivityNewProjectBinding
     val layoutInflater: LayoutInflater
     val processedImage: ProcessedImage
-    fun showBottomMenu()
-    fun removeAllMenus ()
+    fun onClose()
+    fun onStart ()
 }

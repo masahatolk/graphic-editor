@@ -99,11 +99,10 @@ class FaceDetection(
             }
         }
 
-    override fun showBottomMenu() {
-        TODO("Not yet implemented")
+    override fun onStart() {
     }
 
-    override fun removeAllMenus() {
+    override fun onClose() {
         removeFaceDetectionBottomMenu(binding, this.faceDetectionBottomMenu)
     }
 }

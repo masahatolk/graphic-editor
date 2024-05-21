@@ -16,7 +16,7 @@ class AffineTransform(
     override val layoutInflater: LayoutInflater,
     override val processedImage: ProcessedImage
 ):Filter {
-    override fun showBottomMenu() {
+    override fun onStart() {
         addGestures()
     }
     @SuppressLint("ClickableViewAccessibility")
@@ -80,7 +80,7 @@ class AffineTransform(
                                             pointerStartYs[2],
                                             pointerEndYs[2]
                                         )
-                                    )?.transformedImage
+                                    )?.getSimpleImage()
                                 }
                                 if (transformedImage != null) {
                                     processedImage.addToLocalStackAndSetImageToView(transformedImage)
@@ -121,7 +121,7 @@ class AffineTransform(
                                             pointerStartYs[2],
                                             pointerEndYs[2]
                                         )
-                                    )?.transformedImage
+                                    )?.getSimpleImage()
                                 }
                                 if (transformedImage != null) {
                                     processedImage.addToLocalStackAndSetImageToView(transformedImage)
@@ -140,7 +140,7 @@ class AffineTransform(
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun removeAllMenus() {
+    override fun onClose() {
         binding.imageView.setOnTouchListener(null)
     }
 }

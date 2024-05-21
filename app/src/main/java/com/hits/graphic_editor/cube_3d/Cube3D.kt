@@ -10,9 +10,8 @@ class Cube3D(
     override val layoutInflater: LayoutInflater,
     override val processedImage: ProcessedImage
 ):Filter {
-    override fun showBottomMenu() {
+    override fun onStart() {
     }
-
-    override fun removeAllMenus() {
+    override fun onClose() {
     }
 }

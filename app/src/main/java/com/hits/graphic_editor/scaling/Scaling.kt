@@ -16,12 +16,12 @@ class Scaling (
     override val layoutInflater: LayoutInflater,
     override val processedImage: ProcessedImage
 ): Filter {
-    override fun removeAllMenus () {
-        removeScalingBottomMenu()
-    }
-    override fun showBottomMenu () {
+    override fun onStart () {
         addScalingBottomMenu()
         setListeners()
+    }
+    override fun onClose() {
+        removeScalingBottomMenu()
     }
 
     private val scalingBottomMenu: ScalingBottomMenuBinding by lazy {

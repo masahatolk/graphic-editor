@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -31,15 +32,27 @@ data class EdgePoints(
     val bottomX: Int
 )
 data class AffineTransformedResult(
-    val transformedImage: SimpleImage,
-    val cropOffset: Vec2?
+    private val transformedImage: SimpleImage,
+    private val edgePoints: EdgePoints?,
+    private var ratio: Float,
 )
 {
+    private var cashedCropOffset: Vec2
+    init{
+        cashedCropOffset = getCropOffset(transformedImage, edgePoints, ratio)
+    }
     fun getSimpleImage(): SimpleImage{
         return transformedImage
     }
-    fun getCropPreviewSimpleImage(): SimpleImage {
-        cropOffset ?: return transformedImage
+    fun getCropPreviewSimpleImage(newRatio: Float? = null): SimpleImage {
+        if (newRatio != null && newRatio != ratio){
+            ratio = newRatio
+            cashedCropOffset = getCropOffset(transformedImage, edgePoints, ratio)
+        }
+        if (cashedCropOffset.x == 0 && cashedCropOffset.y == 0)
+            return transformedImage
+        val cropOffset = cashedCropOffset
+
         val cropPreviewImg = transformedImage.copy(pixels = transformedImage.pixels.clone())
         val jobs: MutableList<Job> = mutableListOf()
 
@@ -47,31 +60,38 @@ data class AffineTransformedResult(
             jobs.add(CoroutineScope(Dispatchers.Default).launch {
                 for (x in 0 until cropOffset.x) {
                     cropPreviewImg[x, y] =
-                        cropPreviewImg[x, y].divideIntColorByInt(2)
+                        cropPreviewImg[x, y].divideIntColorByInt(3)
                 }
                 for (x in transformedImage.width - cropOffset.x until transformedImage.width) {
                     cropPreviewImg[x, y] =
-                        cropPreviewImg[x, y].divideIntColorByInt(2)
+                        cropPreviewImg[x, y].divideIntColorByInt(3)
                 }
             })
         }
-        for (x in 0 until cropOffset.x) {
+        for (x in cropOffset.x until transformedImage.width - cropOffset.x) {
             jobs.add(CoroutineScope(Dispatchers.Default).launch {
                 for (y in 0 until cropOffset.y) {
                     cropPreviewImg[x, y] =
-                        cropPreviewImg[x, y].divideIntColorByInt(2)
+                        cropPreviewImg[x, y].divideIntColorByInt(3)
                 }
                 for (y in transformedImage.height - cropOffset.y until transformedImage.height) {
                     cropPreviewImg[x, y] =
-                        cropPreviewImg[x, y].divideIntColorByInt(2)
+                        cropPreviewImg[x, y].divideIntColorByInt(3)
                 }
             })
         }
         runBlocking{ jobs.forEach { it.join() }}
         return cropPreviewImg
     }
-    fun getCroppedSimpleImage(): SimpleImage {
-        cropOffset ?: return transformedImage
+    fun getCroppedSimpleImage(newRatio: Float? = null): SimpleImage {
+        if (newRatio != null && newRatio != ratio){
+            ratio = newRatio
+            cashedCropOffset = getCropOffset(transformedImage, edgePoints, ratio)
+        }
+        if (cashedCropOffset.x == 0 && cashedCropOffset.y == 0)
+            return transformedImage
+        val cropOffset = cashedCropOffset
+
         val resultImg = SimpleImage(
             transformedImage.width - cropOffset.x * 2,
             transformedImage.height - cropOffset.y * 2
@@ -79,21 +99,29 @@ data class AffineTransformedResult(
         for (x in 0 until resultImg.width)
             for (y in 0 until resultImg.height)
                 resultImg[x, y] = transformedImage[x + cropOffset.x, y + cropOffset.y]
+
         return resultImg
     }
 }
 private fun getCropOffset(
-    img: SimpleImage, edgePoints: EdgePoints, ratioXY: Float): Vec2
+    img: SimpleImage, edgePoints: EdgePoints?, ratioXY: Float): Vec2
 {
+    if (edgePoints == null)
+    {
+        if (ratioXY == img.width/img.height.toFloat()) return Vec2(0,0)
+        if (ratioXY < img.width/img.height.toFloat())
+            return Vec2(((img.width - ratioXY * img.height)/2).toInt(),0)
+        return Vec2(0, ((img.height - ratioXY * img.width)/2).toInt())
+    }
     val leftTopLine = arrayOf(
         edgePoints.leftY,
         edgePoints.topX,
         -edgePoints.leftY * edgePoints.topX
     )
     val topRightLine = arrayOf(
-        edgePoints.rightY,
-        -edgePoints.topX,
-        -edgePoints.topX * edgePoints.rightY
+        -edgePoints.rightY,
+        (img.width - edgePoints.topX),
+        edgePoints.topX * edgePoints.rightY
     )
 
     var leftWidth = 0
@@ -171,118 +199,10 @@ private fun getReversedTransformationMatrix(matrix: Array<Array<Float>>): Array<
         arrayOf(newAy, newBy,-matrix[1][2])
     )
 }
-private suspend fun getAffineTransformedSimpleImage(
-    mipMapsContainer: MipMapsContainer, matrix: Array<Array<Float>>): SimpleImage
-{
-    val img = mipMapsContainer.img
-    val oldHeight = img.height
-    val oldWidth = img.width
-
-    // function ignores coordinates offset and centers new image
-    fun getTransformedFVec2(vec: FVec2, matrix: Array<Array<Float>>): FVec2
-            = FVec2(
-        matrix[0][0] * vec.x + matrix[0][1] * vec.y,
-        matrix[1][0] * vec.x + matrix[1][1] * vec.y)
-
-    val reversedMatrix = getReversedTransformationMatrix(matrix)
-
-    val cornerCoordinates = arrayOf(
-        FVec2(0F, 0F),
-        getTransformedFVec2(FVec2(img.width.toFloat(), 0F), matrix),
-        getTransformedFVec2(FVec2(0F, img.height.toFloat()), matrix),
-        getTransformedFVec2(FVec2(img.width.toFloat(), img.height.toFloat()), matrix))
-
-    val translatedLeft = ceil(cornerCoordinates.minBy{ it.x }.x).toInt()
-    val translatedTop = ceil(cornerCoordinates.minBy{ it.y }.y).toInt()
-    val translatedRight = cornerCoordinates.maxBy{ it.x }.x.toInt()
-    val translatedBottom = cornerCoordinates.maxBy{ it.y }.y.toInt()
-
-    val newWidth = translatedRight - translatedLeft
-    val newHeight = translatedBottom - translatedTop
-    val newImg = SimpleImage(newWidth, newHeight)
-
-    val currCoeff = sqrt(newWidth * newHeight / (img.width * img.height).toFloat())
-
-    val jobs: MutableList<Job> = mutableListOf()
-
-    if (currCoeff >= MipMapsContainer.constSizeCoeffs.last() ||
-        currCoeff <= MipMapsContainer.constSizeCoeffs.first())
-    {
-        for (translatedX in translatedLeft until translatedRight) {
-            jobs.add(CoroutineScope(Dispatchers.Default).launch {
-                    for (translatedY in translatedTop until translatedBottom) {
-                        val oldVec = getTransformedFVec2(
-                            FVec2(translatedX.toFloat(), translatedY.toFloat()),
-                            reversedMatrix
-                        )
-
-                        val newX = translatedX - translatedLeft
-                        val newY = translatedY - translatedTop
-
-                        if (0 <= oldVec.x && oldVec.x < oldWidth &&
-                            0 <= oldVec.y && oldVec.y < oldHeight
-                        )
-                            newImg[newX, newY] = getBilinearFilteredPixelInt(
-                                img, oldVec.x / oldWidth, oldVec.y / oldHeight
-                            )
-                    }
-                })
-        }
-    }
-    else{
-        val biggerImgIndex = MipMapsContainer.constSizeCoeffs.indexOfFirst { it >= currCoeff }
-
-        //waits for mipmaps to generate
-        mipMapsContainer.jobs[biggerImgIndex - 1].join()
-        mipMapsContainer.jobs[biggerImgIndex].join()
-
-        val biggerImg = mipMapsContainer.mipMaps[biggerImgIndex]
-        val smallerImg = mipMapsContainer.mipMaps[biggerImgIndex - 1]
-        val blendCoeff = getTrilinearFilterBlendCoeff(
-            MipMapsContainer.constSizeCoeffs[biggerImgIndex - 1],
-            MipMapsContainer.constSizeCoeffs[biggerImgIndex],
-            currCoeff)
-
-        for (translatedX in translatedLeft until translatedRight) {
-            jobs.add(CoroutineScope(Dispatchers.Default).launch {
-                for (translatedY in translatedTop until translatedBottom) {
-                    val oldVec = getTransformedFVec2(
-                        FVec2(translatedX.toFloat(), translatedY.toFloat()),
-                        reversedMatrix
-                    )
-
-                    val newX = translatedX - translatedLeft
-                    val newY = translatedY - translatedTop
-
-                    if (0 <= oldVec.x && oldVec.x < oldWidth &&
-                        0 <= oldVec.y && oldVec.y < oldHeight
-                    )
-                        newImg[newX, newY] = getTrilinearFilteredPixelInt(
-                            smallerImg, biggerImg, blendCoeff,
-                            oldVec.x / oldWidth, oldVec.y / oldHeight
-                        )
-                }
-            })
-        }
-    }
-    jobs.forEach{it.join()}
-    return newImg
-}
-private suspend fun getAffineTransformedSimpleImage(
-    mipMapsContainer: MipMapsContainer,
-    transf1: PointTransfer,
-    transf2: PointTransfer,
-    transf3: PointTransfer):SimpleImage?
-{
-    val matrix = getAffineTransformationMatrix(transf1, transf2, transf3) ?: return null
-    return getAffineTransformedSimpleImage(mipMapsContainer, matrix)
-}
-
-
 
 
 suspend fun getAffineTransformedResult(
-    mipMapsContainer: MipMapsContainer, matrix: Array<Array<Float>>): AffineTransformedResult {
+    mipMapsContainer: MipMapsContainer, matrix: Array<Array<Float>>, ratio: Float? = null): AffineTransformedResult {
     val img = mipMapsContainer.img
     val oldHeight = img.height
     val oldWidth = img.width
@@ -343,7 +263,8 @@ suspend fun getAffineTransformedResult(
                 }
             })
         }
-    } else {
+    }
+    else {
         val biggerImgIndex = MipMapsContainer.constSizeCoeffs.indexOfFirst { it >= currCoeff }
 
         //waits for mipmaps to generate
@@ -383,20 +304,22 @@ suspend fun getAffineTransformedResult(
     jobs.forEach { it.join() }
     return AffineTransformedResult(
         newImg,
-        getCropOffset(newImg, EdgePoints(
-            leftTranslatedPoint.y.roundToInt(),
+        EdgePoints(
+            leftTranslatedPoint.y.roundToInt() - translatedTop,
             topTranslatedPoint.x.roundToInt() - translatedLeft,
-            rightTranslatedPoint.y.roundToInt(),
-            bottomTranslatedPoint.x.roundToInt()- translatedLeft
-        ),img.width/img.height.toFloat())
+            rightTranslatedPoint.y.roundToInt() - translatedTop,
+            bottomTranslatedPoint.x.roundToInt() - translatedLeft
+        ),
+        ratio ?: (img.width/img.height.toFloat())
     )
 }
 suspend fun getAffineTransformedResult(
     mipMapsContainer: MipMapsContainer,
     transf1: PointTransfer,
     transf2: PointTransfer,
-    transf3: PointTransfer):AffineTransformedResult?
+    transf3: PointTransfer,
+    ratio: Float? = null):AffineTransformedResult?
 {
     val matrix = getAffineTransformationMatrix(transf1, transf2, transf3) ?: return null
-    return getAffineTransformedResult(mipMapsContainer, matrix)
+    return getAffineTransformedResult(mipMapsContainer, matrix, ratio)
 }

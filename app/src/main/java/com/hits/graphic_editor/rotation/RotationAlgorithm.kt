@@ -58,17 +58,24 @@ private suspend fun getRotated270DegreesSimpleImage(img: SimpleImage): SimpleIma
 }
 
 suspend
-fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int): AffineTransformedResult
+fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Float? = null): AffineTransformedResult
 {
-    if (degAngle == 0) return AffineTransformedResult(getRotated0DegreesSimpleImage(input.img), null)
-    if (degAngle == 90) return AffineTransformedResult(getRotated90DegreesSimpleImage(input.img), null)
-    if (degAngle == 180) return AffineTransformedResult(getRotated180DegreesSimpleImage(input.img), null)
-    if (degAngle == 270) return AffineTransformedResult(getRotated270DegreesSimpleImage(input.img), null)
+    val ratio = newRatio ?: (input.img.width / input.img.height.toFloat())
+
+    if (degAngle == 0) return AffineTransformedResult(getRotated0DegreesSimpleImage(input.img),
+        null, ratio)
+    if (degAngle == 90) return AffineTransformedResult(getRotated90DegreesSimpleImage(input.img),
+        null, ratio)
+    if (degAngle == 180) return AffineTransformedResult(getRotated180DegreesSimpleImage(input.img),
+        null, ratio)
+    if (degAngle == 270) return AffineTransformedResult(getRotated270DegreesSimpleImage(input.img),
+        null, ratio)
 
     val angleRadians: Float = Math.toRadians(degAngle.toDouble()).toFloat()
     return getAffineTransformedResult(input,
         arrayOf(
             arrayOf(cos(angleRadians),-sin(angleRadians),0F),
             arrayOf(sin(angleRadians), cos(angleRadians),0F)
-        ))
+        ),
+        ratio)
 }

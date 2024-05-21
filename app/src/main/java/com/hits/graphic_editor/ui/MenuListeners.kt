@@ -8,26 +8,19 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Toast
 import com.hits.graphic_editor.NewProjectActivity
-import com.hits.graphic_editor.affine_transform.AffineTransform
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import com.hits.graphic_editor.face_detection.FaceDetection
-import com.hits.graphic_editor.rotation.Rotation
-import com.hits.graphic_editor.scaling.Scaling
-import com.hits.graphic_editor.color_correction.ColorCorrection
-import com.hits.graphic_editor.cube_3d.Cube3D
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
@@ -39,26 +32,16 @@ fun setListenersToExtraTopMenu(
     bottomMenu: BottomMenuBinding,
     extraTopMenu: ExtraTopMenuBinding,
     processedImage: ProcessedImage,
-    scaling: Scaling,
-    rotation: Rotation,
-    filter: ColorCorrection,
-    faceDetection: FaceDetection,
-    affine: AffineTransform,
-    cube: Cube3D
+    currentFilter: Filter,
 ) {
     extraTopMenu.close.setOnClickListener {
 
-        processedImage.switchStackMode(false)
-        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
-
         removeExtraTopMenu(binding, extraTopMenu)
-        scaling.removeAllMenus()
-        rotation.removeAllMenus()
-        filter.removeAllMenus()
-        faceDetection.removeAllMenus()
-        affine.removeAllMenus()
-        cube.removeAllMenus()
+        currentFilter.onClose()
         //...
+
+        processedImage.switchStackMode(false)
+        processedImage.setImageToView()
 
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
@@ -66,17 +49,11 @@ fun setListenersToExtraTopMenu(
 
     extraTopMenu.save.setOnClickListener {
 
-        processedImage.switchStackMode(true)
-        binding.imageView.setImageBitmap(getBitMap(processedImage.getSimpleImage()))
-
         removeExtraTopMenu(binding, extraTopMenu)
-        scaling.removeAllMenus()
-        rotation.removeAllMenus()
-        filter.removeAllMenus()
-        faceDetection.removeAllMenus()
-        affine.removeAllMenus()
-        cube.removeAllMenus()
+        currentFilter.onClose()
         //...
+        processedImage.switchStackMode(true)
+        processedImage.setImageToView()
 
         addTopMenu(binding, topMenu)
         addBottomMenu(binding, bottomMenu)
@@ -97,7 +74,6 @@ fun setListenersToTopMenu(
     context: Context,
     topMenu: TopMenuBinding,
     processedImage: ProcessedImage
-
 ) {
     topMenu.close.setOnClickListener() {
         activity.finish()
