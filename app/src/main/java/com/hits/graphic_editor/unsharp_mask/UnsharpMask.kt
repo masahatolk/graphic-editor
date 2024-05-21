@@ -3,26 +3,11 @@ package com.hits.graphic_editor.unsharp_mask
 import android.graphics.Bitmap
 import android.view.LayoutInflater
 import com.hits.graphic_editor.Filter
-import com.hits.graphic_editor.custom_api.SimpleImage
-import com.hits.graphic_editor.custom_api.alpha
-import com.hits.graphic_editor.custom_api.argbToInt
-import com.hits.graphic_editor.custom_api.blue
-import com.hits.graphic_editor.custom_api.getBitMap
-import com.hits.graphic_editor.custom_api.getTruncatedChannel
-import com.hits.graphic_editor.custom_api.green
-import com.hits.graphic_editor.custom_api.red
+import com.hits.graphic_editor.custom_api.*
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.UnsharpmaskBottomMenuBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import kotlin.math.abs
-import kotlin.math.exp
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.sqrt
+import kotlinx.coroutines.*
+import kotlin.math.*
 
 class UnsharpMask(
     override val binding: ActivityNewProjectBinding,
@@ -52,8 +37,7 @@ class UnsharpMask(
 
     private fun unsharpMask(inputBitmap: Bitmap, radius: Float, amount: Float, threshold: Int): Bitmap {
         val mask = createMask(inputBitmap, radius, amount, threshold)
-        val sharpenedMask = applyEdgeEnhancement(mask, amount)
-        val thresholdedMask = applyThreshold(sharpenedMask, threshold)
+        val thresholdedMask = applyThreshold(mask, threshold)
         return applyMask(inputBitmap, thresholdedMask)
     }
 
@@ -61,84 +45,59 @@ class UnsharpMask(
         val width = inputBitmap.width
         val height = inputBitmap.height
 
-        val horizontalBlurBitmap = Bitmap.createBitmap(width, height, inputBitmap.config)
-        val verticalBlurBitmap = Bitmap.createBitmap(width, height, inputBitmap.config)
+        val blurredBitmap = Bitmap.createBitmap(width, height, inputBitmap.config)
+        val radiusInt = radius.toInt()
 
         runBlocking {
-            val horizontalBlurJob = async { applyGaussianBlurHorizontally(inputBitmap, horizontalBlurBitmap, radius) }
+            val horizontalBlurJob = async { boxBlur(inputBitmap, blurredBitmap, width, height, radiusInt, true) }
             horizontalBlurJob.await()
-            val verticalBlurJob = async { applyGaussianBlurVertically(horizontalBlurBitmap, verticalBlurBitmap, radius) }
+            val verticalBlurJob = async { boxBlur(blurredBitmap, blurredBitmap, width, height, radiusInt, false) }
             verticalBlurJob.await()
         }
 
-        return verticalBlurBitmap
+        return blurredBitmap
     }
 
-    private suspend fun applyGaussianBlurHorizontally(inputBitmap: Bitmap, outputBitmap: Bitmap, radius: Float) = withContext(Dispatchers.Default) {
-        val width = inputBitmap.width
-        val height = inputBitmap.height
-        val sigma = radius / 3f
-        val kernelSize = (sigma * 6).toInt()
-        val kernel = FloatArray(kernelSize) { i ->
-            val x = i - kernelSize / 2
-            ((1 / (sigma * sqrt(2 * Math.PI))) * exp(-(x * x).toDouble() / (2 * sigma * sigma).toDouble())).toFloat()
-        }
+    private suspend fun boxBlur(src: Bitmap, dst: Bitmap, width: Int, height: Int, radius: Int, horizontal: Boolean) = withContext(Dispatchers.Default) {
+        val div = 2 * radius + 1
+        val pixels = IntArray(if (horizontal) width else height)
+        val resultPixels = IntArray(pixels.size)
 
-        val pixels = IntArray(width)
-        val resultPixels = IntArray(width)
-        for (y in 0 until height) {
-            inputBitmap.getPixels(pixels, 0, width, 0, y, width, 1)
-            for (x in 0 until width) {
-                var r = 0f
-                var g = 0f
-                var b = 0f
-                for (i in kernel.indices) {
-                    val pixel = pixels[min(max(x + i - kernelSize / 2, 0), width - 1)]
-                    r += pixel.red() * kernel[i]
-                    g += pixel.green() * kernel[i]
-                    b += pixel.blue() * kernel[i]
-                }
-                resultPixels[x] = argbToInt(pixels[x].alpha(), getTruncatedChannel(r), getTruncatedChannel(g), getTruncatedChannel(b))
+        for (i in 0 until if (horizontal) height else width) {
+            if (horizontal) src.getPixels(pixels, 0, width, 0, i, width, 1)
+            else src.getPixels(pixels, 0, 1, i, 0, 1, height)
+
+            var r = 0
+            var g = 0
+            var b = 0
+
+            for (j in -radius..radius) {
+                val pixel = pixels[min(max(j, 0), pixels.size - 1)]
+                r += pixel.red()
+                g += pixel.green()
+                b += pixel.blue()
             }
-            outputBitmap.setPixels(resultPixels, 0, width, 0, y, width, 1)
-        }
-    }
 
-    private suspend fun applyGaussianBlurVertically(inputBitmap: Bitmap, outputBitmap: Bitmap, radius: Float) = withContext(Dispatchers.Default) {
-        val width = inputBitmap.width
-        val height = inputBitmap.height
-        val sigma = radius / 3f
-        val kernelSize = (sigma * 6).toInt()
-        val kernel = FloatArray(kernelSize) { i ->
-            val x = i - kernelSize / 2
-            ((1 / (sigma * sqrt(2 * Math.PI))) * exp(-(x * x).toDouble() / (2 * sigma * sigma).toDouble())).toFloat()
-        }
+            for (j in 0 until pixels.size) {
+                val pixelOut = pixels[min(j + radius, pixels.size - 1)]
+                val pixelIn = pixels[max(j - radius - 1, 0)]
 
-        val pixels = IntArray(height)
-        val resultPixels = IntArray(height)
-        for (x in 0 until width) {
-            inputBitmap.getPixels(pixels, 0, 1, x, 0, 1, height)
-            for (y in 0 until height) {
-                var r = 0f
-                var g = 0f
-                var b = 0f
-                for (i in kernel.indices) {
-                    val pixel = pixels[min(max(y + i - kernelSize / 2, 0), height - 1)]
-                    r += pixel.red() * kernel[i]
-                    g += pixel.green() * kernel[i]
-                    b += pixel.blue() * kernel[i]
-                }
-                resultPixels[y] = argbToInt(pixels[y].alpha(), getTruncatedChannel(r), getTruncatedChannel(g), getTruncatedChannel(b))
+                r += pixelOut.red() - pixelIn.red()
+                g += pixelOut.green() - pixelIn.green()
+                b += pixelOut.blue() - pixelIn.blue()
+
+                resultPixels[j] = argbToInt(255, r / div, g / div, b / div)
             }
-            outputBitmap.setPixels(resultPixels, 0, 1, x, 0, 1, height)
+
+            if (horizontal) dst.setPixels(resultPixels, 0, width, 0, i, width, 1)
+            else dst.setPixels(resultPixels, 0, 1, i, 0, 1, height)
         }
     }
 
     private fun createMask(inputBitmap: Bitmap, radius: Float, amount: Float, threshold: Int): Bitmap {
         val blurredBitmap = applyGaussianBlurToImage(inputBitmap, radius)
-        val maskBitmap = inputBitmap.copy(inputBitmap.config, true)
-        val width = maskBitmap.width
-        val height = maskBitmap.height
+        val width = inputBitmap.width
+        val height = inputBitmap.height
 
         val originalPixels = IntArray(width * height)
         val blurredPixels = IntArray(width * height)
@@ -147,7 +106,7 @@ class UnsharpMask(
         inputBitmap.getPixels(originalPixels, 0, width, 0, 0, width, height)
         blurredBitmap.getPixels(blurredPixels, 0, width, 0, 0, width, height)
 
-        for (i in 0 until width * height) {
+        for (i in originalPixels.indices) {
             val originalPixel = originalPixels[i]
             val blurredPixel = blurredPixels[i]
 
@@ -159,41 +118,17 @@ class UnsharpMask(
             val maskG = if (abs(diffG) >= threshold) diffG else 0
             val maskB = if (abs(diffB) >= threshold) diffB else 0
 
-            val newR = getTruncatedChannel(originalPixel.red() + (amount * maskR).toInt())
-            val newG = getTruncatedChannel(originalPixel.green() + (amount * maskG).toInt())
-            val newB = getTruncatedChannel(originalPixel.blue() + (amount * maskB).toInt())
-
-            resultPixels[i] = argbToInt(originalPixel.alpha(), newR, newG, newB)
+            resultPixels[i] = argbToInt(
+                originalPixel.alpha(),
+                getTruncatedChannel(originalPixel.red() + (amount * maskR).toInt()),
+                getTruncatedChannel(originalPixel.green() + (amount * maskG).toInt()),
+                getTruncatedChannel(originalPixel.blue() + (amount * maskB).toInt())
+            )
         }
 
+        val maskBitmap = Bitmap.createBitmap(width, height, inputBitmap.config)
         maskBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
         return maskBitmap
-    }
-
-    private fun applyEdgeEnhancement(mask: Bitmap, amount: Float): Bitmap {
-        val width = mask.width
-        val height = mask.height
-        val resultPixels = IntArray(width * height)
-        val maskPixels = IntArray(width * height)
-
-        mask.getPixels(maskPixels, 0, width, 0, 0, width, height)
-
-        for (i in 0 until width * height) {
-            val pixel = maskPixels[i]
-            val r = pixel.red()
-            val g = pixel.green()
-            val b = pixel.blue()
-
-            val enhancedR = getTruncatedChannel(r * amount)
-            val enhancedG = getTruncatedChannel(g * amount)
-            val enhancedB = getTruncatedChannel(b * amount)
-
-            resultPixels[i] = argbToInt(pixel.alpha(), enhancedR, enhancedG, enhancedB)
-        }
-
-        val enhancedBitmap = Bitmap.createBitmap(width, height, mask.config)
-        enhancedBitmap.setPixels(resultPixels, 0, width, 0, 0, width, height)
-        return enhancedBitmap
     }
 
     private fun applyThreshold(mask: Bitmap, threshold: Int): Bitmap {
@@ -204,17 +139,18 @@ class UnsharpMask(
 
         mask.getPixels(maskPixels, 0, width, 0, 0, width, height)
 
-        for (i in 0 until width * height) {
+        for (i in maskPixels.indices) {
             val pixel = maskPixels[i]
             val r = pixel.red()
             val g = pixel.green()
             val b = pixel.blue()
 
-            val newR = if (abs(r) >= threshold) r else 0
-            val newG = if (abs(g) >= threshold) g else 0
-            val newB = if (abs(b) >= threshold) b else 0
-
-            resultPixels[i] = argbToInt(pixel.alpha(), newR, newG, newB)
+            resultPixels[i] = argbToInt(
+                pixel.alpha(),
+                if (abs(r) >= threshold) r else 0,
+                if (abs(g) >= threshold) g else 0,
+                if (abs(b) >= threshold) b else 0
+            )
         }
 
         val thresholdedBitmap = Bitmap.createBitmap(width, height, mask.config)
@@ -242,11 +178,12 @@ class UnsharpMask(
                         val originalPixel = originalPixels[i]
                         val maskPixel = maskPixels[i]
 
-                        val newR = getTruncatedChannel(originalPixel.red() + maskPixel.red())
-                        val newG = getTruncatedChannel(originalPixel.green() + maskPixel.green())
-                        val newB = getTruncatedChannel(originalPixel.blue() + maskPixel.blue())
-
-                        resultPixels[i] = argbToInt(originalPixel.alpha(), newR, newG, newB)
+                        resultPixels[i] = argbToInt(
+                            originalPixel.alpha(),
+                            getTruncatedChannel(originalPixel.red() + maskPixel.red()),
+                            getTruncatedChannel(originalPixel.green() + maskPixel.green()),
+                            getTruncatedChannel(originalPixel.blue() + maskPixel.blue())
+                        )
                     }
                 }
             }
@@ -258,4 +195,3 @@ class UnsharpMask(
         return resultBitmap
     }
 }
-
