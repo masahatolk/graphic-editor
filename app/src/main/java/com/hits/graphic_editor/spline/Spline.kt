@@ -8,6 +8,8 @@ import android.graphics.Paint
 import android.graphics.Point
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
+import android.view.View.OnTouchListener
 import com.github.dhaval2404.colorpicker.ColorPickerDialog
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.SplineBottomMenuBinding
@@ -38,10 +40,8 @@ class Spline(
     private var extraPointsList: MutableList<MutableList<Point>> = mutableListOf()
 
     private var path: MutableList<Point> = mutableListOf()
-    private var copyPath: MutableList<Point> = mutableListOf()
     private var middles: MutableList<Point> = mutableListOf()
     private var extraPoints: MutableList<Point> = mutableListOf()
-    private var copyExtraPoints: MutableList<Point> = mutableListOf()
 
     private var movingPathIndex: Int = -1
     private var movingPointIndex: Int = -1
@@ -67,12 +67,12 @@ class Spline(
     fun setListeners() {
         splineBottomMenu.splineModeButton.setOnClickListener {
             splineMode = !splineMode
-            defaultBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-            paths.add(copyPath)
-            extraPointsList.add(copyExtraPoints)
-            path.clear()
-            middles.clear()
-            extraPoints.clear()
+            if(splineMode){
+                paths.add(mutableListOf())
+                extraPointsList.add(mutableListOf())
+                middles.clear()
+            }
+            else defaultBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
         }
         splineBottomMenu.polygonModeButton.setOnClickListener {}
         splineBottomMenu.deleteButton.setOnClickListener {}
@@ -82,67 +82,74 @@ class Spline(
             paint.color = color
         }
 
-        binding.extraImageView.setOnTouchListener { v, event ->
+        binding.extraImageView.setOnTouchListener(CustomTouchListener())
+    }
+
+    inner class CustomTouchListener : OnTouchListener{
+        @SuppressLint("ClickableViewAccessibility")
+        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
             when (event?.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (splineMode) {
-                        path.add(Point(event.x.toInt(), event.y.toInt()))
-                        if (path.size > 1) {
-                            val x = calculateMiddle(path.last().x, path[path.lastIndex - 1].x)
-                            val y = calculateMiddle(path.last().y, path[path.lastIndex - 1].y)
 
-                            middles.add(Point(x, y))
-
-                            if (path.size > 2) {
-                                val prev = path[path.lastIndex - 2]
-                                val curr = path[path.lastIndex - 1]
-                                val next = path.last()
-
-                                val leftLength: Float = calculateLength(prev, curr)
-                                val rightLength: Float = calculateLength(curr, next)
-
-                                val diffPoint = calculateExtraPoints(
-                                    extraPoints,
-                                    path[path.lastIndex - 1],
-                                    middles[middles.lastIndex - 1],
-                                    middles.last(),
-                                    leftLength / rightLength
-                                )
-                                extraPoints.add(
-                                    Point(
-                                        middles[middles.lastIndex - 1].x + diffPoint.x,
-                                        middles[middles.lastIndex - 1].y + diffPoint.y
-                                    )
-                                )
-                                extraPoints.add(
-                                    Point(
-                                        middles.last().x + diffPoint.x,
-                                        middles.last().y + diffPoint.y
-                                    )
-                                )
-                            }
-                        }
-
-                        draw(canvas, resultCanvas, path, extraPoints, paint)
-                        drawByDefault(canvas, defaultBitmap, paint)
-
-                        binding.extraImageView.setImageBitmap(bitmap)
-
-                        copyPath = path.toMutableList()
-                        copyExtraPoints = extraPoints.toMutableList()
-
-                    } else {
                         movingPathIndex = checkForMatchPoint(event.x, event.y)
                         if (movingPathIndex == -1) {
                             moveMode = false
                             movingPointIndex = -1
+
+                            val path = paths.last()
+                            val extraPoints = extraPointsList.last()
+
+                            path.add(Point(event.x.toInt(), event.y.toInt()))
+                            if (path.size > 1) {
+                                val x = calculateMiddle(path.last().x, path[path.lastIndex - 1].x)
+                                val y = calculateMiddle(path.last().y, path[path.lastIndex - 1].y)
+
+                                middles.add(Point(x, y))
+
+                                if (path.size > 2) {
+                                    val prev = path[path.lastIndex - 2]
+                                    val curr = path[path.lastIndex - 1]
+                                    val next = path.last()
+
+                                    val leftLength: Float = calculateLength(prev, curr)
+                                    val rightLength: Float = calculateLength(curr, next)
+
+                                    val diffPoint = calculateExtraPoints(
+                                        extraPoints,
+                                        path[path.lastIndex - 1],
+                                        middles[middles.lastIndex - 1],
+                                        middles.last(),
+                                        leftLength / rightLength
+                                    )
+                                    extraPoints.add(
+                                        Point(
+                                            middles[middles.lastIndex - 1].x + diffPoint.x,
+                                            middles[middles.lastIndex - 1].y + diffPoint.y
+                                        )
+                                    )
+                                    extraPoints.add(
+                                        Point(
+                                            middles.last().x + diffPoint.x,
+                                            middles.last().y + diffPoint.y
+                                        )
+                                    )
+                                }
+                            }
+
+                            draw(canvas, resultCanvas, path, extraPoints, paint)
+                            drawByDefault(canvas, defaultBitmap, paint)
+
+                            binding.extraImageView.setImageBitmap(bitmap)
+
+
                         }
                         else moveMode = true
                     }
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    if (!splineMode && moveMode) {
+                    if (splineMode && moveMode) {
                         paths[movingPathIndex][movingPointIndex] =
                             Point(event.x.toInt(), event.y.toInt())
                         calculateFieldsForMovingPoint(
@@ -151,24 +158,22 @@ class Spline(
                             movingPointIndex
                         )
 
-                        draw(canvas, resultCanvas, paths[movingPathIndex], extraPoints, paint)
+                        draw(canvas, resultCanvas, paths[movingPathIndex], extraPointsList[movingPathIndex], paint)
                         drawByDefault(canvas, defaultBitmap, paint)
+
+                        binding.extraImageView.setImageBitmap(bitmap)
                     }
                 }
-
-                MotionEvent.ACTION_UP -> {
-                    //processedImage.addToLocalStackAnd = getSimpleImage(resultBitmap)
-                }
             }
-            v?.onTouchEvent(event) ?: true
+            return true
         }
     }
 
     private fun checkForMatchPoint(x: Float, y: Float): Int {
         for (i in 0 until paths.size) {
-            for (j in 0 until path.size) {
-                if (paths[i][j].x + pointRadius >= x && x >= paths[i][j].x - pointRadius &&
-                    paths[i][j].y + pointRadius >= y && y >= paths[i][j].y - pointRadius
+            for (j in 0 until paths[i].size) {
+                if (paths[i][j].x + pointRadius * 2 >= x && x >= paths[i][j].x - pointRadius * 2 &&
+                    paths[i][j].y + pointRadius * 2 >= y && y >= paths[i][j].y - pointRadius * 2
                 ) {
                     movingPointIndex = j
                     return i
