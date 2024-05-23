@@ -33,6 +33,7 @@ class AffineTransform(
     }
     override fun onStart() {
         addBottomMenu()
+        paint.strokeWidth = 10F
         setListeners()
         addGestures()
     }
@@ -96,8 +97,9 @@ class AffineTransform(
         processedImage.getSimpleImage().height,
         Bitmap.Config.ARGB_8888)
     private val arrowsCanvas = Canvas(canvasBitmap)
+    private val paint = Paint()
     private fun Canvas.drawArrow(tr: PointTransfer){
-        this.drawLine(tr.fromX, tr.fromY, tr.toX, tr.toY, Paint())
+        this.drawLine(tr.fromX, tr.fromY, tr.toX, tr.toY, paint)
     }
     private fun Canvas.drawArrows(transfers: MutableList<PointTransfer>){
         transfers.forEach { this.drawArrow(it) }
@@ -107,32 +109,31 @@ class AffineTransform(
         var capturedPointIndex = 0
         var startPointCaptured = false
 
-        binding.root.setOnTouchListener{ _, event ->
+        binding.extraImageView.setOnTouchListener{ _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
 
-                    capturedPointIndex = 0
-                    startPointCaptured = false
-
                     for (i in 0 until pointTransfers.size){
                         if (hypot(pointTransfers[i].fromX - event.x,
-                                pointTransfers[i].fromY - event.y) < 5) {
+                                pointTransfers[i].fromY - event.y) < 50) {
                             capturedPointIndex = i
                             startPointCaptured = true
                             return@setOnTouchListener true
                         }
                         if (hypot(pointTransfers[i].toX - event.x,
-                                pointTransfers[i].toY - event.y) < 5) {
+                                pointTransfers[i].toY - event.y) < 50) {
                             capturedPointIndex = i
                             startPointCaptured = false
                             return@setOnTouchListener true
                         }
                     }
 
-                    pointTransfers.add(PointTransfer(event.x, event.y, event.x, event.y))
-
-                    if (pointTransfers.size >= 3)
+                    if (pointTransfers.size > 2)
                         pointTransfers.removeFirst()
+
+                    pointTransfers.add(PointTransfer(event.x, event.y, event.x, event.y))
+                    capturedPointIndex = pointTransfers.size - 1
+                    startPointCaptured = false
                 }
                 MotionEvent.ACTION_MOVE ->{
                     if (startPointCaptured) {
