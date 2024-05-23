@@ -82,6 +82,7 @@ class ColorCorrection(
 
     override fun onClose() {
         removeAllFilterMenus(binding, this)
+        faceDetection.onClose()
     }
 
     fun updateFilterMode(filterMode: ColorCorrectionMode) {

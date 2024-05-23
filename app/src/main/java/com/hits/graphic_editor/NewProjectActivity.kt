@@ -101,7 +101,8 @@ class NewProjectActivity : AppCompatActivity() {
 
         // -------------- create necessary fields ---------------
         val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap), binding.imageView)
-        lateinit var currentFilter: Filter
+        //lateinit var currentFilter: Filter
+        var currentFilter:Filter = Scaling(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------
         topMenu.close.setOnClickListener() {
@@ -241,7 +242,14 @@ class NewProjectActivity : AppCompatActivity() {
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                removeTopMenu(binding, topMenu)
+                removeBottomMenu(binding, bottomMenu)
+                addExtraTopMenu(binding, extraTopMenu)
+
+                processedImage.switchStackMode()
+                currentFilter.onStart()
+            }
         })
 
         supportActionBar?.hide()

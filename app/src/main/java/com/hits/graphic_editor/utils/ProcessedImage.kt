@@ -14,6 +14,11 @@ class ProcessedImage(
     image: SimpleImage,
     private var imageView: ImageView
 ) {
+    companion object {
+        const val MAX_SIZE = 7680* 4320
+        const val MIN_SIZE = 10 * 10
+    }
+
     private var mipMapsContainer: MipMapsContainer = MipMapsContainer(image)
 
     private var globalStack: MutableList<SimpleImage> = mutableListOf(image)

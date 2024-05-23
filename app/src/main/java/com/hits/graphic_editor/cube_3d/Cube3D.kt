@@ -100,15 +100,12 @@ class Cube3D(
         runBlocking{sceneLoopJob.cancelAndJoin()}
     }
     private fun renderHighResFrame(){
-        if (processedImage.getSimpleImageBeforeFiltering().width < binding.imageView.measuredWidth)
-            return
-        scene.setResolution(processedImage.getSimpleImageBeforeFiltering().width)
+        if (processedImage.getSimpleImageBeforeFiltering().width > binding.imageView.measuredWidth)
+            scene.setResolution(processedImage.getSimpleImageBeforeFiltering().width)
         scene.renderFrame()
     }
 
 
-
-    //@SuppressLint("ClickableViewAccessibility")
     @SuppressLint("ClickableViewAccessibility")
     fun initGestures() {
          val scaleDetector = ScaleGestureDetector(
