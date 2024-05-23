@@ -2,16 +2,17 @@ package com.hits.graphic_editor.unsharp_mask
 
 import android.graphics.Bitmap
 import android.view.LayoutInflater
-import com.hits.graphic_editor.Filter
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.custom_api.*
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.UnsharpmaskBottomMenuBinding
+import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.*
 import kotlin.math.*
 
 class UnsharpMask(
     override val binding: ActivityNewProjectBinding,
-    override val layoutInflater: LayoutInflater
+    override val layoutInflater: LayoutInflater, override val processedImage: ProcessedImage
 ) : Filter {
 
     lateinit var simpleImage: SimpleImage
@@ -24,9 +25,14 @@ class UnsharpMask(
         UnsharpmaskBottomMenuBinding.inflate(layoutInflater)
     }
 
-    override fun showBottomMenu() {
+    override fun onClose() {
+        TODO("Not yet implemented")
+    }
+
+    override fun onStart() {
         addUnsharpMaskingControls(binding, this, unsharpMaskBinding)
     }
+
 
     fun applyUnsharpMasking() {
         val inputBitmap = lastProcessedBitmap ?: getBitMap(simpleImage)
