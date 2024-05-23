@@ -93,12 +93,12 @@ data class AffineTransformedResult(
         val cropOffset = cashedCropOffset
 
         val resultImg = SimpleImage(
-            transformedImage.width - (cropOffset.x + 1) * 2,
-            transformedImage.height - (cropOffset.y + 1) * 2
+            transformedImage.width - (cropOffset.x + 2) * 2,
+            transformedImage.height - (cropOffset.y + 2) * 2
         )
         for (x in 0 until resultImg.width)
             for (y in 0 until resultImg.height)
-                resultImg[x, y] = transformedImage[x + cropOffset.x + 1, y + cropOffset.y + 1]
+                resultImg[x, y] = transformedImage[x + cropOffset.x + 2, y + cropOffset.y + 2]
 
         return resultImg
     }
@@ -110,8 +110,8 @@ private fun getCropOffset(
     {
         if (ratioXY == img.width/img.height.toFloat()) return Vec2(0,0)
         if (ratioXY < img.width/img.height.toFloat())
-            return Vec2(((img.width - ratioXY * img.height)/2).toInt(),0)
-        return Vec2(0, ((img.height - ratioXY * img.width)/2).toInt())
+            return Vec2(((img.width - img.height * ratioXY)/2).toInt(),0)
+        return Vec2(0, ((img.height - img.width / ratioXY)/2).toInt())
     }
     fun relationToLeftTopLine(x: Int, y: Int) =
         edgePoints.leftY * x + edgePoints.topX * y -edgePoints.leftY * edgePoints.topX
