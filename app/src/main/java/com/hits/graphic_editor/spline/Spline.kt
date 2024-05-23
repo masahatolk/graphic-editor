@@ -39,9 +39,7 @@ class Spline(
     private var paths: MutableList<MutableList<Point>> = mutableListOf()
     private var extraPointsList: MutableList<MutableList<Point>> = mutableListOf()
 
-    private var path: MutableList<Point> = mutableListOf()
     private var middles: MutableList<Point> = mutableListOf()
-    private var extraPoints: MutableList<Point> = mutableListOf()
 
     private var movingPathIndex: Int = -1
     private var movingPointIndex: Int = -1
@@ -116,7 +114,6 @@ class Spline(
                                     val rightLength: Float = calculateLength(curr, next)
 
                                     val diffPoint = calculateExtraPoints(
-                                        extraPoints,
                                         path[path.lastIndex - 1],
                                         middles[middles.lastIndex - 1],
                                         middles.last(),

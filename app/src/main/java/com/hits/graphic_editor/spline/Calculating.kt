@@ -4,10 +4,6 @@ import android.graphics.Point
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-fun update() {
-
-}
-
 fun calculatePoint(first: Point, second: Point, third: Point, fourth: Point, t: Float): Point {
     val point = Point()
 
@@ -57,7 +53,6 @@ fun calculateCubicCoordinate(t: Float, c1: Float, c2: Float, c3: Float, c4: Floa
 }
 
 fun calculateExtraPoints(
-    extraPoints: MutableList<Point>,
     controlPoint: Point,
     left: Point,
     right: Point,
@@ -88,8 +83,8 @@ fun calculateFieldsForMovingPoint(
 ) {
     var leftMiddle: Point? = null
     var rightMiddle: Point? = null
-    var leftLength: Float = 0f
-    var rightLength: Float = 0f
+    var leftLength = 0f
+    var rightLength = 0f
 
     if (pointIndex < path.lastIndex) {
         rightMiddle = Point(
@@ -109,43 +104,87 @@ fun calculateFieldsForMovingPoint(
     val diffPoint: Point
     if (leftMiddle != null && rightMiddle != null) {
         diffPoint = calculateExtraPoints(
-            extraPoints,
             path[pointIndex],
             leftMiddle,
             rightMiddle,
             leftLength / rightLength
         )
-        leftMiddle.x += diffPoint.x
-        leftMiddle.y += diffPoint.y
-        rightMiddle.x += diffPoint.x
-        rightMiddle.y += diffPoint.y
-        extraPoints[pointIndex - 1] = leftMiddle
-        extraPoints[pointIndex] = rightMiddle
+        val leftExtraPoint = Point(leftMiddle.x + diffPoint.x, leftMiddle.y + diffPoint.y)
+        val rightExtraPoint = Point(rightMiddle.x + diffPoint.x, rightMiddle.y + diffPoint.y)
+
+        extraPoints[(pointIndex - 1) * 2] = leftExtraPoint
+        extraPoints[(pointIndex - 1) * 2 + 1] = rightExtraPoint
     }
 
-    /*if(pointIndex < path.lastIndex) {
-        calculateRightFields(rightMiddle, rightLength)
+    if (pointIndex + 1 < path.lastIndex && rightMiddle != null) {
+        calculateRightFields(path, extraPoints, rightMiddle, rightLength, pointIndex)
     }
-    if (pointIndex > 0) {
-        calculateLeftFields(leftMiddle, leftLength)
-    }*/
+    if (pointIndex - 1 > 0 && leftMiddle != null) {
+        calculateLeftFields(path, extraPoints, leftMiddle, leftLength, pointIndex)
+    }
 }
 
 fun calculateRightFields(
     path: MutableList<Point>,
     extraPoints: MutableList<Point>,
-    pointIndex: Int,
     leftMiddle: Point,
-    rightMiddle: Point
+    leftLength: Float,
+    pointIndex: Int
 ) {
 
+    val rightMiddle = Point(
+        calculateMiddle(path[pointIndex + 1].x, path[pointIndex + 2].x),
+        calculateMiddle(path[pointIndex + 1].y, path[pointIndex + 2].y)
+    )
+    val rightLength = calculateLength(path[pointIndex + 1], path[pointIndex + 2])
 
-    val leftLength = calculateLength(path[0], path[1])
-    val rightLength = calculateLength(path[1], path[2])
+    val diffPoint = calculateExtraPoints(
+        path[pointIndex + 1],
+        leftMiddle,
+        rightMiddle,
+        leftLength / rightLength
+    )
 
-    //calculateExtraPoints(extraPoints, , , , leftLength / rightLength)
+    val leftExtraPoint = Point(leftMiddle.x + diffPoint.x, leftMiddle.y + diffPoint.y)
+    val rightExtraPoint = Point(rightMiddle.x + diffPoint.x, rightMiddle.y + diffPoint.y)
+
+    if (pointIndex == 0) {
+        extraPoints[0] = leftExtraPoint
+        extraPoints[1] = rightExtraPoint
+    } else {
+        extraPoints[(pointIndex - 1) * 2 + 2] = leftExtraPoint
+        extraPoints[(pointIndex - 1) * 2 + 3] = rightExtraPoint
+    }
 }
 
-fun calculateLeftFields() {
+fun calculateLeftFields(
+    path: MutableList<Point>,
+    extraPoints: MutableList<Point>,
+    rightMiddle: Point,
+    rightLength: Float,
+    pointIndex: Int
+) {
+    val leftMiddle = Point(
+        calculateMiddle(path[pointIndex - 1].x, path[pointIndex - 2].x),
+        calculateMiddle(path[pointIndex - 1].y, path[pointIndex - 2].y)
+    )
+    val leftLength = calculateLength(path[pointIndex - 1], path[pointIndex - 2])
 
+    val diffPoint = calculateExtraPoints(
+        path[pointIndex - 1],
+        leftMiddle,
+        rightMiddle,
+        leftLength / rightLength
+    )
+
+    val leftExtraPoint = Point(leftMiddle.x + diffPoint.x, leftMiddle.y + diffPoint.y)
+    val rightExtraPoint = Point(rightMiddle.x + diffPoint.x, rightMiddle.y + diffPoint.y)
+
+    if (pointIndex == extraPoints.lastIndex) {
+        extraPoints[extraPoints.lastIndex - 1] = leftExtraPoint
+        extraPoints[extraPoints.lastIndex] = rightExtraPoint
+    } else {
+        extraPoints[(pointIndex - 1) * 2 - 2] = leftExtraPoint
+        extraPoints[(pointIndex - 1) * 2 - 1] = rightExtraPoint
+    }
 }
