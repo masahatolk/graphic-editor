@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -90,6 +91,9 @@ class NewProjectActivity : AppCompatActivity() {
             }
         }
         binding.imageView.setImageBitmap(selectedPhotoBitmap)
+        binding.imageView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
 
         // ------------------- add main menus -------------------
         addTopMenu(binding, topMenu)
@@ -230,7 +234,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.CUBE.ordinal -> {
-                        currentFilter = Cube3D(binding, layoutInflater, processedImage)
+                        currentFilter = Cube3D(binding, layoutInflater, processedImage, this@NewProjectActivity)
                     }
                 }
                 currentFilter.onStart()

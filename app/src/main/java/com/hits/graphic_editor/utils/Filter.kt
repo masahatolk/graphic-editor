@@ -8,5 +8,5 @@ interface Filter {
     val layoutInflater: LayoutInflater
     val processedImage: ProcessedImage
     fun onClose()
-    fun onStart ()
+    fun onStart()
 }
