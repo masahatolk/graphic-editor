@@ -76,6 +76,10 @@ fun calculateMiddle(first: Int, second: Int): Int {
     return (first + second) / 2
 }
 
+fun calculateMiddlePoint(first: Point, second: Point): Point {
+    return Point(calculateMiddle(first.x, second.x), calculateMiddle(first.y, second.y))
+}
+
 fun calculateFieldsForMovingPoint(
     path: MutableList<Point>,
     extraPoints: MutableList<Point>,
@@ -87,17 +91,11 @@ fun calculateFieldsForMovingPoint(
     var rightLength = 0f
 
     if (pointIndex < path.lastIndex) {
-        rightMiddle = Point(
-            calculateMiddle(path[pointIndex].x, path[pointIndex + 1].x),
-            calculateMiddle(path[pointIndex].y, path[pointIndex + 1].y)
-        )
+        rightMiddle = calculateMiddlePoint(path[pointIndex], path[pointIndex + 1])
         rightLength = calculateLength(path[pointIndex], path[pointIndex + 1])
     }
     if (pointIndex > 0) {
-        leftMiddle = Point(
-            calculateMiddle(path[pointIndex - 1].x, path[pointIndex].x),
-            calculateMiddle(path[pointIndex - 1].y, path[pointIndex].y)
-        )
+        leftMiddle = calculateMiddlePoint(path[pointIndex - 1], path[pointIndex])
         leftLength = calculateLength(path[pointIndex - 1], path[pointIndex])
     }
 
@@ -132,10 +130,7 @@ fun calculateRightFields(
     pointIndex: Int
 ) {
 
-    val rightMiddle = Point(
-        calculateMiddle(path[pointIndex + 1].x, path[pointIndex + 2].x),
-        calculateMiddle(path[pointIndex + 1].y, path[pointIndex + 2].y)
-    )
+    val rightMiddle = calculateMiddlePoint(path[pointIndex + 1], path[pointIndex + 2])
     val rightLength = calculateLength(path[pointIndex + 1], path[pointIndex + 2])
 
     val diffPoint = calculateExtraPoints(
@@ -164,10 +159,7 @@ fun calculateLeftFields(
     rightLength: Float,
     pointIndex: Int
 ) {
-    val leftMiddle = Point(
-        calculateMiddle(path[pointIndex - 1].x, path[pointIndex - 2].x),
-        calculateMiddle(path[pointIndex - 1].y, path[pointIndex - 2].y)
-    )
+    val leftMiddle = calculateMiddlePoint(path[pointIndex - 1], path[pointIndex - 2])
     val leftLength = calculateLength(path[pointIndex - 1], path[pointIndex - 2])
 
     val diffPoint = calculateExtraPoints(
