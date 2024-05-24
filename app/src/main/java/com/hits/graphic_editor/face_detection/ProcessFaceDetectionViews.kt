@@ -10,7 +10,7 @@ fun addFaceDetectionBottomMenu(
     faceDetectionBottomMenu: FaceDetectionBottomMenuBinding
 ) {
     binding.root.addView(
-        faceDetectionBottomMenu.root.rootView,
+        faceDetectionBottomMenu.root,
         ConstraintLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
