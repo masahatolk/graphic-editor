@@ -1,5 +1,6 @@
 package com.hits.graphic_editor.retouch
 
+import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.SeekBar
@@ -8,10 +9,13 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.hits.graphic_editor.R
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
+import com.hits.graphic_editor.databinding.RetouchBottomMenuBinding
+import com.hits.graphic_editor.databinding.ScalingBottomMenuBinding
 
 
-fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch) {
-    showSeekBarLayout(binding, retouch)
+@SuppressLint("ClickableViewAccessibility")
+fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch, bottomMenu: RetouchBottomMenuBinding) {
+    showSeekBarLayout(binding, retouch, bottomMenu)
 
     binding.imageView.setOnTouchListener { v, event ->
         if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
@@ -30,31 +34,12 @@ fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch) {
         }
         true
     }
-
-    val extraTopMenu: ExtraTopMenuBinding by lazy {
-        ExtraTopMenuBinding.inflate(retouch.layoutInflater)
-    }
-    extraTopMenu.close.setOnClickListener {
-
-    }
-
-    extraTopMenu.save.setOnClickListener {
-
-    }
-
-    binding.root.addView(
-        extraTopMenu.root,
-        ConstraintLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            topToTop = binding.root.id
-        }
-    )
 }
 
-fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch) {
-    val seekBarLayout = retouch.layoutInflater.inflate(R.layout.retouch_bottom_menu, null)
+fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch, bottomMenu: RetouchBottomMenuBinding) {
+
+    val seekBarLayout = bottomMenu.root//retouch.layoutInflater.inflate(R.layout.retouch_bottom_menu, null)
+
     val retouchCoefSeekBar = seekBarLayout.findViewById<SeekBar>(R.id.retouchCoef)
     val brushSizeSeekBar = seekBarLayout.findViewById<SeekBar>(R.id.brushSize)
 

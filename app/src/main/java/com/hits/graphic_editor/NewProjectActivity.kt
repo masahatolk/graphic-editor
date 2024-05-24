@@ -30,12 +30,14 @@ import com.hits.graphic_editor.color_correction.ColorCorrection
 import com.hits.graphic_editor.cube_3d.Cube3D
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.face_detection.FaceDetection
+import com.hits.graphic_editor.retouch.Retouch
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
 import com.hits.graphic_editor.ui.addTopMenu
 import com.hits.graphic_editor.ui.removeBottomMenu
 import com.hits.graphic_editor.ui.removeExtraTopMenu
 import com.hits.graphic_editor.ui.removeTopMenu
+import com.hits.graphic_editor.unsharp_mask.UnsharpMask
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.FilterMode
 import com.hits.graphic_editor.utils.ProcessedImage
@@ -224,7 +226,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.RETOUCH.ordinal -> {
-
+                        currentFilter = Retouch(binding, layoutInflater, processedImage)
                     }
 
                     FilterMode.SPLINE.ordinal -> {
@@ -236,7 +238,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.UNSHARP_MASKING.ordinal -> {
-
+                        currentFilter = UnsharpMask(binding, layoutInflater, processedImage)
                     }
 
                     FilterMode.CUBE.ordinal -> {
