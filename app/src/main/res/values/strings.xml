@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Graphic-editor</string>
+    <string name="app_name">Elixir</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
@@ -12,6 +12,17 @@
 
     <string name="temp_images_dir">temp_images</string>
     <string name="temp_image">temp_image.jpg</string>
+    <string name="add">add</string>
+    <string name="antialiasing">Antialiasing</string>
+    <string name="color">color</string>
+    <string name="menu">menu</string>
+    <string name="scale">Scale</string>
     <string name="rotate">Rotate</string>
+    <string name="filter">Filter</string>
+    <string name="retouch">Retouch</string>
+    <string name="spline">Spline</string>
+    <string name="at">AT</string>
+    <string name="um">UM</string>
+    <string name="cube">Cube</string>
     <!--    <string name="authorities">com.hits.graphic-editor</string>-->
 </resources>

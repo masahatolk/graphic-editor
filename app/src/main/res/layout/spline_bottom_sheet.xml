@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/SplineGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/splineModeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_spline_24dp"
+                android:button="@android:color/transparent"
+                android:layout_marginRight="20dp"/>
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/polygonModeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_polygon_24dp"
+                android:button="@android:color/transparent" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/deleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_delete_24dp"
+                android:button="@android:color/transparent"
+                android:layout_marginLeft="20dp"/>
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/newSpline"
+            android:layout_width="88dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/round_button"
+            android:text="@string/add"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.265"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/SplineGroup" />
+
+        <androidx.constraintlayout.widget.Group
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="antialiasingChip">
+
+
+        </androidx.constraintlayout.widget.Group>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/antialiasingChip"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:text="@string/antialiasing"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/SplineGroup" />
+
+        <Button
+            android:id="@+id/colorPickerButton"
+            android:layout_width="84dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/round_button"
+            android:text="@string/color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.735"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/SplineGroup" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
