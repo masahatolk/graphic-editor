@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SeekBar
+        android:id="@+id/brushSize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="40dp"
+        android:max="20"
+        android:progress="10"
+        android:progressTint="#9C27B0"
+        android:thumbTint="#7B1FA2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <SeekBar
+        android:id="@+id/retouchCoef"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="80dp"
+        android:max="20"
+        android:progress="5"
+        android:progressTint="#9C27B0"
+        android:thumbTint="#7B1FA2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/brushSizeExplanation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Размер кисти: 10"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/brushSize"
+        app:layout_constraintStart_toStartOf="@id/brushSize"
+        app:layout_constraintEnd_toEndOf="@id/brushSize" />
+
+    <TextView
+        android:id="@+id/retouchCoefExplanation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Коэффициент ретуширования: 0.5"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/retouchCoef"
+        app:layout_constraintStart_toStartOf="@id/retouchCoef"
+        app:layout_constraintEnd_toEndOf="@id/retouchCoef" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
