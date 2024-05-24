@@ -38,7 +38,8 @@ class Retouch(
     override fun onClose(onSave: Boolean) {
         binding.imageView.setOnClickListener(null)
         binding.root.removeView(bottomMenu.root)
-        processedImage.addToLocalStack(getSimpleImage(imageBitmap))
+        if (onSave)
+            processedImage.addToLocalStack(getSimpleImage(imageBitmap))
     }
 
     override fun onStart() {
