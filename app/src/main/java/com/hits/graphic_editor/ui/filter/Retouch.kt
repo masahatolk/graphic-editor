@@ -12,18 +12,19 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.hits.graphic_editor.R
-import com.hits.graphic_editor.SimpleImage
-import com.hits.graphic_editor.argbToInt
 import com.hits.graphic_editor.custom_api.IntColor
+import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.alpha
+import com.hits.graphic_editor.custom_api.argbToInt
 import com.hits.graphic_editor.custom_api.blue
+import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.custom_api.green
 import com.hits.graphic_editor.custom_api.red
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
-import com.hits.graphic_editor.getBitMap
+
 import kotlin.math.max
 import kotlin.math.min
 
