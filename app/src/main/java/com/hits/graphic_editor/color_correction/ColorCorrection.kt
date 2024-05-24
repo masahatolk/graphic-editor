@@ -20,6 +20,7 @@ import com.hits.graphic_editor.scaling.getSuperSampledSimpleImage
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -69,7 +70,7 @@ class ColorCorrection(
         faces = faceDetection.detectFaces(faceDetection.getMatrix(processedImage.getSimpleImage())).toArray()
     }
     private lateinit var cachedDetectionBm: Bitmap
-    private val cachedDetectionJob = CoroutineScope(Dispatchers.IO).launch {
+    private val cachedDetectionJob = CoroutineScope(Dispatchers.IO).launch(start = CoroutineStart.LAZY) {
         cachedDetectionBm = faceDetection.getDetection(processedImage.getSimpleImageBeforeFiltering())
     }
 
@@ -284,6 +285,7 @@ class ColorCorrection(
             )
         )
 
+        cachedDetectionJob.start()
         return items
     }
 
