@@ -24,5 +24,13 @@
     <string name="at">AT</string>
     <string name="um">UM</string>
     <string name="cube">Cube</string>
+    <string name="_90">90</string>
+    <string name="crop">crop</string>
+    <string name="apply">Apply</string>
+    <string name="_0">Порог: 0</string>
+    <string name="_1_0">Коэффициент усиления: 1.0</string>
+    <string name="_10">Радиус размытия: 10</string>
+    <string name="__10">Размер кисти: 10</string>
+    <string name="_0_5">Коэффициент ретуширования: 0.5</string>
     <!--    <string name="authorities">com.hits.graphic-editor</string>-->
 </resources>
