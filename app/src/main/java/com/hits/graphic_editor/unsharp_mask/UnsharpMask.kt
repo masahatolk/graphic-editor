@@ -16,31 +16,28 @@ class UnsharpMask(
     override val processedImage: ProcessedImage
 
 ) : Filter {
-
-    lateinit var simpleImage: SimpleImage
     private var lastProcessedBitmap: Bitmap? = null
     var blurRadius: Float = 10f
     var amount: Float = 1.0f
     var threshold: Int = 0
 
-    val unsharpMaskBinding: UnsharpmaskBottomMenuBinding by lazy {
+    private val unsharpMaskBinding: UnsharpmaskBottomMenuBinding by lazy {
         UnsharpmaskBottomMenuBinding.inflate(layoutInflater)
     }
-
-    override fun onClose() {
-        TODO("Not yet implemented")
+    override fun onClose(onSave: Boolean) {
+        removeUnsharpMaskingControls(binding, unsharpMaskBinding)
     }
 
     override fun onStart() {
         addUnsharpMaskingControls(binding, this, unsharpMaskBinding)
     }
 
-
     fun applyUnsharpMasking() {
-        val inputBitmap = lastProcessedBitmap ?: getBitMap(simpleImage)
+        val inputBitmap = lastProcessedBitmap ?: getBitMap(processedImage.getSimpleImage())
         val resultBitmap = unsharpMask(inputBitmap, blurRadius, amount, threshold)
         lastProcessedBitmap = resultBitmap
-        binding.imageView.setImageBitmap(resultBitmap)
+
+        processedImage.addToLocalStackAndSetImageToView(getSimpleImage(resultBitmap))
     }
 
     private fun unsharpMask(

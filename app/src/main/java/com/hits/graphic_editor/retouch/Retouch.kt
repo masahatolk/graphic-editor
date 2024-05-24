@@ -11,9 +11,12 @@ import com.hits.graphic_editor.custom_api.alpha
 import com.hits.graphic_editor.custom_api.argbToInt
 import com.hits.graphic_editor.custom_api.blue
 import com.hits.graphic_editor.custom_api.getBitMap
+import com.hits.graphic_editor.custom_api.getSimpleImage
 import com.hits.graphic_editor.custom_api.green
 import com.hits.graphic_editor.custom_api.red
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
+import com.hits.graphic_editor.databinding.RetouchBottomMenuBinding
+import com.hits.graphic_editor.databinding.ScalingBottomMenuBinding
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 
@@ -25,10 +28,22 @@ class Retouch(
     override val layoutInflater: LayoutInflater,
     override val processedImage: ProcessedImage
 ) : Filter {
-    private lateinit var simpleImage: SimpleImage
     private var brushSize: Int = 10
     private var retouchCoefficient: Float = 0.5f
-    var imageBitmap = getBitMap(simpleImage)
+    var imageBitmap = getBitMap(processedImage.getSimpleImage())
+
+    private val bottomMenu: RetouchBottomMenuBinding by lazy {
+        RetouchBottomMenuBinding.inflate(layoutInflater)
+    }
+    override fun onClose(onSave: Boolean) {
+        binding.imageView.setOnClickListener(null)
+        binding.root.removeView(bottomMenu.root)
+        processedImage.addToLocalStack(getSimpleImage(imageBitmap))
+    }
+
+    override fun onStart() {
+        showBottomMenu(binding, this, bottomMenu)
+    }
 
     fun updateBrushSize(progress: Int) {
         brushSize = progress
@@ -136,14 +151,4 @@ class Retouch(
 
         return PointF(originalX, originalY)
     }
-
-    override fun onClose() {
-        TODO("Not yet implemented")
-    }
-
-    override fun onStart() {
-        TODO("Not yet implemented")
-    }
 }
-
-
