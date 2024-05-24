@@ -46,8 +46,7 @@ class MainActivity : AppCompatActivity() {
             bottomSheetBinding.gallery.setOnClickListener {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     requestPermission(Manifest.permission.READ_MEDIA_IMAGES, 1)
-                }
-                else requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, 1)
+                } else requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE, 1)
             }
 
             bottomSheetBinding.camera.setOnClickListener {
@@ -56,8 +55,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         tempImageUri = initTempUri()
-
-        supportActionBar?.hide()
     }
 
     private val galleryLauncher =
@@ -72,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
     private val cameraLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) {
-            if(it){
+            if (it) {
                 val message: String = tempImageUri.toString()
                 val photoIntent = Intent(this, NewProjectActivity::class.java)
                 photoIntent.putExtra("photo", message)
@@ -111,17 +108,20 @@ class MainActivity : AppCompatActivity() {
     private fun initTempUri(): Uri {
         val tempImagesDir = File(
             applicationContext.filesDir,
-            getString(R.string.temp_images_dir))
+            getString(R.string.temp_images_dir)
+        )
 
         tempImagesDir.mkdir()
 
         val tempImage = File(
             tempImagesDir,
-            getString(R.string.temp_image))
+            getString(R.string.temp_image)
+        )
 
         return FileProvider.getUriForFile(
             applicationContext,
             "com.hits.graphic-editor",
-            tempImage)
+            tempImage
+        )
     }
 }

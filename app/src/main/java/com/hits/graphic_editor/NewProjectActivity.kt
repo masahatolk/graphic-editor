@@ -1,8 +1,10 @@
 package com.hits.graphic_editor
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -16,6 +18,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import com.github.dhaval2404.colorpicker.ColorPickerDialog
+import com.github.dhaval2404.colorpicker.model.ColorShape
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.hits.graphic_editor.affine_transform.AffineTransform
@@ -65,7 +69,9 @@ class NewProjectActivity : AppCompatActivity() {
     val extraTopMenu: ExtraTopMenuBinding by lazy {
         ExtraTopMenuBinding.inflate(layoutInflater)
     }
+    private lateinit var colorPicker: ColorPickerDialog.Builder
 
+    @SuppressLint("ResourceType")
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +85,15 @@ class NewProjectActivity : AppCompatActivity() {
             (Toast.makeText(this, "OpenCV initialization failed!", Toast.LENGTH_LONG)).show()
             return
         }
+
+        // ------------- color picker for splines -------------
+        colorPicker = ColorPickerDialog
+            .Builder(this)
+            .setTitle("Pick Theme")
+            .setColorShape(ColorShape.SQAURE)
+            .setDefaultColor(Color.BLACK)
+
+
         setContentView(binding.root)
 
         // ------------ get photo from MainActivity ------------
@@ -108,7 +123,6 @@ class NewProjectActivity : AppCompatActivity() {
 
         // -------------- create necessary fields ---------------
         val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap), binding.imageView)
-        //lateinit var currentFilter: Filter
         var currentFilter:Filter = Scaling(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------
