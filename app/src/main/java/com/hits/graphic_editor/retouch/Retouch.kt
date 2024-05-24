@@ -38,7 +38,7 @@ class Retouch(
         retouchCoefficient = progress / 10f
     }
 
-    private fun applyRetouchToBitmap(bitmap: Bitmap, touchX: Int, touchY: Int): Bitmap {
+    fun applyRetouchToBitmap(bitmap: Bitmap, touchX: Int, touchY: Int): Bitmap {
         val retouchedBitmap = bitmap.copy(bitmap.config, true)
         val pixelColors = mutableListOf<IntColor>()
         val radiusSquared = brushSize * brushSize
