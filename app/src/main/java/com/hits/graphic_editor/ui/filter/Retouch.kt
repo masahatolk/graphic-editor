@@ -1,10 +1,13 @@
 package com.hits.graphic_editor.ui.filter
 
 import android.content.Context
-import android.util.Log
+import android.graphics.Bitmap
+import android.graphics.Matrix
+import android.graphics.PointF
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -13,7 +16,6 @@ import com.hits.graphic_editor.SimpleImage
 import com.hits.graphic_editor.argbToInt
 import com.hits.graphic_editor.custom_api.IntColor
 import com.hits.graphic_editor.custom_api.alpha
-import com.hits.graphic_editor.custom_api.blendedIntColor
 import com.hits.graphic_editor.custom_api.blue
 import com.hits.graphic_editor.custom_api.green
 import com.hits.graphic_editor.custom_api.red
@@ -22,10 +24,6 @@ import com.hits.graphic_editor.databinding.BottomMenuBinding
 import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.TopMenuBinding
 import com.hits.graphic_editor.getBitMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -37,8 +35,7 @@ class Retouch(
 ) {
     private var brushSize: Int = 10
     private var retouchCoefficient: Float = 0.5f
-    private var lastX: Int = 0
-    private var lastY: Int = 0
+    private var imageBitmap = getBitMap(simpleImage)
 
     private fun updateBrushSize(progress: Int) {
         brushSize = progress
@@ -48,8 +45,8 @@ class Retouch(
         retouchCoefficient = progress / 10f
     }
 
-    private fun applyRetouchToImage(image: SimpleImage, touchX: Int, touchY: Int): SimpleImage {
-        val retouchedImage = image.copy()
+    private fun applyRetouchToBitmap(bitmap: Bitmap, touchX: Int, touchY: Int): Bitmap {
+        val retouchedBitmap = bitmap.copy(bitmap.config, true)
         val pixelColors = mutableListOf<IntColor>()
         val radiusSquared = brushSize * brushSize
 
@@ -57,16 +54,16 @@ class Retouch(
         val centerY = touchY
         val startX = max(0, centerX - brushSize)
         val startY = max(0, centerY - brushSize)
-        val endX = min(image.width - 1, centerX + brushSize)
-        val endY = min(image.height - 1, centerY + brushSize)
+        val endX = min(bitmap.width - 1, centerX + brushSize)
+        val endY = min(bitmap.height - 1, centerY + brushSize)
 
         for (nx in startX..endX) {
             for (ny in startY..endY) {
                 val dx = nx - centerX
                 val dy = ny - centerY
                 if (dx * dx + dy * dy <= radiusSquared) {
-                    if (nx in 0 until image.width && ny in 0 until image.height) {
-                        pixelColors.add(image[nx, ny])
+                    if (nx in 0 until bitmap.width && ny in 0 until bitmap.height) {
+                        pixelColors.add(bitmap.getPixel(nx, ny))
                     }
                 }
             }
@@ -79,14 +76,15 @@ class Retouch(
                 val dx = nx - centerX
                 val dy = ny - centerY
                 if (dx * dx + dy * dy <= radiusSquared) {
-                    if (nx in 0 until image.width && ny in 0 until image.height) {
-                        retouchedImage[nx, ny] = blendColors(image[nx, ny], averageColor, retouchCoefficient)
+                    if (nx in 0 until bitmap.width && ny in 0 until bitmap.height) {
+                        val blendedColor = blendColors(bitmap.getPixel(nx, ny), averageColor, retouchCoefficient)
+                        retouchedBitmap.setPixel(nx, ny, blendedColor)
                     }
                 }
             }
         }
 
-        return retouchedImage
+        return retouchedBitmap
     }
 
     private fun calculateAverageColor(colors: List<IntColor>): IntColor {
@@ -119,6 +117,50 @@ class Retouch(
         return argbToInt(alpha, red, green, blue)
     }
 
+
+
+    fun showBottomMenu(topMenu: TopMenuBinding, bottomMenu: BottomMenuBinding) {
+        showSeekBarLayout()
+
+        binding.imageView.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
+                val imageView = binding.imageView
+
+                val touchX = event.x
+                val touchY = event.y
+                val imageCoords = getImageCoordinates(imageView, touchX, touchY)
+                val imageX = imageCoords.x.toInt()
+                val imageY = imageCoords.y.toInt()
+
+                if (imageX in 0 until imageBitmap.width && imageY in 0 until imageBitmap.height) {
+                    imageBitmap = applyRetouchToBitmap(imageBitmap, imageX, imageY)
+                    binding.imageView.setImageBitmap(imageBitmap)
+                }
+            }
+            true
+        }
+
+        val extraTopMenu: ExtraTopMenuBinding by lazy {
+            ExtraTopMenuBinding.inflate(layoutInflater)
+        }
+        extraTopMenu.close.setOnClickListener {
+
+        }
+
+        extraTopMenu.save.setOnClickListener {
+
+        }
+
+        binding.root.addView(
+            extraTopMenu.root,
+            ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topToTop = binding.root.id
+            }
+        )
+    }
     fun showSeekBarLayout() {
         val seekBarLayout = layoutInflater.inflate(R.layout.retouch_bottom_menu, null)
         val retouchCoefSeekBar = seekBarLayout.findViewById<SeekBar>(R.id.retouchCoef)
@@ -163,71 +205,21 @@ class Retouch(
             }
         )
     }
+    private fun getImageCoordinates(imageView: ImageView, x: Float, y: Float): PointF {
+        val matrix = FloatArray(9)
+        imageView.imageMatrix.getValues(matrix)
 
-    fun showBottomMenu(topMenu: TopMenuBinding, bottomMenu: BottomMenuBinding) {
-        showSeekBarLayout()
+        val scaleX = matrix[Matrix.MSCALE_X]
+        val scaleY = matrix[Matrix.MSCALE_Y]
 
-        binding.imageView.setOnTouchListener { v, event ->
-            val imageViewWidth = binding.imageView.width.toFloat()
-            val imageViewHeight = binding.imageView.height.toFloat()
-            val imageWidth = simpleImage.width.toFloat()
-            val imageHeight = simpleImage.height.toFloat()
+        val transX = matrix[Matrix.MTRANS_X]
+        val transY = matrix[Matrix.MTRANS_Y]
 
-            val scale: Float
-            val offsetX: Float
-            val offsetY: Float
+        val originalX = (x - transX) / scaleX
+        val originalY = (y - transY) / scaleY
 
-            if (imageViewWidth / imageWidth > imageViewHeight / imageHeight) {
-                scale = imageViewHeight / imageHeight
-                offsetX = (imageViewWidth - imageWidth * scale) / 2
-                offsetY = 0f
-            } else {
-                scale = imageViewWidth / imageWidth
-                offsetX = 0f
-                offsetY = (imageViewHeight - imageHeight * scale) / 2
-            }
-
-            val touchX = ((event.x - offsetX) / scale).toInt()
-            val touchY = ((event.y - offsetY) / scale).toInt()
-
-            when (event.action) {
-                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
-                    if (touchX in 0 until imageWidth.toInt() && touchY in 0 until imageHeight.toInt()) {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            withContext(Dispatchers.Default) {
-                                simpleImage = applyRetouchToImage(simpleImage, touchX, touchY)
-                            }
-                            binding.imageView.setImageBitmap(getBitMap(simpleImage))
-                        }
-                    } else {
-                        Log.e("Retouch", "Touch coordinates are out of bounds: ($touchX, $touchY)")
-                    }
-                }
-            }
-            true
-        }
-
-
-
-        val extraTopMenu: ExtraTopMenuBinding by lazy {
-            ExtraTopMenuBinding.inflate(layoutInflater)
-        }
-        extraTopMenu.close.setOnClickListener {
-            // Your code to handle the close button click
-        }
-
-        extraTopMenu.save.setOnClickListener {
-            // Your code to handle the save button click
-        }
-
-        binding.root.addView(
-            extraTopMenu.root,
-            ConstraintLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topToTop = binding.root.id
-            }
-        )
+        return PointF(originalX, originalY)
     }
 }
+
+
