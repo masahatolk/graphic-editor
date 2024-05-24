@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.tan
 
@@ -259,7 +260,6 @@ class Scene(
 
             if (getAngle(
                     getRotatedFVec3(it.crossProductFVec3, obj.cachedRotationMatrix),
-                    //calcTrianglePerpendicular(transformedP1, transformedP2, transformedP3),
                     fVec3ToCamera) < PI/2)
             {
                 val projectedP1 = projectedFVec3(transformedP1)
@@ -385,7 +385,9 @@ class Cube(
 fun Scene.validateObjectDistance()
 {
     this.sceneObj.position.z =
-        (this.sceneObj.position.z).coerceAtLeast(1.42F + this.camera.distToCanvas)
+        (this.sceneObj.position.z)
+            .coerceAtLeast(1.9F + this.camera.distToCanvas)
+            .coerceAtMost(40F)
 }
 fun Scene.changeObjectDistance(delta: Float) {
     this.sceneObj.position.z += delta

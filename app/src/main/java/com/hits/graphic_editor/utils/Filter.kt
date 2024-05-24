@@ -7,6 +7,6 @@ interface Filter {
     val binding: ActivityNewProjectBinding
     val layoutInflater: LayoutInflater
     val processedImage: ProcessedImage
-    fun onClose()
-    fun onStart ()
+    fun onClose(onSave: Boolean)
+    fun onStart()
 }

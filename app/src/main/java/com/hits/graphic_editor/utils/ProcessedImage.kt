@@ -4,6 +4,7 @@ import android.widget.ImageView
 import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.getBitMap
+import com.hits.graphic_editor.scaling.getScaledSimpleImageByNewWidth
 import kotlin.math.min
 fun <T> MutableList<T>.shrinkSize(size: Int)
 {
@@ -14,6 +15,11 @@ class ProcessedImage(
     image: SimpleImage,
     private var imageView: ImageView
 ) {
+    companion object {
+        const val MAX_SIZE = 7680* 4320
+        const val MIN_SIZE = 10 * 10
+    }
+
     private var mipMapsContainer: MipMapsContainer = MipMapsContainer(image)
 
     private var globalStack: MutableList<SimpleImage> = mutableListOf(image)
@@ -120,5 +126,16 @@ class ProcessedImage(
     fun addToLocalStackAndSetImageToView(img: SimpleImage){
         addToLocalStack(img)
         setImageToView()
+    }
+
+    /**
+     * Может вернуть ссылку на изображение из глобального стека, если новый размер больше,
+     * поэтому изображение не следует модифицировать. Processed image не хранит сгенерированную картинку
+     */
+    suspend fun createIncreasedImage(viewSizeDivider: Int): SimpleImage{
+        val newWidth = imageView.width / viewSizeDivider
+        if (newWidth > getSimpleImageBeforeFiltering().width)
+            return getSimpleImageBeforeFiltering()
+        return getScaledSimpleImageByNewWidth(getMipMapsContainer(), newWidth)
     }
 }

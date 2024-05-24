@@ -4,6 +4,7 @@ import com.hits.graphic_editor.custom_api.MipMapsContainer
 import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.divideIntColorByInt
 import com.hits.graphic_editor.utils.FVec2
+import com.hits.graphic_editor.utils.ProcessedImage
 import com.hits.graphic_editor.utils.Vec2
 import com.hits.graphic_editor.utils.getBilinearFilteredPixelInt
 import com.hits.graphic_editor.utils.getTrilinearFilterBlendCoeff
@@ -93,12 +94,12 @@ data class AffineTransformedResult(
         val cropOffset = cashedCropOffset
 
         val resultImg = SimpleImage(
-            transformedImage.width - (cropOffset.x + 1) * 2,
-            transformedImage.height - (cropOffset.y + 1) * 2
+            transformedImage.width - (cropOffset.x + 2) * 2,
+            transformedImage.height - (cropOffset.y + 2) * 2
         )
         for (x in 0 until resultImg.width)
             for (y in 0 until resultImg.height)
-                resultImg[x, y] = transformedImage[x + cropOffset.x + 1, y + cropOffset.y + 1]
+                resultImg[x, y] = transformedImage[x + cropOffset.x + 2, y + cropOffset.y + 2]
 
         return resultImg
     }
@@ -110,8 +111,8 @@ private fun getCropOffset(
     {
         if (ratioXY == img.width/img.height.toFloat()) return Vec2(0,0)
         if (ratioXY < img.width/img.height.toFloat())
-            return Vec2(((img.width - ratioXY * img.height)/2).toInt(),0)
-        return Vec2(0, ((img.height - ratioXY * img.width)/2).toInt())
+            return Vec2(((img.width - img.height * ratioXY)/2).toInt(),0)
+        return Vec2(0, ((img.height - img.width / ratioXY)/2).toInt())
     }
     fun relationToLeftTopLine(x: Int, y: Int) =
         edgePoints.leftY * x + edgePoints.topX * y -edgePoints.leftY * edgePoints.topX
@@ -197,16 +198,20 @@ private fun getReversedTransformationMatrix(matrix: Array<Array<Float>>): Array<
 
 
 suspend fun getAffineTransformedResult(
-    mipMapsContainer: MipMapsContainer, matrix: Array<Array<Float>>, ratio: Float? = null): AffineTransformedResult {
+    mipMapsContainer: MipMapsContainer, matrix: Array<Array<Float>>,
+    ratio: Float? = null, maxTransformedImageResolution: Int? = null): AffineTransformedResult {
+
+    val maxResolution = maxTransformedImageResolution ?: ProcessedImage.MAX_SIZE
     val img = mipMapsContainer.img
     val oldHeight = img.height
     val oldWidth = img.width
+    val sizeMultiplier: Float
 
     // function ignores coordinates offset and centers new image
-    fun getTransformedFVec2(vec: FVec2, matrix: Array<Array<Float>>): FVec2 = FVec2(
-        matrix[0][0] * vec.x + matrix[0][1] * vec.y,
-        matrix[1][0] * vec.x + matrix[1][1] * vec.y
-    )
+    fun getTransformedFVec2(vec: FVec2, matrix: Array<Array<Float>>) = FVec2(
+            (matrix[0][0] * vec.x + matrix[0][1] * vec.y),
+            (matrix[1][0] * vec.x + matrix[1][1] * vec.y)
+        )
 
     val reversedMatrix = getReversedTransformationMatrix(matrix)
 
@@ -222,20 +227,44 @@ suspend fun getAffineTransformedResult(
     val rightTranslatedPoint = cornerCoordinates.maxBy { it.x }
     val bottomTranslatedPoint = cornerCoordinates.maxBy { it.y }
 
-    val translatedLeft = ceil(leftTranslatedPoint.x).toInt()
-    val translatedTop = ceil(topTranslatedPoint.y).toInt()
-    val translatedRight = rightTranslatedPoint.x.toInt()
-    val translatedBottom = bottomTranslatedPoint.y.toInt()
+    var translatedLeft = ceil(leftTranslatedPoint.x).toInt()
+    var translatedTop = ceil(topTranslatedPoint.y).toInt()
+    var translatedRight = rightTranslatedPoint.x.toInt()
+    var translatedBottom = bottomTranslatedPoint.y.toInt()
 
-    val newWidth = translatedRight - translatedLeft
-    val newHeight = translatedBottom - translatedTop
+    var newWidth = translatedRight - translatedLeft
+    var newHeight = translatedBottom - translatedTop
+
+    if (newWidth * newHeight > maxResolution)
+    {
+        sizeMultiplier = sqrt(maxResolution / (newWidth * newHeight).toFloat())
+
+        reversedMatrix[0][0] /= sizeMultiplier
+        reversedMatrix[0][1] /= sizeMultiplier
+        reversedMatrix[1][0] /= sizeMultiplier
+        reversedMatrix[1][1] /= sizeMultiplier
+
+        leftTranslatedPoint *= sizeMultiplier
+        topTranslatedPoint *= sizeMultiplier
+        rightTranslatedPoint *= sizeMultiplier
+        bottomTranslatedPoint *= sizeMultiplier
+
+        translatedLeft = ceil(leftTranslatedPoint.x).toInt()
+        translatedTop = ceil(topTranslatedPoint.y).toInt()
+        translatedRight = rightTranslatedPoint.x.toInt()
+        translatedBottom = bottomTranslatedPoint.y.toInt()
+
+        newWidth = translatedRight - translatedLeft
+        newHeight = translatedBottom - translatedTop
+    }
+
     val newImg = SimpleImage(newWidth, newHeight)
 
     val currCoeff = sqrt(newWidth * newHeight / (img.width * img.height).toFloat())
 
     val jobs: MutableList<Job> = mutableListOf()
 
-    if (currCoeff >= MipMapsContainer.constSizeCoeffs.last() ||
+    if (maxTransformedImageResolution != null || currCoeff >= MipMapsContainer.constSizeCoeffs.last() ||
         currCoeff <= MipMapsContainer.constSizeCoeffs.first()
     ) {
         for (translatedX in translatedLeft until translatedRight) {
@@ -297,6 +326,7 @@ suspend fun getAffineTransformedResult(
         }
     }
     jobs.forEach { it.join() }
+
     return AffineTransformedResult(
         newImg,
         EdgePoints(
@@ -313,8 +343,9 @@ suspend fun getAffineTransformedResult(
     transf1: PointTransfer,
     transf2: PointTransfer,
     transf3: PointTransfer,
-    ratio: Float? = null):AffineTransformedResult?
+    ratio: Float? = null,
+    maxResolution: Int? = null):AffineTransformedResult?
 {
     val matrix = getAffineTransformationMatrix(transf1, transf2, transf3) ?: return null
-    return getAffineTransformedResult(mipMapsContainer, matrix, ratio)
+    return getAffineTransformedResult(mipMapsContainer, matrix, ratio, maxResolution)
 }

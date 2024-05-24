@@ -5,37 +5,102 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/scalingCoefficient"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:inputType="numberDecimal"
-        app:layout_constraintEnd_toStartOf="@+id/scalingButton"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <Button
         android:id="@+id/scalingButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="84dp"
+        android:layout_marginStart="92dp"
         android:password="false"
         android:text="Scale"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintEnd_toStartOf="@+id/antialiasing"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <CheckBox
+    <Switch
         android:id="@+id/antialiasing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:text="Antialiasing"
+        android:layout_marginBottom="8dp"
+        android:text="AntiAliasing"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scalingButton" />
+        app:layout_constraintHorizontal_bias="0.748"
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/oldWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.039"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="625dp" />
+
+        <TextView
+            android:id="@+id/X"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="x" />
+
+        <TextView
+            android:id="@+id/oldHeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.073"
+            app:layout_constraintStart_toEndOf="@+id/oldWidth"
+            tools:layout_editor_absoluteY="625dp" />
+
+        <EditText
+            android:id="@+id/scalingCoefficient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:maxLength="7"
+            android:minEms="4"
+            android:text="0"
+            app:layout_constraintEnd_toStartOf="@+id/newWidth"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="611dp" />
+
+        <EditText
+            android:id="@+id/newWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:maxLength="7"
+            android:minEms="4"
+            android:text="0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.643"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="611dp" />
+
+        <EditText
+            android:id="@+id/newHeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="0"
+            android:inputType="numberDecimal"
+            android:maxLength="7"
+            android:minEms="4"
+            android:text="0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@+id/newWidth"
+            tools:layout_editor_absoluteY="611dp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

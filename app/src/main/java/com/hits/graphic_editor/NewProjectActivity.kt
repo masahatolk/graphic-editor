@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -89,7 +90,15 @@ class NewProjectActivity : AppCompatActivity() {
                 decoder.isMutableRequired = true
             }
         }
+
+        if (selectedPhotoBitmap.width * selectedPhotoBitmap.height
+            !in ProcessedImage.MIN_SIZE..ProcessedImage.MAX_SIZE)
+            this.finish()
+
         binding.imageView.setImageBitmap(selectedPhotoBitmap)
+        binding.imageView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
 
         // ------------------- add main menus -------------------
         addTopMenu(binding, topMenu)
@@ -97,7 +106,8 @@ class NewProjectActivity : AppCompatActivity() {
 
         // -------------- create necessary fields ---------------
         val processedImage = ProcessedImage(getSimpleImage(selectedPhotoBitmap), binding.imageView)
-        lateinit var currentFilter: Filter
+        //lateinit var currentFilter: Filter
+        var currentFilter:Filter = Scaling(binding, layoutInflater, processedImage)
 
         // -------------- add listeners to top menus ----------------
         topMenu.close.setOnClickListener() {
@@ -169,7 +179,7 @@ class NewProjectActivity : AppCompatActivity() {
         extraTopMenu.close.setOnClickListener {
 
             removeExtraTopMenu(binding, extraTopMenu)
-            currentFilter.onClose()
+            currentFilter.onClose(false)
 
             processedImage.switchStackMode(false)
             processedImage.setImageToView()
@@ -181,7 +191,7 @@ class NewProjectActivity : AppCompatActivity() {
         extraTopMenu.save.setOnClickListener {
 
             removeExtraTopMenu(binding, extraTopMenu)
-            currentFilter.onClose()
+            currentFilter.onClose(true)
             //...
             processedImage.switchStackMode(true)
             processedImage.setImageToView()
@@ -230,14 +240,21 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.CUBE.ordinal -> {
-                        currentFilter = Cube3D(binding, layoutInflater, processedImage)
+                        currentFilter = Cube3D(binding, layoutInflater, processedImage, this@NewProjectActivity)
                     }
                 }
                 currentFilter.onStart()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {
+                removeTopMenu(binding, topMenu)
+                removeBottomMenu(binding, bottomMenu)
+                addExtraTopMenu(binding, extraTopMenu)
+
+                processedImage.switchStackMode()
+                currentFilter.onStart()
+            }
         })
 
         supportActionBar?.hide()

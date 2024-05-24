@@ -36,7 +36,7 @@ private suspend fun getRotated180DegreesSimpleImage(img: SimpleImage): SimpleIma
     for (y in 0 until newImage.height)
         jobs.add(CoroutineScope(Dispatchers.Default).launch {
             for (x in 0 until newImage.width)
-                newImage[x, y] = img[x, img.height - y - 1]
+                newImage[x, y] = img[img.width - x - 1, img.height - y - 1]
         })
 
     jobs.forEach { it.join() }
@@ -58,17 +58,17 @@ private suspend fun getRotated270DegreesSimpleImage(img: SimpleImage): SimpleIma
 }
 
 suspend
-fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Float? = null): AffineTransformedResult
+fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Float? = null, maxResolution: Int? = null): AffineTransformedResult
 {
     val ratio = newRatio ?: (input.img.width / input.img.height.toFloat())
 
-    if (degAngle == 0) return AffineTransformedResult(getRotated0DegreesSimpleImage(input.img),
+    if ((degAngle + 360) % 360 == 0) return AffineTransformedResult(getRotated0DegreesSimpleImage(input.img),
         null, ratio)
-    if (degAngle == 90) return AffineTransformedResult(getRotated90DegreesSimpleImage(input.img),
+    if ((degAngle + 360) % 360 == 90) return AffineTransformedResult(getRotated90DegreesSimpleImage(input.img),
         null, ratio)
-    if (degAngle == 180) return AffineTransformedResult(getRotated180DegreesSimpleImage(input.img),
+    if ((degAngle + 360) % 360 == 180) return AffineTransformedResult(getRotated180DegreesSimpleImage(input.img),
         null, ratio)
-    if (degAngle == 270) return AffineTransformedResult(getRotated270DegreesSimpleImage(input.img),
+    if ((degAngle + 360) % 360 == 270) return AffineTransformedResult(getRotated270DegreesSimpleImage(input.img),
         null, ratio)
 
     val angleRadians: Float = Math.toRadians(degAngle.toDouble()).toFloat()
@@ -77,5 +77,6 @@ fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Floa
             arrayOf(cos(angleRadians),-sin(angleRadians),0F),
             arrayOf(sin(angleRadians), cos(angleRadians),0F)
         ),
-        ratio)
+        ratio,
+        maxResolution)
 }

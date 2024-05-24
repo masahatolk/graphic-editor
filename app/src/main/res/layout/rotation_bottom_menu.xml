@@ -6,17 +6,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
+    <com.google.android.material.slider.Slider
+        android:id="@+id/aspectRatioSlider"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:stepSize="0.000000001"
+        android:value="1.0"
+        android:valueFrom="0.2"
+        android:valueTo="5.0"
+        app:layout_constraintBottom_toTopOf="@+id/rotationSlider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tickVisible="false" />
+
     <Button
-        android:id="@+id/rotateButton"
+        android:id="@+id/rotate90Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:onClick="onRotateButtonClick"
-        android:text="@string/rotate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.918"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:onClick="onRotate90ButtonClick"
+        android:text="90"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <com.google.android.material.slider.Slider
+        android:id="@+id/rotationSlider"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:stepSize="1"
+        android:value="0"
+        android:valueFrom="-180"
+        android:valueTo="180"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tickVisible="false" />
+
+    <Switch
+        android:id="@+id/cropSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Crop"
+        app:layout_constraintBottom_toTopOf="@+id/rotate90Button"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -102,7 +102,7 @@ class FaceDetection(
     override fun onStart() {
     }
 
-    override fun onClose() {
+    override fun onClose(onSave: Boolean) {
         removeFaceDetectionBottomMenu(binding, this.faceDetectionBottomMenu)
     }
 }
