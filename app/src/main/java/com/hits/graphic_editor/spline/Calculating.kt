@@ -1,5 +1,6 @@
 package com.hits.graphic_editor.spline
 
+import android.graphics.Canvas
 import android.graphics.Point
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -83,23 +84,27 @@ fun calculateMiddlePoint(first: Point, second: Point): Point {
 fun calculateFieldsForMovingPoint(
     path: MutableList<Point>,
     extraPoints: MutableList<Point>,
-    pointIndex: Int
+    pointIndex: Int,
+    splineMode: SplineMode
 ) {
     var leftMiddle: Point? = null
     var rightMiddle: Point? = null
     var leftLength = 0f
     var rightLength = 0f
 
-    if (pointIndex < path.lastIndex) {
-        rightMiddle = calculateMiddlePoint(path[pointIndex], path[pointIndex + 1])
-        rightLength = calculateLength(path[pointIndex], path[pointIndex + 1])
+    val rightIndex = getRightIndex(pointIndex, path.lastIndex)
+    if (pointIndex < path.lastIndex || splineMode == SplineMode.POLYGON) {
+        rightMiddle = calculateMiddlePoint(path[pointIndex], path[rightIndex])
+        rightLength = calculateLength(path[pointIndex], path[rightIndex])
     }
-    if (pointIndex > 0) {
-        leftMiddle = calculateMiddlePoint(path[pointIndex - 1], path[pointIndex])
-        leftLength = calculateLength(path[pointIndex - 1], path[pointIndex])
+    val leftIndex = getLeftIndex(pointIndex, path.lastIndex)
+    if (pointIndex > 0 || splineMode == SplineMode.POLYGON) {
+        leftMiddle = calculateMiddlePoint(path[leftIndex], path[pointIndex])
+        leftLength = calculateLength(path[leftIndex], path[pointIndex])
     }
 
     val diffPoint: Point
+
     if (leftMiddle != null && rightMiddle != null) {
         diffPoint = calculateExtraPoints(
             path[pointIndex],
@@ -110,14 +115,19 @@ fun calculateFieldsForMovingPoint(
         val leftExtraPoint = Point(leftMiddle.x + diffPoint.x, leftMiddle.y + diffPoint.y)
         val rightExtraPoint = Point(rightMiddle.x + diffPoint.x, rightMiddle.y + diffPoint.y)
 
-        extraPoints[(pointIndex - 1) * 2] = leftExtraPoint
-        extraPoints[(pointIndex - 1) * 2 + 1] = rightExtraPoint
+        if (pointIndex != 0) {
+            extraPoints[(pointIndex - 1) * 2] = leftExtraPoint
+            extraPoints[(pointIndex - 1) * 2 + 1] = rightExtraPoint
+        } else {
+            extraPoints[(path.lastIndex - 1) * 2 + 2] = leftExtraPoint
+            extraPoints[(path.lastIndex - 1) * 2 + 3] = rightExtraPoint
+        }
     }
 
-    if (pointIndex + 1 < path.lastIndex && rightMiddle != null) {
+    if ((pointIndex + 1 < path.lastIndex || (splineMode == SplineMode.POLYGON && path.size >= 3)) && rightMiddle != null) {
         calculateRightFields(path, extraPoints, rightMiddle, rightLength, pointIndex)
     }
-    if (pointIndex - 1 > 0 && leftMiddle != null) {
+    if ((pointIndex - 1 > 0 || (splineMode == SplineMode.POLYGON && path.size >= 3)) && leftMiddle != null) {
         calculateLeftFields(path, extraPoints, leftMiddle, leftLength, pointIndex)
     }
 }
@@ -130,11 +140,14 @@ fun calculateRightFields(
     pointIndex: Int
 ) {
 
-    val rightMiddle = calculateMiddlePoint(path[pointIndex + 1], path[pointIndex + 2])
-    val rightLength = calculateLength(path[pointIndex + 1], path[pointIndex + 2])
+    val rightIndex = getRightIndex(pointIndex, path.lastIndex)
+    val rightMiddle =
+        calculateMiddlePoint(path[rightIndex], path[getRightIndex(rightIndex, path.lastIndex)])
+    val rightLength =
+        calculateLength(path[rightIndex], path[getRightIndex(rightIndex, path.lastIndex)])
 
     val diffPoint = calculateExtraPoints(
-        path[pointIndex + 1],
+        path[rightIndex],
         leftMiddle,
         rightMiddle,
         leftLength / rightLength
@@ -159,11 +172,13 @@ fun calculateLeftFields(
     rightLength: Float,
     pointIndex: Int
 ) {
-    val leftMiddle = calculateMiddlePoint(path[pointIndex - 1], path[pointIndex - 2])
-    val leftLength = calculateLength(path[pointIndex - 1], path[pointIndex - 2])
+    val leftIndex = getLeftIndex(pointIndex, path.lastIndex)
+    val leftMiddle =
+        calculateMiddlePoint(path[leftIndex], path[getLeftIndex(leftIndex, path.lastIndex)])
+    val leftLength = calculateLength(path[leftIndex], path[getLeftIndex(leftIndex, path.lastIndex)])
 
     val diffPoint = calculateExtraPoints(
-        path[pointIndex - 1],
+        path[leftIndex],
         leftMiddle,
         rightMiddle,
         leftLength / rightLength
@@ -172,11 +187,46 @@ fun calculateLeftFields(
     val leftExtraPoint = Point(leftMiddle.x + diffPoint.x, leftMiddle.y + diffPoint.y)
     val rightExtraPoint = Point(rightMiddle.x + diffPoint.x, rightMiddle.y + diffPoint.y)
 
-    if (pointIndex == extraPoints.lastIndex) {
-        extraPoints[extraPoints.lastIndex - 1] = leftExtraPoint
-        extraPoints[extraPoints.lastIndex] = rightExtraPoint
-    } else {
+    if (pointIndex != 0 && pointIndex != 1) {
         extraPoints[(pointIndex - 1) * 2 - 2] = leftExtraPoint
         extraPoints[(pointIndex - 1) * 2 - 1] = rightExtraPoint
+    } else if (pointIndex == 0) {
+        extraPoints[(path.lastIndex - 1) * 2] = leftExtraPoint
+        extraPoints[(path.lastIndex - 1) * 2 + 1] = rightExtraPoint
+    } else {
+        extraPoints[(path.lastIndex - 1) * 2 + 2] = leftExtraPoint
+        extraPoints[(path.lastIndex - 1) * 2 + 3] = rightExtraPoint
     }
+}
+
+fun calculateAuxSplinePoints(
+    canvas: Canvas,
+    first: Point,
+    second: Point,
+    third: Point,
+    antialiasingMode: Boolean
+) {
+    var point: Point
+    var t = 0f
+    while (t < 1.0f) {
+
+        point = calculateAuxPoint(
+            first, second, third, t
+        )
+        if (antialiasingMode) drawAntialiasingSplinePoint(canvas, point, splinePaint)
+        drawSplinePoint(canvas, point, splinePaint)
+        t += 0.001f
+    }
+}
+
+
+fun getRightIndex(index: Int, lastIndex: Int): Int {
+    return if (index < lastIndex) index + 1
+    else 0
+}
+
+fun getLeftIndex(index: Int, lastIndex: Int): Int {
+    return if (index > 0) {
+        index - 1
+    } else lastIndex
 }

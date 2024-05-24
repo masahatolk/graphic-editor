@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Graphic-editor"
+rootProject.name = "Elixir"
 include(":app")

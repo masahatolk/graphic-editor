@@ -139,8 +139,6 @@ class NewProjectActivity : AppCompatActivity() {
                 onTabSelectedProcess()
             }
         })
-
-        supportActionBar?.hide()
     }
 
     fun onTabSelectedProcess() {
