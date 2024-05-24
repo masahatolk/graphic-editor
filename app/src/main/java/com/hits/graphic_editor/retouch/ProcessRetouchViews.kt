@@ -37,14 +37,11 @@ fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch, bottomM
 }
 
 fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch, bottomMenu: RetouchBottomMenuBinding) {
+    val retouchCoefSeekBar = bottomMenu.retouchCoef
+    val brushSizeSeekBar = bottomMenu.brushSize
 
-    val seekBarLayout = bottomMenu.root//retouch.layoutInflater.inflate(R.layout.retouch_bottom_menu, null)
-
-    val retouchCoefSeekBar = seekBarLayout.findViewById<SeekBar>(R.id.retouchCoef)
-    val brushSizeSeekBar = seekBarLayout.findViewById<SeekBar>(R.id.brushSize)
-
-    val brushSizeExplanation = seekBarLayout.findViewById<TextView>(R.id.brushSizeExplanation)
-    val retouchCoefExplanation = seekBarLayout.findViewById<TextView>(R.id.retouchCoefExplanation)
+    val brushSizeExplanation = bottomMenu.brushSizeExplanation
+    val retouchCoefExplanation = bottomMenu.retouchCoefExplanation
 
     retouchCoefSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -68,17 +65,15 @@ fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch, bott
         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
     })
 
-    val rootViewGroup = binding.root as ViewGroup
-
-    rootViewGroup.addView(
-        seekBarLayout,
+    binding.root.addView(
+        bottomMenu.root.rootView,
         ConstraintLayout.LayoutParams(
-            ConstraintLayout.LayoutParams.MATCH_PARENT,
-            ConstraintLayout.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply {
-            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
-            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
-            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            bottomToBottom = binding.root.id
+            leftToLeft = binding.root.id
+            rightToRight = binding.root.id
         }
     )
 }
