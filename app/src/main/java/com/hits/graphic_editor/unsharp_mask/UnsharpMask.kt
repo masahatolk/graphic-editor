@@ -12,7 +12,9 @@ import kotlin.math.*
 
 class UnsharpMask(
     override val binding: ActivityNewProjectBinding,
-    override val layoutInflater: LayoutInflater, override val processedImage: ProcessedImage
+    override val layoutInflater: LayoutInflater,
+    override val processedImage: ProcessedImage
+
 ) : Filter {
 
     lateinit var simpleImage: SimpleImage
