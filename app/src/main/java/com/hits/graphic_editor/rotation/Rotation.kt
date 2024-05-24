@@ -23,11 +23,24 @@ class Rotation(
         addBottomMenu()
         setListeners()
     }
-    override fun onClose() {
-        processedImage.addToLocalStack(
-            if (cropSwitch.isChecked) imageResult.getCroppedSimpleImage(ratioSlider.value)
-            else imageResult.getSimpleImage()
-        )
+    override fun onClose(onSave: Boolean) {
+        if (onSave) {
+            runBlocking {
+                imageResult = getRotatedImageResult(
+                    processedImage.getMipMapsContainer(),
+                    rotationSlider.value.toInt(),
+                    ratioSlider.value
+                )
+                processedImage.addToLocalStackAndSetImageToView(
+                    if (cropSwitch.isChecked) imageResult.getCropPreviewSimpleImage(ratioSlider.value)
+                    else imageResult.getSimpleImage()
+                )
+            }
+            processedImage.addToLocalStack(
+                if (cropSwitch.isChecked) imageResult.getCroppedSimpleImage(ratioSlider.value)
+                else imageResult.getSimpleImage()
+            )
+        }
         removeBottomMenu()
     }
 
@@ -47,6 +60,8 @@ class Rotation(
             totalDegreeAngle(),
         )
     }
+    private val maxResolution =
+        binding.imageView.measuredWidth * binding.imageView.measuredHeight / 4
     private fun setListeners() {
         ratioSlider.value = processedImage.getSimpleImage().width /
                 processedImage.getSimpleImage().height.toFloat()
@@ -59,7 +74,8 @@ class Rotation(
                 imageResult = getRotatedImageResult(
                     processedImage.getMipMapsContainer(),
                     value.toInt(),
-                    ratioSlider.value
+                    ratioSlider.value,
+                    maxResolution
                 )
                 processedImage.addToLocalStackAndSetImageToView(
                     if (cropSwitch.isChecked) imageResult.getCropPreviewSimpleImage(ratioSlider.value)

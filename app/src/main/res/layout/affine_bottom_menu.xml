@@ -18,28 +18,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:tickVisible="false" />
 
-    <Button
-        android:id="@+id/transformButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onTransformButtonClick"
-        android:text="Transform"
-        app:layout_constraintBottom_toTopOf="@+id/aspectRatioSlider"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <Switch
         android:id="@+id/cropSwitch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="21dp"
         android:layout_marginEnd="16dp"
         android:text="Crop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/aspectRatioSlider"
-        app:layout_constraintTop_toBottomOf="@+id/transformButton"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintStart_toEndOf="@+id/aspectRatioSlider" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -54,7 +54,7 @@ class Scaling (
         oldWidthView.text = oldWidth.toString()
         oldHeightView.text = oldHeight.toString()
     }
-    override fun onClose() {
+    override fun onClose(onSave: Boolean) {
         removeBottomMenu()
     }
 

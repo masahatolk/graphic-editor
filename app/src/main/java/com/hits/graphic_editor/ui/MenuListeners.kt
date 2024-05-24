@@ -37,7 +37,7 @@ fun setListenersToExtraTopMenu(
     extraTopMenu.close.setOnClickListener {
 
         removeExtraTopMenu(binding, extraTopMenu)
-        currentFilter.onClose()
+        currentFilter.onClose(false)
         //...
 
         processedImage.switchStackMode(false)
@@ -50,7 +50,7 @@ fun setListenersToExtraTopMenu(
     extraTopMenu.save.setOnClickListener {
 
         removeExtraTopMenu(binding, extraTopMenu)
-        currentFilter.onClose()
+        currentFilter.onClose(true)
         //...
         processedImage.switchStackMode(true)
         processedImage.setImageToView()

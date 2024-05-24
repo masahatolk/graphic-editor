@@ -58,7 +58,7 @@ private suspend fun getRotated270DegreesSimpleImage(img: SimpleImage): SimpleIma
 }
 
 suspend
-fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Float? = null): AffineTransformedResult
+fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Float? = null, maxResolution: Int? = null): AffineTransformedResult
 {
     val ratio = newRatio ?: (input.img.width / input.img.height.toFloat())
 
@@ -77,5 +77,6 @@ fun getRotatedImageResult(input: MipMapsContainer, degAngle: Int, newRatio: Floa
             arrayOf(cos(angleRadians),-sin(angleRadians),0F),
             arrayOf(sin(angleRadians), cos(angleRadians),0F)
         ),
-        ratio)
+        ratio,
+        maxResolution)
 }

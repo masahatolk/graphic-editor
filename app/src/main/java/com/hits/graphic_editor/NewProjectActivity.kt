@@ -90,6 +90,11 @@ class NewProjectActivity : AppCompatActivity() {
                 decoder.isMutableRequired = true
             }
         }
+
+        if (selectedPhotoBitmap.width * selectedPhotoBitmap.height
+            !in ProcessedImage.MIN_SIZE..ProcessedImage.MAX_SIZE)
+            this.finish()
+
         binding.imageView.setImageBitmap(selectedPhotoBitmap)
         binding.imageView.measure(
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
@@ -174,7 +179,7 @@ class NewProjectActivity : AppCompatActivity() {
         extraTopMenu.close.setOnClickListener {
 
             removeExtraTopMenu(binding, extraTopMenu)
-            currentFilter.onClose()
+            currentFilter.onClose(false)
 
             processedImage.switchStackMode(false)
             processedImage.setImageToView()
@@ -186,7 +191,7 @@ class NewProjectActivity : AppCompatActivity() {
         extraTopMenu.save.setOnClickListener {
 
             removeExtraTopMenu(binding, extraTopMenu)
-            currentFilter.onClose()
+            currentFilter.onClose(true)
             //...
             processedImage.switchStackMode(true)
             processedImage.setImageToView()

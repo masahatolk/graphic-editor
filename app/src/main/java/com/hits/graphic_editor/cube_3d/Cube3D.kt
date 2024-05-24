@@ -37,9 +37,11 @@ class Cube3D(
         addBindings()
         initGestures()
     }
-    override fun onClose() {
-        renderHighResFrame()
-        processedImage.addToLocalStackAndSetImageToView(scene.canvas)
+    override fun onClose(onSave: Boolean) {
+        if (onSave) {
+            renderHighResFrame()
+            processedImage.addToLocalStack(scene.canvas)
+        }
         removeScalingBottomMenu()
         deleteGestures()
         destroyScene()
@@ -92,7 +94,7 @@ class Cube3D(
     }
     private fun initScene(){
         scene.setCameraFOV(fovSlider.value.toInt())
-        scene.setResolution(binding.imageView.measuredWidth)
+        scene.setResolution(binding.imageView.measuredWidth / 2)
         sceneLoopJob.start()
     }
     private fun destroyScene(){

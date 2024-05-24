@@ -82,6 +82,24 @@ data class FVec2(var x: Float, var y: Float)
     fun ceilToVec2():Vec2{
         return Vec2(ceil(x).toInt(), ceil(y).toInt())
     }
+    fun length() = sqrt(x*x + y*y)
+    fun normalize(){
+        val oldLength = length()
+        x /= oldLength
+        y /= oldLength
+    }
+    fun resize(size: Float){
+        this.normalize()
+        this.x *= size
+        this.y *= size
+    }
+    operator fun plus(another: FVec2) =
+        FVec2(this.x + another.x, this.y + another.y)
+
+    operator fun timesAssign(a: Float) {
+        this.x *= a
+        this.y *= a
+    }
 }
 fun getRotationMatrix(vec: FVec3):Array<Array<Float>>
     =getRotationMatrix(vec.x, vec.y, vec.z)

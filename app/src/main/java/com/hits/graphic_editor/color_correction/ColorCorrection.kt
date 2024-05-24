@@ -80,9 +80,9 @@ class ColorCorrection(
         addFilterBottomMenu(binding, colorCorrectionBottomMenu)
     }
 
-    override fun onClose() {
+    override fun onClose(onSave: Boolean) {
         removeAllFilterMenus(binding, this)
-        faceDetection.onClose()
+        faceDetection.onClose(onSave)
     }
 
     fun updateFilterMode(filterMode: ColorCorrectionMode) {
