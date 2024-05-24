@@ -11,7 +11,7 @@ import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 
 
 fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch) {
-    retouch.showSeekBarLayout()
+    showSeekBarLayout(binding, retouch)
 
     binding.imageView.setOnTouchListener { v, event ->
         if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {

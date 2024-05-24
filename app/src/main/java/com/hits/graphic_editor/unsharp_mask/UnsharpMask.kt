@@ -43,7 +43,12 @@ class UnsharpMask(
         binding.imageView.setImageBitmap(resultBitmap)
     }
 
-    private fun unsharpMask(inputBitmap: Bitmap, radius: Float, amount: Float, threshold: Int): Bitmap {
+    private fun unsharpMask(
+        inputBitmap: Bitmap,
+        radius: Float,
+        amount: Float,
+        threshold: Int
+    ): Bitmap {
         val mask = createMask(inputBitmap, radius, amount, threshold)
         val thresholdedMask = applyThreshold(mask, threshold)
         return applyMask(inputBitmap, thresholdedMask)
@@ -57,16 +62,25 @@ class UnsharpMask(
         val radiusInt = radius.toInt()
 
         runBlocking {
-            val horizontalBlurJob = async { boxBlur(inputBitmap, blurredBitmap, width, height, radiusInt, true) }
+            val horizontalBlurJob =
+                async { boxBlur(inputBitmap, blurredBitmap, width, height, radiusInt, true) }
             horizontalBlurJob.await()
-            val verticalBlurJob = async { boxBlur(blurredBitmap, blurredBitmap, width, height, radiusInt, false) }
+            val verticalBlurJob =
+                async { boxBlur(blurredBitmap, blurredBitmap, width, height, radiusInt, false) }
             verticalBlurJob.await()
         }
 
         return blurredBitmap
     }
 
-    private suspend fun boxBlur(src: Bitmap, dst: Bitmap, width: Int, height: Int, radius: Int, horizontal: Boolean) = withContext(Dispatchers.Default) {
+    private suspend fun boxBlur(
+        src: Bitmap,
+        dst: Bitmap,
+        width: Int,
+        height: Int,
+        radius: Int,
+        horizontal: Boolean
+    ) = withContext(Dispatchers.Default) {
         val div = 2 * radius + 1
         val pixels = IntArray(if (horizontal) width else height)
         val resultPixels = IntArray(pixels.size)
@@ -102,7 +116,12 @@ class UnsharpMask(
         }
     }
 
-    private fun createMask(inputBitmap: Bitmap, radius: Float, amount: Float, threshold: Int): Bitmap {
+    private fun createMask(
+        inputBitmap: Bitmap,
+        radius: Float,
+        amount: Float,
+        threshold: Int
+    ): Bitmap {
         val blurredBitmap = applyGaussianBlurToImage(inputBitmap, radius)
         val width = inputBitmap.width
         val height = inputBitmap.height

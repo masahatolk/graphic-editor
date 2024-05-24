@@ -7,7 +7,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.UnsharpmaskBottomMenuBinding
 
-fun addUnsharpMaskingControls(binding: ActivityNewProjectBinding, unsharpMask: UnsharpMask, unsharpMaskBinding: UnsharpmaskBottomMenuBinding) {
+fun addUnsharpMaskingControls(
+    binding: ActivityNewProjectBinding,
+    unsharpMask: UnsharpMask,
+    unsharpMaskBinding: UnsharpmaskBottomMenuBinding
+) {
     binding.root.addView(
         unsharpMaskBinding.root,
         ConstraintLayout.LayoutParams(
@@ -25,11 +29,17 @@ fun addUnsharpMaskingControls(binding: ActivityNewProjectBinding, unsharpMask: U
     setupApplyButtonListener(unsharpMask, unsharpMaskBinding)
 }
 
-fun removeUnsharpMaskingControls(binding: ActivityNewProjectBinding, unsharpMaskBinding: UnsharpmaskBottomMenuBinding) {
+fun removeUnsharpMaskingControls(
+    binding: ActivityNewProjectBinding,
+    unsharpMaskBinding: UnsharpmaskBottomMenuBinding
+) {
     binding.root.removeView(unsharpMaskBinding.root)
 }
 
-private fun setupIconListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: UnsharpmaskBottomMenuBinding) {
+private fun setupIconListeners(
+    unsharpMask: UnsharpMask,
+    unsharpMaskBinding: UnsharpmaskBottomMenuBinding
+) {
     unsharpMaskBinding.radiusIcon.setOnClickListener {
         unsharpMaskBinding.radiusSeekBar.visibility = View.VISIBLE
         unsharpMaskBinding.amountSeekBar.visibility = View.GONE
@@ -58,8 +68,12 @@ private fun setupIconListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: Uns
     }
 }
 
-private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: UnsharpmaskBottomMenuBinding) {
-    unsharpMaskBinding.radiusSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+private fun setupSeekBarListeners(
+    unsharpMask: UnsharpMask,
+    unsharpMaskBinding: UnsharpmaskBottomMenuBinding
+) {
+    unsharpMaskBinding.radiusSeekBar.setOnSeekBarChangeListener(object :
+        SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             unsharpMask.blurRadius = progress.toFloat()
             unsharpMaskBinding.radiusValue.text = "Радиус размытия: $progress"
@@ -69,7 +83,8 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
     })
 
-    unsharpMaskBinding.amountSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    unsharpMaskBinding.amountSeekBar.setOnSeekBarChangeListener(object :
+        SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             unsharpMask.amount = progress / 100f
             unsharpMaskBinding.amountValue.text = "Коэффициент усиления: ${unsharpMask.amount}"
@@ -79,7 +94,8 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
     })
 
-    unsharpMaskBinding.thresholdSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+    unsharpMaskBinding.thresholdSeekBar.setOnSeekBarChangeListener(object :
+        SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             unsharpMask.threshold = progress
             unsharpMaskBinding.thresholdValue.text = "Порог: $progress"
@@ -90,7 +106,10 @@ private fun setupSeekBarListeners(unsharpMask: UnsharpMask, unsharpMaskBinding: 
     })
 }
 
-private fun setupApplyButtonListener(unsharpMask: UnsharpMask, unsharpMaskBinding: UnsharpmaskBottomMenuBinding) {
+private fun setupApplyButtonListener(
+    unsharpMask: UnsharpMask,
+    unsharpMaskBinding: UnsharpmaskBottomMenuBinding
+) {
     unsharpMaskBinding.applyButton.setOnClickListener {
         unsharpMask.applyUnsharpMasking()
     }
