@@ -10,20 +10,25 @@
         android:id="@+id/aspectRatioSlider"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="20dp"
         android:stepSize="0.000000001"
         android:value="1.0"
         android:valueFrom="0.2"
         android:valueTo="5.0"
         app:layout_constraintBottom_toTopOf="@+id/rotationSlider"
         app:layout_constraintStart_toStartOf="parent"
+        app:thumbRadius="8dp"
         app:tickVisible="false" />
 
-    <Button
+    <ImageButton
         android:id="@+id/rotate90Button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onRotate90ButtonClick"
-        android:text="90"
+        android:layout_width="54dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/round_button"
+        android:src="@drawable/ic_rotate90_24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -31,20 +36,27 @@
         android:id="@+id/rotationSlider"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="28dp"
         android:stepSize="1"
         android:value="0"
         android:valueFrom="-180"
         android:valueTo="180"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:thumbRadius="8dp"
         app:tickVisible="false" />
 
-    <Switch
+    <com.google.android.material.chip.Chip
         android:id="@+id/cropSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Crop"
+        android:layout_width="78dp"
+        android:layout_height="56dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:text="@string/crop"
+        android:textAlignment="center"
+        android:textSize="25sp"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
         app:layout_constraintBottom_toTopOf="@+id/rotate90Button"
         app:layout_constraintEnd_toEndOf="parent" />
 

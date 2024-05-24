@@ -17,6 +17,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.SplineBottomSheetBinding
 import com.hits.graphic_editor.databinding.SplineMenuButtonBinding
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
 
 enum class SplineMode {
@@ -30,11 +31,11 @@ val width = Resources.getSystem().displayMetrics.widthPixels
 
 
 class Spline(
-    val binding: ActivityNewProjectBinding,
-    private val layoutInflater: LayoutInflater,
-    private val processedImage: ProcessedImage,
+    override val binding: ActivityNewProjectBinding,
+    override val layoutInflater: LayoutInflater,
+    override val processedImage: ProcessedImage,
     private val colorPicker: ColorPickerDialog.Builder
-) {
+) : Filter {
 
     private lateinit var canvas: Canvas
     private lateinit var resultCanvas: Canvas
@@ -66,7 +67,7 @@ class Spline(
         SplineBottomSheetBinding.inflate(layoutInflater)
     }
 
-    fun showBottomMenu() {
+    override fun onStart() {
         addSplineMenuButton(binding, splineMenuButton)
 
         canvas = Canvas(bitmap)
@@ -397,5 +398,14 @@ class Spline(
     private fun removeExtraPoints(index: Int) {
         extraPointsList.last().removeAt(index)
         extraPointsList.last().removeAt(index)
+    }
+
+    override fun onClose(onSave: Boolean) {
+        if(onSave) {
+            canvas.drawBitmap(resultBitmap, null, rect, paint)
+            //canvas.drawBitmap(bitmap, null, rect, paint)
+            //processedImage.addToLocalStack()
+        }
+        removeSplineMenuButton(binding, splineMenuButton)
     }
 }

@@ -7,22 +7,28 @@
 
     <com.google.android.material.slider.Slider
         android:id="@+id/FovSlider"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
+        android:layout_width="253dp"
+        android:layout_height="45dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="44dp"
         android:stepSize="1"
         android:value="90"
         android:valueFrom="30"
         android:valueTo="150"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:thumbRadius="8dp"
         app:tickVisible="false" />
 
     <TextView
         android:id="@+id/FOV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
         android:text="FOV"
+        android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/FovSlider"
+        app:layout_constraintHorizontal_bias="0.769"
         app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

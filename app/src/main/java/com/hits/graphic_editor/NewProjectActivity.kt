@@ -35,6 +35,7 @@ import com.hits.graphic_editor.cube_3d.Cube3D
 import com.hits.graphic_editor.custom_api.getBitMap
 import com.hits.graphic_editor.face_detection.FaceDetection
 import com.hits.graphic_editor.retouch.Retouch
+import com.hits.graphic_editor.spline.Spline
 import com.hits.graphic_editor.ui.addBottomMenu
 import com.hits.graphic_editor.ui.addExtraTopMenu
 import com.hits.graphic_editor.ui.addTopMenu
@@ -244,7 +245,7 @@ class NewProjectActivity : AppCompatActivity() {
                     }
 
                     FilterMode.SPLINE.ordinal -> {
-
+                        currentFilter = Spline(binding, layoutInflater, processedImage, colorPicker)
                     }
 
                     FilterMode.AFFINE_TRANSFORMATION.ordinal -> {

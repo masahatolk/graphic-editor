@@ -75,7 +75,7 @@ class ColorCorrection(
     }
 
     override fun onStart() {
-        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.09F) }
+        runBlocking { smallSimpleImage = getSuperSampledSimpleImage(processedImage.getSimpleImage(), 0.1F) }
         adapter.items = getListOfSamples()
         colorCorrectionBottomMenu.colorCorrectionRecyclerView.adapter = adapter
         addFilterBottomMenu(binding, colorCorrectionBottomMenu)

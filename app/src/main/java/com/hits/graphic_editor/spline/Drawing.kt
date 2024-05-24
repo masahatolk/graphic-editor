@@ -10,7 +10,7 @@ import android.graphics.Rect
 
 const val pointRadius: Float = 15F
 private const val splinePointRadius: Float = 2F
-private val rect: Rect = Rect(0, 0, width, height)
+val rect: Rect = Rect(0, 0, width, height)
 var splinePaint: Paint = Paint()
 
 

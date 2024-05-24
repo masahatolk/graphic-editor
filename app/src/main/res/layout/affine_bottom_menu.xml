@@ -8,25 +8,33 @@
 
     <com.google.android.material.slider.Slider
         android:id="@+id/aspectRatioSlider"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
+        android:layout_width="243dp"
+        android:layout_height="51dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginBottom="30dp"
         android:stepSize="0.000000001"
         android:value="1.0"
         android:valueFrom="0.2"
         android:valueTo="5.0"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/cropSwitch"
+        app:layout_constraintHorizontal_bias="0.2"
         app:layout_constraintStart_toStartOf="parent"
+        app:thumbRadius="8dp"
         app:tickVisible="false" />
 
-    <Switch
+    <com.google.android.material.chip.Chip
         android:id="@+id/cropSwitch"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="Crop"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="91dp"
+        android:layout_height="54dp"
+        android:layout_marginBottom="28dp"
+        android:text="@string/crop"
+        android:textAlignment="center"
+        android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/aspectRatioSlider" />
+        app:layout_constraintHorizontal_bias="0.89"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
