@@ -49,16 +49,19 @@ class Retouch(
         val retouchedBitmap = bitmap.copy(bitmap.config, true)
         val pixelColors = mutableListOf<IntColor>()
         val radiusSquared = brushSize * brushSize
-
         val centerX = touchX
         val centerY = touchY
-        val startX = max(0, centerX - brushSize)
-        val startY = max(0, centerY - brushSize)
-        val endX = min(bitmap.width - 1, centerX + brushSize)
-        val endY = min(bitmap.height - 1, centerY + brushSize)
 
-        for (nx in startX..endX) {
-            for (ny in startY..endY) {
+        fun interpolateCoefficient(distance: Float): Float {
+            val maxDistance = brushSize.toFloat()
+            val minCoefficient = 0.2f
+            val maxCoefficient = 1.0f
+            val t = distance / maxDistance
+            return minCoefficient + (maxCoefficient - minCoefficient) * t
+        }
+
+        for (nx in (centerX - brushSize)..(centerX + brushSize)) {
+            for (ny in (centerY - brushSize)..(centerY + brushSize)) {
                 val dx = nx - centerX
                 val dy = ny - centerY
                 if (dx * dx + dy * dy <= radiusSquared) {
@@ -71,12 +74,14 @@ class Retouch(
 
         val averageColor = calculateAverageColor(pixelColors)
 
-        for (nx in startX..endX) {
-            for (ny in startY..endY) {
+        for (nx in (centerX - brushSize)..(centerX + brushSize)) {
+            for (ny in (centerY - brushSize)..(centerY + brushSize)) {
                 val dx = nx - centerX
                 val dy = ny - centerY
                 if (dx * dx + dy * dy <= radiusSquared) {
                     if (nx in 0 until bitmap.width && ny in 0 until bitmap.height) {
+                        val distanceToCenter = kotlin.math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+                        val retouchCoefficient = interpolateCoefficient(distanceToCenter)
                         val blendedColor = blendColors(bitmap.getPixel(nx, ny), averageColor, retouchCoefficient)
                         retouchedBitmap.setPixel(nx, ny, blendedColor)
                     }
@@ -109,14 +114,19 @@ class Retouch(
         return argbToInt(avgAlpha, avgRed, avgGreen, avgBlue)
     }
 
-    private fun blendColors(color1: IntColor, color2: IntColor, coef: Float): IntColor {
-        val alpha = (color1.alpha() * coef + color2.alpha() * (1 - coef)).toInt()
-        val red = (color1.red() * coef + color2.red() * (1 - coef)).toInt()
-        val green = (color1.green() * coef + color2.green() * (1 - coef)).toInt()
-        val blue = (color1.blue() * coef + color2.blue() * (1 - coef)).toInt()
-        return argbToInt(alpha, red, green, blue)
-    }
+    private fun blendColors(centerColor: IntColor, averageColor: IntColor, coef: Float): IntColor {
+        val alpha = (centerColor.alpha() * coef + averageColor.alpha() * (1 - coef)).toInt()
+        val red = (centerColor.red() * coef + averageColor.red() * (1 - coef)).toInt()
+        val green = (centerColor.green() * coef + averageColor.green() * (1 - coef)).toInt()
+        val blue = (centerColor.blue() * coef + averageColor.blue() * (1 - coef)).toInt()
 
+        val limitedAlpha = min(max(alpha, 0), 255)
+        val limitedRed = min(max(red, 0), 255)
+        val limitedGreen = min(max(green, 0), 255)
+        val limitedBlue = min(max(blue, 0), 255)
+
+        return argbToInt(limitedAlpha, limitedRed, limitedGreen, limitedBlue)
+    }
 
 
     fun showBottomMenu(topMenu: TopMenuBinding, bottomMenu: BottomMenuBinding) {
