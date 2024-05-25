@@ -4,17 +4,17 @@ import android.annotation.SuppressLint
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.SeekBar
-import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.hits.graphic_editor.R
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
-import com.hits.graphic_editor.databinding.ExtraTopMenuBinding
 import com.hits.graphic_editor.databinding.RetouchBottomMenuBinding
-import com.hits.graphic_editor.databinding.ScalingBottomMenuBinding
 
 
 @SuppressLint("ClickableViewAccessibility")
-fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch, bottomMenu: RetouchBottomMenuBinding) {
+fun showBottomMenu(
+    binding: ActivityNewProjectBinding,
+    retouch: Retouch,
+    bottomMenu: RetouchBottomMenuBinding
+) {
     showSeekBarLayout(binding, retouch, bottomMenu)
 
     binding.imageView.setOnTouchListener { v, event ->
@@ -28,7 +28,8 @@ fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch, bottomM
             val imageY = imageCoords.y.toInt()
 
             if (imageX in 0 until retouch.imageBitmap.width && imageY in 0 until retouch.imageBitmap.height) {
-                retouch.imageBitmap = retouch.applyRetouchToBitmap(retouch.imageBitmap, imageX, imageY)
+                retouch.imageBitmap =
+                    retouch.applyRetouchToBitmap(retouch.imageBitmap, imageX, imageY)
                 binding.imageView.setImageBitmap(retouch.imageBitmap)
             }
         }
@@ -36,7 +37,11 @@ fun showBottomMenu(binding: ActivityNewProjectBinding, retouch: Retouch, bottomM
     }
 }
 
-fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch, bottomMenu: RetouchBottomMenuBinding) {
+fun showSeekBarLayout(
+    binding: ActivityNewProjectBinding,
+    retouch: Retouch,
+    bottomMenu: RetouchBottomMenuBinding
+) {
     val retouchCoefSeekBar = bottomMenu.retouchCoef
     val brushSizeSeekBar = bottomMenu.brushSize
 
@@ -46,7 +51,7 @@ fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch, bott
     retouchCoefSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             retouch.updateRetouchCoefficient(progress)
-            retouchCoefExplanation.text = "Коэффициент ретуширования: ${progress / 10f}"
+            retouchCoefExplanation.text = "Retouch coefficient: ${progress / 10f}"
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -57,7 +62,7 @@ fun showSeekBarLayout(binding: ActivityNewProjectBinding, retouch: Retouch, bott
     brushSizeSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             retouch.updateBrushSize(progress)
-            brushSizeExplanation.text = "Размер кисти: $progress"
+            brushSizeExplanation.text = "Brush size: $progress"
         }
 
         override fun onStartTrackingTouch(seekBar: SeekBar?) {}

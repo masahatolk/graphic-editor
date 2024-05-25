@@ -2,13 +2,32 @@ package com.hits.graphic_editor.unsharp_mask
 
 import android.graphics.Bitmap
 import android.view.LayoutInflater
-import com.hits.graphic_editor.utils.Filter
-import com.hits.graphic_editor.custom_api.*
+import android.view.View
+import android.widget.SeekBar
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.hits.graphic_editor.custom_api.alpha
+import com.hits.graphic_editor.custom_api.argbToInt
+import com.hits.graphic_editor.custom_api.blue
+import com.hits.graphic_editor.custom_api.getBitMap
+import com.hits.graphic_editor.custom_api.getSimpleImage
+import com.hits.graphic_editor.custom_api.getTruncatedChannel
+import com.hits.graphic_editor.custom_api.green
+import com.hits.graphic_editor.custom_api.red
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
+import com.hits.graphic_editor.databinding.SplineMenuButtonBinding
 import com.hits.graphic_editor.databinding.UnsharpmaskBottomMenuBinding
+import com.hits.graphic_editor.spline.addUnsharpMaskMenuButton
+import com.hits.graphic_editor.spline.removeUnsharpMaskMenuButton
+import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
-import kotlinx.coroutines.*
-import kotlin.math.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 class UnsharpMask(
     override val binding: ActivityNewProjectBinding,
@@ -20,19 +39,35 @@ class UnsharpMask(
     var blurRadius: Float = 10f
     var amount: Float = 1.0f
     var threshold: Int = 0
+    private val dialog: BottomSheetDialog = BottomSheetDialog(binding.root.context)
 
     private val unsharpMaskBinding: UnsharpmaskBottomMenuBinding by lazy {
         UnsharpmaskBottomMenuBinding.inflate(layoutInflater)
     }
+    private val menuButton: SplineMenuButtonBinding by lazy {
+        SplineMenuButtonBinding.inflate(layoutInflater)
+    }
+
     override fun onClose(onSave: Boolean) {
-        removeUnsharpMaskingControls(binding, unsharpMaskBinding)
+        dialog.dismiss()
+        removeUnsharpMaskMenuButton(binding, menuButton)
     }
 
     override fun onStart() {
-        addUnsharpMaskingControls(binding, this, unsharpMaskBinding)
+        addUnsharpMaskMenuButton(binding, menuButton)
+        dialog.setContentView(unsharpMaskBinding.root)
+        setListeners()
     }
 
-    fun applyUnsharpMasking() {
+    private fun setListeners() {
+        menuButton.button.setOnClickListener { dialog.show() }
+
+        setupIconListeners()
+        setupSeekBarListeners()
+        setupApplyButtonListener()
+    }
+
+    private fun applyUnsharpMasking() {
         val inputBitmap = lastProcessedBitmap ?: getBitMap(processedImage.getSimpleImage())
         val resultBitmap = unsharpMask(inputBitmap, blurRadius, amount, threshold)
         lastProcessedBitmap = resultBitmap
@@ -217,5 +252,75 @@ class UnsharpMask(
         }
 
         return resultBitmap
+    }
+
+    private fun setupIconListeners() {
+        unsharpMaskBinding.radiusIcon.setOnClickListener {
+            unsharpMaskBinding.radiusSeekBar.visibility = View.VISIBLE
+            unsharpMaskBinding.amountSeekBar.visibility = View.GONE
+            unsharpMaskBinding.thresholdSeekBar.visibility = View.GONE
+            unsharpMaskBinding.radiusValue.visibility = View.VISIBLE
+            unsharpMaskBinding.amountValue.visibility = View.GONE
+            unsharpMaskBinding.thresholdValue.visibility = View.GONE
+        }
+
+        unsharpMaskBinding.amountIcon.setOnClickListener {
+            unsharpMaskBinding.radiusSeekBar.visibility = View.GONE
+            unsharpMaskBinding.amountSeekBar.visibility = View.VISIBLE
+            unsharpMaskBinding.thresholdSeekBar.visibility = View.GONE
+            unsharpMaskBinding.radiusValue.visibility = View.GONE
+            unsharpMaskBinding.amountValue.visibility = View.VISIBLE
+            unsharpMaskBinding.thresholdValue.visibility = View.GONE
+        }
+
+        unsharpMaskBinding.thresholdIcon.setOnClickListener {
+            unsharpMaskBinding.radiusSeekBar.visibility = View.GONE
+            unsharpMaskBinding.amountSeekBar.visibility = View.GONE
+            unsharpMaskBinding.thresholdSeekBar.visibility = View.VISIBLE
+            unsharpMaskBinding.radiusValue.visibility = View.GONE
+            unsharpMaskBinding.amountValue.visibility = View.GONE
+            unsharpMaskBinding.thresholdValue.visibility = View.VISIBLE
+        }
+    }
+
+    private fun setupSeekBarListeners() {
+        unsharpMaskBinding.radiusSeekBar.setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                blurRadius = progress.toFloat()
+                unsharpMaskBinding.radiusValue.text = "Blur radius: $progress"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        unsharpMaskBinding.amountSeekBar.setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                amount = progress / 100f
+                unsharpMaskBinding.amountValue.text = "Gain: ${amount}"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        unsharpMaskBinding.thresholdSeekBar.setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                threshold = progress
+                unsharpMaskBinding.thresholdValue.text = "Threshold: $progress"
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    private fun setupApplyButtonListener() {
+        unsharpMaskBinding.applyButton.setOnClickListener {
+            applyUnsharpMasking()
+        }
     }
 }

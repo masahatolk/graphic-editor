@@ -6,7 +6,6 @@ import android.graphics.PointF
 import android.view.LayoutInflater
 import android.widget.ImageView
 import com.hits.graphic_editor.custom_api.IntColor
-import com.hits.graphic_editor.custom_api.SimpleImage
 import com.hits.graphic_editor.custom_api.alpha
 import com.hits.graphic_editor.custom_api.argbToInt
 import com.hits.graphic_editor.custom_api.blue
@@ -16,10 +15,8 @@ import com.hits.graphic_editor.custom_api.green
 import com.hits.graphic_editor.custom_api.red
 import com.hits.graphic_editor.databinding.ActivityNewProjectBinding
 import com.hits.graphic_editor.databinding.RetouchBottomMenuBinding
-import com.hits.graphic_editor.databinding.ScalingBottomMenuBinding
 import com.hits.graphic_editor.utils.Filter
 import com.hits.graphic_editor.utils.ProcessedImage
-
 import kotlin.math.max
 import kotlin.math.min
 
@@ -35,6 +32,7 @@ class Retouch(
     private val bottomMenu: RetouchBottomMenuBinding by lazy {
         RetouchBottomMenuBinding.inflate(layoutInflater)
     }
+
     override fun onClose(onSave: Boolean) {
         binding.imageView.setOnClickListener(null)
         binding.root.removeView(bottomMenu.root)
@@ -89,9 +87,11 @@ class Retouch(
                 val dy = ny - centerY
                 if (dx * dx + dy * dy <= radiusSquared) {
                     if (nx in 0 until bitmap.width && ny in 0 until bitmap.height) {
-                        val distanceToCenter = kotlin.math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+                        val distanceToCenter =
+                            kotlin.math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
                         val retouchCoefficient = interpolateCoefficient(distanceToCenter)
-                        val blendedColor = blendColors(bitmap.getPixel(nx, ny), averageColor, retouchCoefficient)
+                        val blendedColor =
+                            blendColors(bitmap.getPixel(nx, ny), averageColor, retouchCoefficient)
                         retouchedBitmap.setPixel(nx, ny, blendedColor)
                     }
                 }
