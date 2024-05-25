@@ -218,6 +218,41 @@ class NewProjectActivity : AppCompatActivity() {
         }
 
         // ------------ add listener to bottom menu -------------
+        fun startFilter(){
+            when (bottomMenu.root.selectedTabPosition) {
+                FilterMode.SCALING.ordinal -> {
+                    currentFilter = Scaling(binding, layoutInflater, processedImage)
+                }
+
+                FilterMode.ROTATION.ordinal -> {
+                    currentFilter = Rotation(binding, layoutInflater, processedImage)
+                }
+
+                FilterMode.COLOR_CORRECTION.ordinal -> {
+                    currentFilter = ColorCorrection(binding, layoutInflater, processedImage, FaceDetection(this@NewProjectActivity, binding, layoutInflater, processedImage))
+                }
+
+                FilterMode.RETOUCH.ordinal -> {
+                    currentFilter = Retouch(binding, layoutInflater, processedImage)
+                }
+
+                FilterMode.SPLINE.ordinal -> {
+                    currentFilter = Spline(binding, layoutInflater, processedImage, colorPicker)
+                }
+
+                FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
+                    currentFilter = AffineTransform(this@NewProjectActivity, binding, layoutInflater, processedImage)
+                }
+
+                FilterMode.UNSHARP_MASKING.ordinal -> {
+                    currentFilter = UnsharpMask(binding, layoutInflater, processedImage)
+                }
+
+                FilterMode.CUBE.ordinal -> {
+                    currentFilter = Cube3D(binding, layoutInflater, processedImage, this@NewProjectActivity)
+                }
+            }
+        }
         bottomMenu.root.addOnTabSelectedListener(object : OnTabSelectedListener {
 
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -226,40 +261,8 @@ class NewProjectActivity : AppCompatActivity() {
                 removeBottomMenu(binding, bottomMenu)
                 addExtraTopMenu(binding, extraTopMenu)
 
+                startFilter()
                 processedImage.switchStackMode()
-                when (bottomMenu.root.selectedTabPosition) {
-                    FilterMode.SCALING.ordinal -> {
-                        currentFilter = Scaling(binding, layoutInflater, processedImage)
-                    }
-
-                    FilterMode.ROTATION.ordinal -> {
-                        currentFilter = Rotation(binding, layoutInflater, processedImage)
-                    }
-
-                    FilterMode.COLOR_CORRECTION.ordinal -> {
-                        currentFilter = ColorCorrection(binding, layoutInflater, processedImage, FaceDetection(this@NewProjectActivity, binding, layoutInflater, processedImage))
-                    }
-
-                    FilterMode.RETOUCH.ordinal -> {
-                        currentFilter = Retouch(binding, layoutInflater, processedImage)
-                    }
-
-                    FilterMode.SPLINE.ordinal -> {
-                        currentFilter = Spline(binding, layoutInflater, processedImage, colorPicker)
-                    }
-
-                    FilterMode.AFFINE_TRANSFORMATION.ordinal -> {
-                        currentFilter = AffineTransform(this@NewProjectActivity, binding, layoutInflater, processedImage)
-                    }
-
-                    FilterMode.UNSHARP_MASKING.ordinal -> {
-                        currentFilter = UnsharpMask(binding, layoutInflater, processedImage)
-                    }
-
-                    FilterMode.CUBE.ordinal -> {
-                        currentFilter = Cube3D(binding, layoutInflater, processedImage, this@NewProjectActivity)
-                    }
-                }
                 currentFilter.onStart()
             }
 
@@ -269,6 +272,7 @@ class NewProjectActivity : AppCompatActivity() {
                 removeBottomMenu(binding, bottomMenu)
                 addExtraTopMenu(binding, extraTopMenu)
 
+                startFilter()
                 processedImage.switchStackMode()
                 currentFilter.onStart()
             }
