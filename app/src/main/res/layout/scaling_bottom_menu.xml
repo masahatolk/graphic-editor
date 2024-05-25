@@ -7,26 +7,29 @@
 
     <Button
         android:id="@+id/scalingButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="87dp"
+        android:layout_height="39dp"
         android:layout_marginStart="92dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/round_button"
         android:password="false"
-        android:text="Scale"
+        android:text="@string/scale"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toStartOf="@+id/antialiasing"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Switch
+    <com.google.android.material.chip.Chip
         android:id="@+id/antialiasing"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="AntiAliasing"
+        android:layout_marginEnd="84dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/antialiasing"
+        android:textSize="17sp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.748"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -34,13 +37,14 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="30dp">
 
         <TextView
             android:id="@+id/oldWidth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0"
+            android:text="@string/__0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.039"
             app:layout_constraintStart_toStartOf="parent"
@@ -50,13 +54,13 @@
             android:id="@+id/X"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="x" />
+            android:text="@string/x" />
 
         <TextView
             android:id="@+id/oldHeight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0"
+            android:text="@string/__0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.073"
             app:layout_constraintStart_toEndOf="@+id/oldWidth"
@@ -69,7 +73,7 @@
             android:inputType="numberDecimal"
             android:maxLength="7"
             android:minEms="4"
-            android:text="0"
+            android:text="@string/__0"
             app:layout_constraintEnd_toStartOf="@+id/newWidth"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -82,7 +86,7 @@
             android:inputType="numberDecimal"
             android:maxLength="7"
             android:minEms="4"
-            android:text="0"
+            android:text="@string/__0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.643"
             app:layout_constraintStart_toStartOf="parent"
@@ -96,7 +100,7 @@
             android:inputType="numberDecimal"
             android:maxLength="7"
             android:minEms="4"
-            android:text="0"
+            android:text="@string/__0"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toEndOf="@+id/newWidth"

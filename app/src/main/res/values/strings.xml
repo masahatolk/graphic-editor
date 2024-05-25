@@ -27,10 +27,12 @@
     <string name="_90">90</string>
     <string name="crop">crop</string>
     <string name="apply">Apply</string>
-    <string name="_0">Порог: 0</string>
-    <string name="_1_0">Коэффициент усиления: 1.0</string>
-    <string name="_10">Радиус размытия: 10</string>
-    <string name="__10">Размер кисти: 10</string>
-    <string name="_0_5">Коэффициент ретуширования: 0.5</string>
+    <string name="_0">Threshold: 0</string>
+    <string name="_1_0">Gain: 1.0</string>
+    <string name="_10">Blur radius: 10</string>
+    <string name="__10">Brush size: 10</string>
+    <string name="_0_5">Retouch coefficient: 0.5</string>
+    <string name="__0">0</string>
+    <string name="x">x</string>
     <!--    <string name="authorities">com.hits.graphic-editor</string>-->
 </resources>

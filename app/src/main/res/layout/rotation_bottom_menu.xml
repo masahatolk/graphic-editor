@@ -11,12 +11,14 @@
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="9dp"
         android:layout_marginBottom="20dp"
         android:stepSize="0.000000001"
         android:value="1.0"
         android:valueFrom="0.2"
         android:valueTo="5.0"
         app:layout_constraintBottom_toTopOf="@+id/rotationSlider"
+        app:layout_constraintEnd_toStartOf="@+id/cropSwitch"
         app:layout_constraintStart_toStartOf="parent"
         app:thumbRadius="8dp"
         app:tickVisible="false" />
@@ -43,12 +45,15 @@
         android:valueFrom="-180"
         android:valueTo="180"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/rotate90Button"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:thumbRadius="8dp"
         app:tickVisible="false" />
 
     <com.google.android.material.chip.Chip
         android:id="@+id/cropSwitch"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
         android:layout_width="78dp"
         android:layout_height="56dp"
         android:layout_marginEnd="16dp"
@@ -56,7 +61,6 @@
         android:text="@string/crop"
         android:textAlignment="center"
         android:textSize="25sp"
-        style="@style/Widget.MaterialComponents.Chip.Choice"
         app:layout_constraintBottom_toTopOf="@+id/rotate90Button"
         app:layout_constraintEnd_toEndOf="parent" />
 

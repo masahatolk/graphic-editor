@@ -147,7 +147,6 @@ fun drawSplinePoints(
 
 fun draw(
     canvas: Canvas,
-    resultCanvas: Canvas,
     path: MutableList<Point>,
     extraPoints: MutableList<Point>,
     paint: Paint,
@@ -161,7 +160,6 @@ fun draw(
     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
     drawLines(canvas, path, paint, splineMode, prevSplineMode)
     drawSplines(canvas, path, extraPoints, antialiasingMode, splineMode, prevSplineMode)
-    drawSplines(resultCanvas, path, extraPoints, antialiasingMode, splineMode, prevSplineMode)
     drawPoints(canvas, path, paint)
 
 }

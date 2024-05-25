@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Point
+import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -38,10 +40,8 @@ class Spline(
 ) : Filter {
 
     private lateinit var canvas: Canvas
-    private lateinit var resultCanvas: Canvas
     private var bitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     private var defaultBitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    private var resultBitmap: Bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
     private var paint: Paint = Paint().apply {
         strokeWidth = 2F
@@ -66,19 +66,18 @@ class Spline(
     val splineBottomMenu: SplineBottomSheetBinding by lazy {
         SplineBottomSheetBinding.inflate(layoutInflater)
     }
+    private var dialog: BottomSheetDialog = BottomSheetDialog(binding.root.context)
 
     override fun onStart() {
         addSplineMenuButton(binding, splineMenuButton)
 
         canvas = Canvas(bitmap)
-        resultCanvas = Canvas(resultBitmap)
 
         setListeners()
     }
 
     @SuppressLint("ClickableViewAccessibility")
     fun setListeners() {
-        val dialog = BottomSheetDialog(binding.root.context)
         dialog.setContentView(splineBottomMenu.root)
 
         splineMenuButton.button.setOnClickListener {
@@ -100,7 +99,6 @@ class Spline(
             if (paths.size != 0 && extraPointsList.size != 0) {
                 draw(
                     canvas,
-                    resultCanvas,
                     paths.last(),
                     extraPointsList.last(),
                     paint,
@@ -110,7 +108,7 @@ class Spline(
                 )
                 drawByDefault(canvas, defaultBitmap, paint)
 
-                binding.extraImageView.setImageBitmap(bitmap)
+                binding.superExtraImageView.setImageBitmap(bitmap)
             }
         }
 
@@ -120,7 +118,7 @@ class Spline(
             paint.color = color
         }
 
-        binding.extraImageView.setOnTouchListener(CustomTouchListener())
+        binding.superExtraImageView.setOnTouchListener(CustomTouchListener())
     }
 
     inner class CustomTouchListener : OnTouchListener {
@@ -194,7 +192,6 @@ class Spline(
 
                                     draw(
                                         canvas,
-                                        resultCanvas,
                                         path,
                                         extraPointsList.last(),
                                         paint,
@@ -204,7 +201,7 @@ class Spline(
                                     )
                                     drawByDefault(canvas, defaultBitmap, paint)
 
-                                    binding.extraImageView.setImageBitmap(bitmap)
+                                    binding.superExtraImageView.setImageBitmap(bitmap)
                                 } else movingMode = true
                                 if (paths.last().size >= 10 && !movingMode) Toast.makeText(
                                     binding.root.context,
@@ -255,7 +252,6 @@ class Spline(
 
                                 draw(
                                     canvas,
-                                    resultCanvas,
                                     paths.last(),
                                     extraPointsList.last(),
                                     paint,
@@ -265,7 +261,7 @@ class Spline(
                                 )
                                 drawByDefault(canvas, defaultBitmap, paint)
 
-                                binding.extraImageView.setImageBitmap(bitmap)
+                                binding.superExtraImageView.setImageBitmap(bitmap)
                             } else currPointIndex = -1
                         }
                     }
@@ -283,7 +279,6 @@ class Spline(
 
                             draw(
                                 canvas,
-                                resultCanvas,
                                 paths.last(),
                                 extraPointsList.last(),
                                 paint,
@@ -293,7 +288,7 @@ class Spline(
                             )
                             drawByDefault(canvas, defaultBitmap, paint)
 
-                            binding.extraImageView.setImageBitmap(bitmap)
+                            binding.superExtraImageView.setImageBitmap(bitmap)
                         }
                     }
                 }
@@ -400,12 +395,13 @@ class Spline(
         extraPointsList.last().removeAt(index)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onClose(onSave: Boolean) {
-        if(onSave) {
-            canvas.drawBitmap(resultBitmap, null, rect, paint)
-            //canvas.drawBitmap(bitmap, null, rect, paint)
-            //processedImage.addToLocalStack()
-        }
+        binding.superExtraImageView.setOnTouchListener(null)
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        paths.clear()
+        extraPointsList.clear()
+        dialog.dismiss()
         removeSplineMenuButton(binding, splineMenuButton)
     }
 }
